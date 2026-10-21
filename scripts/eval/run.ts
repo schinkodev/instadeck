@@ -117,9 +117,24 @@ function deckRef(label: string, briefId: string): DeckRef | undefined {
   return { label, briefId, slides: readdirSync(dir).sort().map((f) => join(dir, f)) };
 }
 
-async function judge(first: DeckRef, second: DeckRef): Promise<Verdict> {
-  const run = await claude(["--allowedTools", "Read", "--max-turns", "60", ...(flag("model") ? ["--model", flag("model")!] : []), judgePrompt(first, second)], ROOT, JUDGE_TIMEOUT_MS);
-  return parseVerdict(run.result);
+/**
+ * Posudek jedné dvojice v jednom pořadí. Uloží se na disk, takže opakovaný compare hotové dvojice přeskočí.
+ * Odpověď bez platného JSON se jednou zopakuje (model občas odpoví prózou), surový text zůstane v .raw.txt.
+ */
+async function judge(first: DeckRef, second: DeckRef, cache: string): Promise<Verdict> {
+  if (existsSync(cache)) return JSON.parse(readFileSync(cache, "utf8")) as Verdict;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const run = await claude(["--allowedTools", "Read", "--max-turns", "60", ...(flag("model") ? ["--model", flag("model")!] : []), judgePrompt(first, second)], ROOT, JUDGE_TIMEOUT_MS);
+    const last = run.result ?? "";
+    try {
+      const v = parseVerdict(last);
+      writeFileSync(cache, JSON.stringify(v));
+      return v;
+    } catch {
+      writeFileSync(`${cache}.raw.txt`, last);
+    }
+  }
+  throw new Error(`The judge gave no valid verdict twice, see ${cache}.raw.txt`);
 }
 
 async function compare(a: string, b: string) {
@@ -135,7 +150,9 @@ async function compare(a: string, b: string) {
     stats.a.push(JSON.parse(readFileSync(join(OUT, a, brief.id, "stats.json"), "utf8")));
     stats.b.push(JSON.parse(readFileSync(join(OUT, b, brief.id, "stats.json"), "utf8")));
     console.error(`${brief.id}: judging both orders`);
-    const [ab, ba] = await Promise.all([judge(da, db), judge(db, da)]);
+    const dir = join(OUT, "judge", `${a}-vs-${b}`);
+    mkdirSync(dir, { recursive: true });
+    const [ab, ba] = await Promise.all([judge(da, db, join(dir, `${brief.id}-ab.json`)), judge(db, da, join(dir, `${brief.id}-ba.json`))]);
     results.push({ briefId: brief.id, outcome: reconcile(ab, ba), scores: meanScores(ab, ba), reasons: [ab.reason, ba.reason] });
   }
   const report = reportMarkdown(a, b, results, stats);
