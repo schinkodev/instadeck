@@ -1,14 +1,14 @@
 version: 2
+# Verzní aktualizace jsou vypnuté (limit 0): pro dva lidi je to šum a hlavní verze (TypeScript, SDK) se mění vědomě.
+# Bezpečnostní opravy závislostí zapíná Settings, Code security, Dependabot security updates.
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
-    groups:
-      minor-and-patch:
-        update-types: [minor, patch]
+    open-pull-requests-limit: 0
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    open-pull-requests-limit: 0
