@@ -33,7 +33,7 @@ export default defineConfig([
   },
   {
     files: ["lib/engine/render/player.js", "lib/engine/render/measure.js"],
-    rules: { "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^(mountInstaDeck|measureInstaDeck|measureMotionInstaDeck|snapshotInstaDeck)$" }] },
+    rules: { "@typescript-eslint/no-unused-vars": ["error", { varsIgnorePattern: "^(mountInstaDeck|measureInstaDeck|measureMotionInstaDeck|measureLayoutInstaDeck|snapshotInstaDeck)$" }] },
     languageOptions: { globals: { ResizeObserver: "readonly", window: "readonly", document: "readonly", location: "readonly", history: "readonly", requestAnimationFrame: "readonly", performance: "readonly", matchMedia: "readonly", getComputedStyle: "readonly", setTimeout: "readonly", clearTimeout: "readonly", setInterval: "readonly", clearInterval: "readonly", URLSearchParams: "readonly", DOMMatrix: "readonly", fetch: "readonly", URL: "readonly" } },
   },
   {

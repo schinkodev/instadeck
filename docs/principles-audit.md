@@ -6,13 +6,13 @@ Layers: 1 schema (a bad state cannot be written), 2 tokens (the renderer or deri
 
 A principle is covered when layers 1 to 3 enforce it. A principle with critique only is a judgement call that no measurement captures today. A principle enforced by nothing names its gap.
 
-## Design principles (21 of 27 covered)
+## Design principles (22 of 27 covered)
 
 | Principle | Author | Enforced by | Gap |
 |---|---|---|---|
 | Limited Typeface Palette | Tschichold | 1 schema: DeckDesign.fonts has one heading face and one body face |  |
 | Modular Scale | Bringhurst/Brown | 2 tokens: design.type.scale and base derive every size (deriveTokens) |  |
-| Meaningful Contrast in Size | Williams/CRAP | 2 tokens: the type scale ratio separates heading, lead and body | Measure the heading to body size ratio per slide in the browser |
+| Meaningful Contrast in Size | Williams/CRAP | 2 tokens: the type scale ratio separates heading, lead and body<br>3 lint: type-contrast: the heading is at least 1.5x the text below it, measured in the browser |  |
 | Data-Ink Ratio | Tufte | nothing | Charts have no axes or grid yet. New chart types must justify every axis, grid line and label |
 | Asymmetric Composition | Tschichold/Swiss | 2 tokens: the renderer left-aligns text and centers only display text |  |
 | Measure / Line Length | Bringhurst | 2 tokens: .text has max-width 36em | Bullets and cards are not measured |
@@ -23,7 +23,7 @@ A principle is covered when layers 1 to 3 enforce it. A principle with critique 
 | Honest Expression | Rams | 2 tokens: the renderer uses accent on stat values, highlights and chart focus<br>3 lint: highlight-count: at most two highlights per slide |  |
 | Grid System | Muller-Brockmann | 2 tokens: layouts place zones on one grid | Distinct left edges per slide are not measured |
 | Proximity = Relationship | Gestalt | 2 tokens: spacing tokens sp-xs to sp-lg |  |
-| Active White Space | Swiss Style | nothing | The share of the canvas that content covers is not measured |
+| Active White Space | Swiss Style | 2 tokens: figures (cards, timeline, table, team, comparison) sit in the optical center of the space under the heading<br>3 lint: layout-balance: content of a medium or dense slide reaches at least 60% of the slide height, measured in the browser | Crowding (too little white space) is caught only as overflow |
 | Figure-Ground Clarity | Gestalt | 3 lint: contrast: text on bg and on cards | The distinction of surface from bg is not checked |
 | Alignment | Williams/CRAP | 2 tokens: layouts share edges and baselines |  |
 | Common Region | Palmer/Gestalt | 2 tokens: cards group content on a surface |  |
