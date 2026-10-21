@@ -1,6 +1,6 @@
 {
   "name": "instadeck",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Branded, animated pitch decks from your own Claude. A local MCP server: Claude writes the story and design, InstaDeck renders, validates and exports.",
   "keywords": [
     "mcp",
