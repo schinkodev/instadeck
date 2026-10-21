@@ -82,6 +82,7 @@ export function landingHtml(version: string): string {
 <meta property="og:title" content="InstaDeck | Pitch decks that move">
 <meta property="og:description" content="Describe your company, add your logo, and Claude builds a branded pitch deck with motion that plays right in the chat. Free and open source.">
 <meta property="og:image" content="https://instadeck.app/og.png">
+<link rel="canonical" href="https://instadeck.app/">
 <meta property="og:url" content="https://instadeck.app">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
