@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.schinkodev/instadeck",
+  "title": "InstaDeck",
+  "description": "Branded, animated pitch decks from your own Claude. Free, no account.",
+  "repository": {
+    "url": "https://github.com/schinkodev/instadeck",
+    "source": "github"
+  },
+  "websiteUrl": "https://instadeck.app",
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "instadeck",
+      "version": "0.1.1",
+      "transport": { "type": "stdio" }
+    }
+  ],
+  "remotes": [
+    { "type": "streamable-http", "url": "https://instadeck.app/mcp" }
+  ]
+}
