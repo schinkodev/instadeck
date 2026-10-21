@@ -1,0 +1,273 @@
+/**
+ * Principy designu (převzato ze slyde-saas, src/lib/layers/design-principles.ts).
+ * Znalostní báze pro rozhodování o vizuálním systému, ne katalog presetů.
+ */
+
+export interface DesignPrinciple {
+  id: string;
+  name: string;
+  author: string;
+  category: 'typography' | 'color' | 'layout' | 'hierarchy' | 'cohesion';
+  principle: string;
+  why: string;
+  slideApplication: string;
+  contraindications?: string;
+}
+
+export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
+  // Typography
+  {
+    id: 'limited-typeface-palette',
+    name: 'Limited Typeface Palette',
+    author: 'Tschichold',
+    category: 'typography',
+    principle: 'Use at most two typefaces; create hierarchy through size and weight.',
+    why: 'More fonts fragment visual identity and force the eye to re-calibrate on every slide.',
+    slideApplication: 'One heading font, one body font. Hierarchy via size/weight, never via adding a third font.',
+    contraindications: 'Decks that deliberately showcase typography (type specimen presentations).',
+  },
+  {
+    id: 'modular-scale',
+    name: 'Modular Scale',
+    author: 'Bringhurst/Brown',
+    category: 'typography',
+    principle: 'Derive all type sizes from a single ratio applied to a base size.',
+    why: 'Consistent mathematical relationship between sizes creates visual rhythm the eye recognizes subconsciously.',
+    slideApplication: 'Pick a base (e.g. 24px) and ratio (e.g. 1.333). Every size is base * ratio^n. No ad-hoc values.',
+  },
+  {
+    id: 'meaningful-contrast',
+    name: 'Meaningful Contrast in Size',
+    author: 'Williams/CRAP',
+    category: 'typography',
+    principle: 'If two elements serve different functions, make the visual difference obvious.',
+    why: 'Subtle differences look like mistakes. Readers need instant signals about information hierarchy.',
+    slideApplication: 'Heading must be visibly larger than body. Stat numbers must dwarf their labels. No 2px differences.',
+  },
+  {
+    id: 'data-ink-ratio',
+    name: 'Data-Ink Ratio',
+    author: 'Tufte',
+    category: 'typography',
+    principle: 'Maximize the share of ink used to present data; erase non-data ink.',
+    why: 'Every non-informational mark competes with the actual message for the viewer\'s attention.',
+    slideApplication: 'No decorative bullets, no ornamental rules, no background textures unless they carry meaning.',
+  },
+  {
+    id: 'flush-left-ragged-right',
+    name: 'Asymmetric Composition',
+    author: 'Tschichold/Swiss',
+    category: 'typography',
+    principle: 'Set text flush-left, ragged-right. The eye has a consistent return point.',
+    why: 'Centered text forces the eye to hunt for each new line start. Left-aligned text is faster to scan.',
+    slideApplication: 'Body text, bullets, and descriptions are always left-aligned. Center only single-line display text.',
+    contraindications: 'Title slides or single-line callouts where centering creates symmetry.',
+  },
+  {
+    id: 'measure-line-length',
+    name: 'Measure / Line Length',
+    author: 'Bringhurst',
+    category: 'typography',
+    principle: '45-75 characters per line for comfortable reading.',
+    why: 'Beyond 75 characters, readers lose their place on the return sweep.',
+    slideApplication: 'Body text blocks should not span the full 1920px canvas. Use columns or max-width to constrain.',
+  },
+
+  // Color
+  {
+    id: '60-30-10',
+    name: '60/30/10 Distribution',
+    author: 'Interior Design Canon',
+    category: 'color',
+    principle: '60% dominant, 30% secondary, 10% accent. Unequal distribution creates hierarchy.',
+    why: 'Equal distribution of colors produces visual noise. Dominance creates calm; accent creates focus.',
+    slideApplication: 'Background is 60%, text/surface is 30%, accent appears only on key numbers or CTAs.',
+  },
+  {
+    id: 'seven-contrasts',
+    name: 'Seven Color Contrasts',
+    author: 'Itten',
+    category: 'color',
+    principle: 'Cold-warm, light-dark, complementary: each contrast type produces a different emotional signal.',
+    why: 'Color relationships are not arbitrary. A warm accent on a cool background signals energy differently than analogous harmony.',
+    slideApplication: 'Choose a contrast strategy that matches the deck\'s emotional intent, then apply it consistently.',
+  },
+  {
+    id: 'simultaneous-contrast',
+    name: 'Simultaneous Contrast',
+    author: 'Albers',
+    category: 'color',
+    principle: 'Test colors on their actual background, not in isolation.',
+    why: 'The same color looks different depending on what surrounds it. Swatches lie.',
+    slideApplication: 'Verify accent legibility on bg, muted legibility on surface. Never assume from hex alone.',
+  },
+  {
+    id: 'limited-active-palette',
+    name: 'Limited Active Palette',
+    author: 'Vignelli',
+    category: 'color',
+    principle: '3-5 functional colors. Fewer colors produce stronger recognition.',
+    why: 'Each additional color dilutes the system. Restraint forces intentional use.',
+    slideApplication: '6 functional slots: bg, fg, accent, muted, accent2, surface. No additional colors.',
+  },
+  {
+    id: 'honest-expression',
+    name: 'Honest Expression',
+    author: 'Rams',
+    category: 'color',
+    principle: 'Styling must not exaggerate importance.',
+    why: 'When everything is highlighted, nothing is. Visual inflation erodes trust.',
+    slideApplication: 'Accent color on featured numbers only. No gratuitous color on labels, backgrounds, or borders.',
+  },
+
+  // Layout & Space
+  {
+    id: 'grid-system',
+    name: 'Grid System',
+    author: 'Muller-Brockmann',
+    category: 'layout',
+    principle: 'Place all elements on a modular grid for ~20% faster visual processing.',
+    why: 'Grid alignment reduces cognitive load. The eye can predict where the next element will be.',
+    slideApplication: 'Use CSS grid or flex with consistent column counts. All elements share alignment edges.',
+  },
+  {
+    id: 'proximity-relationship',
+    name: 'Proximity = Relationship',
+    author: 'Gestalt',
+    category: 'layout',
+    principle: 'Close things belong together. Gap between groups must exceed gap within groups.',
+    why: 'Spatial grouping is the strongest pre-attentive signal. It works before reading begins.',
+    slideApplication: 'Item gap (within a stat group) < section gap (between groups) < heading-to-content gap.',
+  },
+  {
+    id: 'active-white-space',
+    name: 'Active White Space',
+    author: 'Swiss Style',
+    category: 'layout',
+    principle: '40-50% empty space signals authority, not waste.',
+    why: 'Crowded slides signal desperation. Generous space signals confidence and editorial control.',
+    slideApplication: 'Content area uses 50-60% of the canvas. Padding is generous. Never fill all available space.',
+  },
+  {
+    id: 'figure-ground',
+    name: 'Figure-Ground Clarity',
+    author: 'Gestalt',
+    category: 'layout',
+    principle: 'Foreground and background must be instantly distinguishable.',
+    why: 'Ambiguous figure-ground relationships cause cognitive stalling. Clarity is speed.',
+    slideApplication: 'High contrast between bg and fg. Surface cards must be subtly but clearly distinct from bg.',
+  },
+  {
+    id: 'alignment',
+    name: 'Alignment',
+    author: 'Williams/CRAP',
+    category: 'layout',
+    principle: 'Every element shares a common edge or axis. One misalignment reads as carelessness.',
+    why: 'Alignment creates invisible lines that connect elements across the slide, producing unity.',
+    slideApplication: 'All text left edges align. All stat numbers align. Grid items share baseline and top edges.',
+  },
+  {
+    id: 'common-region',
+    name: 'Common Region',
+    author: 'Palmer/Gestalt',
+    category: 'layout',
+    principle: 'A shared enclosed area groups elements without labels.',
+    why: 'Cards and containers create grouping that is faster to parse than headers or dividers.',
+    slideApplication: 'Use surface-colored cards to group related content. No need for "Section:" labels.',
+  },
+
+  // Hierarchy
+  {
+    id: 'contrast-hierarchy',
+    name: 'Contrast Creates Hierarchy',
+    author: 'Williams',
+    category: 'hierarchy',
+    principle: 'One dominant element per slide, everything else subordinate.',
+    why: 'Multiple competing focal points split attention. A single hero element anchors the message.',
+    slideApplication: 'Title slide: one big number or statement. Stats slide: the key metric is largest. Never equal sizing.',
+  },
+  {
+    id: 'repetition-unity',
+    name: 'Repetition Builds Unity',
+    author: 'Williams/CRAP',
+    category: 'hierarchy',
+    principle: 'Same treatment for same function across all slides.',
+    why: 'Inconsistency forces re-learning on each slide. Repetition lets the audience predict structure.',
+    slideApplication: 'Every heading is the same size/weight/position. Every stat renders identically. No one-off styling.',
+  },
+  {
+    id: 'less-but-better',
+    name: 'Less But Better',
+    author: 'Rams',
+    category: 'hierarchy',
+    principle: 'One idea per slide. Remove everything non-communicative.',
+    why: 'Slides are not documents. Each slide is a single beat in a narrative.',
+    slideApplication: 'Max 3-4 items per slide. If it needs more, split into two slides.',
+  },
+  {
+    id: 'gutenberg-diagram',
+    name: 'Gutenberg Diagram',
+    author: 'Arnold',
+    category: 'hierarchy',
+    principle: 'Eye enters top-left, exits bottom-right. Place key info in the terminal area.',
+    why: 'Natural reading gravity moves diagonally. Top-left gets first attention, bottom-right gets lasting impression.',
+    slideApplication: 'Heading at top-left. CTA or key takeaway near bottom-right. Avoid critical content in weak corners.',
+    contraindications: 'RTL languages where the flow is reversed.',
+  },
+
+  // Cohesion
+  {
+    id: 'semantic-consistency',
+    name: 'Semantic Consistency',
+    author: 'Vignelli',
+    category: 'cohesion',
+    principle: 'Same element means the same thing everywhere in the system.',
+    why: 'When accent color means "key metric" on slide 3 but "background" on slide 7, the system breaks.',
+    slideApplication: 'Each CSS custom property has one semantic role. --deck-accent is always the emphasis color.',
+  },
+  {
+    id: 'smallest-effective-difference',
+    name: 'Smallest Effective Difference',
+    author: 'Tufte',
+    category: 'cohesion',
+    principle: 'Make distinctions as subtle as possible while still clear.',
+    why: 'Loud distinctions compete with the content. Quiet distinctions serve it.',
+    slideApplication: 'Surface is only slightly different from bg. Muted is clearly readable but not competing with fg.',
+  },
+  {
+    id: 'form-follows-function',
+    name: 'Form Follows Function',
+    author: 'Sullivan/Bauhaus',
+    category: 'cohesion',
+    principle: 'Every visual decision serves communication, not decoration.',
+    why: 'Decoration without function is noise. It distracts and slows comprehension.',
+    slideApplication: 'No gradient backgrounds, no decorative borders, no drop shadows unless they create depth hierarchy.',
+  },
+  {
+    id: 'signal-color-discipline',
+    name: 'Signal Color Discipline',
+    author: 'Swiss Style',
+    category: 'cohesion',
+    principle: 'Accent color appears only where attention is needed, nowhere else.',
+    why: 'When accent appears everywhere, it loses its power to direct attention.',
+    slideApplication: 'Accent on stat numbers, CTA buttons, key chart segments. Never on borders, backgrounds, or labels.',
+  },
+  {
+    id: 'cognitive-load',
+    name: 'Cognitive Load / 4+/-1 Chunks',
+    author: 'Miller/Cowan',
+    category: 'cohesion',
+    principle: 'Working memory holds ~4 items. Cap content per slide accordingly.',
+    why: 'Exceeding working memory capacity causes information to be dropped, not absorbed.',
+    slideApplication: 'Max 4 stats, 4 bullet points, 4 columns per slide. If more exists, use multiple slides.',
+  },
+  {
+    id: 'signal-to-noise',
+    name: 'Signal-to-Noise Ratio',
+    author: 'Reynolds/Tufte',
+    category: 'cohesion',
+    principle: 'Every non-informational element competes with signal for attention.',
+    why: 'Noise is cumulative. Each decorative element marginally degrades the message.',
+    slideApplication: 'No decorative rules, no ornamental corners, no background patterns, no bullet characters.',
+  },
+];

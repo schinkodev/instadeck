@@ -1,0 +1,44 @@
+name: Release
+
+# Spouští ho jen tag v* (např. v0.1.0), který vytvoří člověk.
+# npm: trusted publishing přes OIDC, bez tokenu, provenance se přidá sama (veřejné repo).
+# První verzi je potřeba publikovat ručně a na npmjs.com u balíčku nastavit tento workflow
+# (release.yml) jako trusted publisher. Postup v docs/RELEASING.md.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      INSTADECK_CHROME_NO_SANDBOX: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing vyžaduje npm 11.5.1 a novější, Node 22 nese starší npm.
+      - name: Newer npm for trusted publishing
+        run: npm install -g "npm@>=11.5.1 <12"
+      - run: npm ci
+      - name: Version matches the tag
+        run: test "v$(node -p 'require("./package.json").version')" = "${GITHUB_REF_NAME}"
+      - run: npm run typecheck
+      - run: npm test
+      - name: Package check
+        run: node scripts/smoke-pack.mjs
+      - name: Claude Desktop extension
+        run: npm run bundle
+      - name: GitHub Release with instadeck.mcpb
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist-bundle/instadeck.mcpb --title "${GITHUB_REF_NAME}" --generate-notes
+      - name: Publish to npm
+        run: npm publish --access public

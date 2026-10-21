@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>InstaDeck</title>
+<link id="deck-fonts" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;background:transparent}
+body{font-family:system-ui,sans-serif}
+/*EMBED_CSS*/
+.bar{position:absolute;top:10px;right:10px;z-index:3;display:flex;gap:6px;opacity:0;transition:opacity .2s}
+.embed:hover .bar,.embed:focus-within .bar{opacity:1}
+.bar button{height:30px;padding:0 12px;border:none;background:rgba(17,17,17,.82);color:#FFF;font:500 12.5px system-ui,sans-serif;cursor:pointer}
+.bar button:hover{background:#111}
+.status{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;color:#C9C9CF;font:14px system-ui,sans-serif;background:#0B0B0C}
+.status[hidden]{display:none}
+</style>
+<style id="deck-css"></style>
+</head>
+<body>
+<div class="embed" id="frame">
+  <div id="deck" style="position:absolute;inset:0"></div>
+  <div class="bar"><button type="button" id="open" hidden title="Open in a browser to present, download or share">Open</button></div>
+  <div class="status" id="status">Waiting for the deck</div>
+</div>
+<script>/*VIEW_JS*/</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+node_modules
+dist
+out
+.data
+.env*
+!.env.example
+*.tsbuildinfo
+.DS_Store
+dist-bundle
+dist-lambda
+
+CLAUDE.local.md

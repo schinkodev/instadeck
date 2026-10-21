@@ -1,0 +1,135 @@
+import { describe, expect, it } from "vitest";
+import {
+  BLOCK_TYPES,
+  BLOCK_INFO,
+  DEFAULT_DESIGN,
+  DESIGN_PRINCIPLES,
+  ENTRANCES,
+  GOOGLE_FONTS,
+  LAYOUTS,
+  MAX_PX,
+  MIN_FONT_PX,
+  PITCH_BEATS,
+  STORYTELLING_PRINCIPLES,
+  TYPE_SCALES,
+  blockSchema,
+  contrastRatio,
+  deriveTokens,
+  designFromBrand,
+  designSchema,
+  getLayout,
+  mix,
+  opSchema,
+  parseHex,
+  type Design,
+} from "@/lib/domain";
+
+describe("color", () => {
+  it("computes WCAG contrast", () => {
+    expect(contrastRatio("#000000", "#FFFFFF")).toBeCloseTo(21, 5);
+    expect(contrastRatio("#FFFFFF", "#FFFFFF")).toBeCloseTo(1, 5);
+    // známá hodnota: #767676 na bílé je hranice AA (4.54)
+    expect(contrastRatio("#767676", "#FFFFFF")).toBeCloseTo(4.54, 1);
+  });
+
+  it("mixes and rejects invalid hex", () => {
+    expect(mix("#000000", "#FFFFFF", 0.5)).toBe("#808080");
+    expect(() => parseHex("red")).toThrow();
+    expect(() => parseHex("#FFF")).toThrow();
+  });
+});
+
+describe("tokens", () => {
+  it("derives an ascending modular scale with minimum and maximum sizes", () => {
+    for (const scale of Object.keys(TYPE_SCALES) as Design["type"]["scale"][]) {
+      for (const base of [22, 28, 36]) {
+        const t = deriveTokens({ ...DEFAULT_DESIGN, type: { ...DEFAULT_DESIGN.type, base, scale } });
+        const s = t.size;
+        const order = [s.caption, s.small, s.body, s.lead, s.h3, s.h2, s.h1, s.display];
+        expect([...order].sort((a, b) => a - b)).toEqual(order);
+        expect(s.caption).toBeGreaterThanOrEqual(MIN_FONT_PX);
+        expect(s.h1).toBeLessThanOrEqual(MAX_PX.h1);
+        expect(s.display).toBeLessThanOrEqual(MAX_PX.display);
+      }
+    }
+  });
+
+  it("derives tone palettes with readable text on accent", () => {
+    const t = deriveTokens(DEFAULT_DESIGN);
+    expect(t.palette.inverse.bg).toBe(DEFAULT_DESIGN.colors.fg);
+    expect(t.palette.accent.bg).toBe(DEFAULT_DESIGN.colors.accent);
+    expect(contrastRatio(t.palette.accent.bg, t.palette.accent.fg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("default design passes its own schema", () => {
+    expect(designSchema.parse(DEFAULT_DESIGN)).toEqual(DEFAULT_DESIGN);
+  });
+});
+
+describe("catalog consistency", () => {
+  it("layouts have unique ids and every grid area is a zone", () => {
+    expect(new Set(LAYOUTS.map((l) => l.id)).size).toBe(LAYOUTS.length);
+    for (const l of LAYOUTS) {
+      const areas = new Set(l.grid.areas.flatMap((a) => a.split(/\s+/)).filter((a) => a !== "."));
+      const zones = new Set(l.zones.map((z) => z.name));
+      for (const a of areas) expect(zones, `${l.id}: area ${a}`).toContain(a);
+      for (const z of l.zones) {
+        if (l.bleed?.zone === z.name) expect(areas.has(z.name), `${l.id}: bleed zone is outside the grid`).toBe(false);
+        else expect(areas, `${l.id}: zone ${z.name} has no grid area`).toContain(z.name);
+        for (const t of z.accepts) expect(BLOCK_TYPES).toContain(t);
+      }
+      const cols = l.grid.columns.split(/\s+(?![^(]*\))/).length;
+      for (const row of l.grid.areas) expect(row.split(/\s+/).length, `${l.id}: columns`).toBe(cols);
+      expect(l.grid.rows.split(/\s+(?![^(]*\))/).length, `${l.id}: rows`).toBe(l.grid.areas.length);
+    }
+    expect(LAYOUTS.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("every block type is documented and placeable in some layout", () => {
+    for (const t of BLOCK_TYPES) {
+      expect(BLOCK_INFO[t].purpose.length).toBeGreaterThan(10);
+      expect(LAYOUTS.some((l) => l.zones.some((z) => z.accepts.includes(t))), t).toBe(true);
+    }
+  });
+
+  it("pitch beats reference existing layouts", () => {
+    for (const b of PITCH_BEATS) for (const l of b.layouts) expect(getLayout(l), `${b.id}: ${l}`).toBeDefined();
+  });
+
+  it("fonts and principles are complete", () => {
+    expect(new Set(GOOGLE_FONTS.map((f) => f.family)).size).toBe(GOOGLE_FONTS.length);
+    expect(DESIGN_PRINCIPLES.length).toBeGreaterThan(20);
+    expect(STORYTELLING_PRINCIPLES.length).toBeGreaterThan(10);
+    expect(Object.keys(ENTRANCES)).toContain("rise");
+  });
+});
+
+describe("schemas", () => {
+  it("enforces cognitive limits on lists", () => {
+    const items = ["a", "b", "c", "d", "e", "f"];
+    expect(blockSchema.safeParse({ type: "bullets", items }).success).toBe(false);
+    expect(blockSchema.safeParse({ type: "bullets", items: items.slice(0, 4) }).success).toBe(true);
+  });
+
+  it("rejects fonts outside the curated list", () => {
+    const bad = { ...DEFAULT_DESIGN, fonts: { ...DEFAULT_DESIGN.fonts, heading: { source: "google", family: "Comic Neue Extra" } } };
+    expect(designSchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("parses ops", () => {
+    const op = opSchema.parse({ op: "update_slide", slide_id: "s1", blocks: { support: null } });
+    expect(op.op).toBe("update_slide");
+    expect(opSchema.safeParse({ op: "add_slide", slide: { layout: "nope", intent: "x", blocks: {} } }).success).toBe(false);
+  });
+});
+
+describe("brand", () => {
+  it("maps brand colors into the design and keeps typography", () => {
+    const d = designFromBrand({ name: "Acme", colors: { primary: "#E4572E", dark: "#1B1B1E" }, logos: [] }, DEFAULT_DESIGN);
+    expect(d.colors.accent).toBe("#E4572E");
+    expect(d.colors.fg).toBe("#1B1B1E");
+    expect(d.colors.bg).toBe("#FFFFFF");
+    expect(d.type).toEqual(DEFAULT_DESIGN.type);
+    expect(designSchema.safeParse(d).success).toBe(true);
+  });
+});

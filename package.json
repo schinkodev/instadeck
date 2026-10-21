@@ -1,0 +1,73 @@
+{
+  "name": "instadeck",
+  "version": "0.1.0",
+  "description": "Branded, animated pitch decks from your own Claude. A local MCP server: Claude writes the story and design, InstaDeck renders, validates and exports.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "pitch-deck",
+    "presentation",
+    "slides"
+  ],
+  "homepage": "https://instadeck.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/schinkodev/instadeck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/schinkodev/instadeck/issues"
+  },
+  "license": "MIT",
+  "author": "Jakub Schinko",
+  "type": "module",
+  "bin": {
+    "instadeck": "dist/instadeck.js"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "mcp": "tsx server/stdio.ts",
+    "build": "node scripts/build.mjs",
+    "prepack": "npm run build",
+    "bundle": "tsx scripts/bundle.ts",
+    "site": "tsx scripts/site.ts",
+    "gen": "tsx scripts/gen.ts",
+    "example": "tsx scripts/promote-example.ts",
+    "serve": "tsx server/serve.ts",
+    "build:lambda": "node scripts/build-lambda.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1153.0",
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@puppeteer/browsers": "^3.2.5",
+    "pptxgenjs": "^4.0.1",
+    "puppeteer-core": "^25.15.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.13.0",
+    "jszip": "^3.10.1",
+    "pdfjs-dist": "^6.4.299",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

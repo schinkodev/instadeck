@@ -1,0 +1,1594 @@
+[
+  {
+    "id": "seed-pitch",
+    "title": "Seed round pitch",
+    "purpose": "A first meeting with investors for an early stage company: hook, problem, solution, proof, market, competition, team, ask.",
+    "audience": "Seed investors",
+    "why": [
+      "The first slide is a promise, the second is a surprising fact. The deck earns attention before it explains anything.",
+      "Every content headline is a full sentence that states the takeaway. The slide body only proves it.",
+      "The strongest proof (pilot results) comes before the market size. Traction beats promises.",
+      "No two neighbouring slides share a layout, and the accent tone is used once, for the ask.",
+      "The closing slide repeats the hook's subject (the megawatt) so the deck ends where it started.",
+      "Motion is subtle and identical on every slide: content rises, slides fade, and only the proof points count up. Nothing distracts from the argument."
+    ],
+    "design": {
+      "colors": {
+        "bg": "#FFFFFF",
+        "fg": "#0F1A17",
+        "accent": "#0E7C66",
+        "accent2": "#F4B942",
+        "muted": "#566660",
+        "surface": "#F1F6F4"
+      },
+      "fonts": {
+        "heading": {
+          "source": "google",
+          "family": "Manrope"
+        },
+        "body": {
+          "source": "google",
+          "family": "Inter"
+        }
+      },
+      "type": {
+        "base": 28,
+        "scale": "perfect-fourth",
+        "headingWeight": 700,
+        "headingTracking": -0.02,
+        "headingCase": "none"
+      },
+      "space": {
+        "unit": 12,
+        "density": "airy"
+      },
+      "shape": {
+        "radius": 14,
+        "cards": "filled"
+      }
+    },
+    "motion": {
+      "intensity": "subtle",
+      "rationale": "Seed investors judge clarity and judgment. Short rises and a quiet fade guide the eye without performing, the numbers are the only thing that moves on its own.",
+      "entrance": "rise",
+      "transition": "fade",
+      "tempo": "calm",
+      "heroes": true
+    },
+    "slides": [
+      {
+        "layout": "title",
+        "intent": "Promise: what Northwind does, in one line.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "display",
+            "text": "The grid runs on ==Northwind=="
+          },
+          "subtitle": {
+            "type": "text",
+            "size": "lead",
+            "text": "Real time balancing for renewable heavy power grids."
+          },
+          "meta": {
+            "type": "text",
+            "size": "small",
+            "text": "Seed round, October 2026"
+          }
+        }
+      },
+      {
+        "layout": "statement",
+        "intent": "Hook: clean energy is being thrown away.",
+        "tone": "inverse",
+        "blocks": {
+          "statement": {
+            "type": "heading",
+            "level": "display",
+            "text": "Europe wasted ==7%== of its wind power."
+          },
+          "support": {
+            "type": "text",
+            "size": "lead",
+            "text": "Not because nobody needed it. Because the grid could not move it in time."
+          }
+        }
+      },
+      {
+        "layout": "headline-stat",
+        "intent": "Problem: the waste has a price, and it grows.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Curtailment costs grid operators billions every year"
+          },
+          "stat": {
+            "type": "stat",
+            "value": 4.2,
+            "decimals": 1,
+            "prefix": "€",
+            "suffix": "B",
+            "label": "lost to curtailment in the EU in 2025",
+            "detail": "Illustrative figure, replace with a sourced number"
+          },
+          "support": {
+            "type": "text",
+            "size": "body",
+            "text": "The loss roughly doubles by 2030 as more wind and solar connect."
+          }
+        }
+      },
+      {
+        "layout": "cards",
+        "intent": "Why now: three shifts make it solvable today.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Three shifts make this solvable now, not five years ago"
+          },
+          "cards": {
+            "type": "cards",
+            "items": [
+              {
+                "title": "Live data",
+                "text": "Substations now stream readings every second instead of every hour."
+              },
+              {
+                "title": "Cheap compute",
+                "text": "Forecasting a whole region takes minutes on commodity hardware."
+              },
+              {
+                "title": "New rules",
+                "text": "Operators must now report and reduce curtailment, with penalties."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "statement",
+        "intent": "Solution in one sentence.",
+        "blocks": {
+          "statement": {
+            "type": "heading",
+            "level": "display",
+            "text": "We see congestion ==before== it hits."
+          },
+          "support": {
+            "type": "text",
+            "size": "lead",
+            "text": "Northwind predicts grid bottlenecks hours ahead and tells operators how to reroute."
+          }
+        }
+      },
+      {
+        "layout": "points",
+        "intent": "Product: how it works in three steps.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Three steps from sensor data to saved megawatts"
+          },
+          "body": {
+            "type": "bullets",
+            "build": "items",
+            "items": [
+              "Connect: read-only access to the operator's existing telemetry.",
+              "Predict: a congestion forecast for every line, six hours ahead.",
+              "Act: ranked reroute suggestions the control room can approve in one click."
+            ]
+          }
+        }
+      },
+      {
+        "layout": "chart-insight",
+        "intent": "Traction: pilots measurably reduced waste.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Pilot grids cut curtailed energy by a third in six months"
+          },
+          "insight": {
+            "type": "stat",
+            "value": 34,
+            "suffix": "%",
+            "label": "less curtailed energy across 3 pilot grids",
+            "detail": "Illustrative pilot data"
+          },
+          "chart": {
+            "type": "chart",
+            "kind": "column",
+            "categories": [
+              "Before",
+              "Month 1",
+              "Month 3",
+              "Month 6"
+            ],
+            "series": [
+              {
+                "name": "Curtailed energy index",
+                "values": [
+                  100,
+                  88,
+                  74,
+                  66
+                ]
+              }
+            ],
+            "highlight": 3,
+            "caption": "Index, start of pilot = 100"
+          }
+        }
+      },
+      {
+        "layout": "stats",
+        "intent": "Market: big enough, with a clear path.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "A €12B yearly problem, and we start with one region"
+          },
+          "stats": {
+            "type": "stats",
+            "items": [
+              {
+                "value": 12,
+                "prefix": "€",
+                "suffix": "B",
+                "label": "yearly curtailment cost by 2030"
+              },
+              {
+                "value": 480,
+                "label": "grid operators in Europe"
+              },
+              {
+                "value": 3,
+                "label": "pilots live, 5 more signed"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "comparison",
+        "intent": "Competition: why we win.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Operators choose us because we act, not just report"
+          },
+          "comparison": {
+            "type": "comparison",
+            "columns": [
+              {
+                "title": "Typical grid software",
+                "items": [
+                  "Reports what already happened",
+                  "Months to integrate",
+                  "Charged per dashboard"
+                ]
+              },
+              {
+                "title": "Northwind",
+                "highlight": true,
+                "items": [
+                  "Forecasts hours ahead",
+                  "Live within two weeks",
+                  "Charged per megawatt saved"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "team",
+        "intent": "Team: we have done this before.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "We have built and run grid software before"
+          },
+          "team": {
+            "type": "team",
+            "people": [
+              {
+                "name": "Anna Novak",
+                "role": "CEO",
+                "bio": "Ten years in grid operations at a national operator."
+              },
+              {
+                "name": "Jonas Weber",
+                "role": "CTO",
+                "bio": "Built forecasting systems for a large energy trader."
+              },
+              {
+                "name": "Mei Lin",
+                "role": "Head of Product",
+                "bio": "Shipped control room tools used in four countries."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "timeline",
+        "intent": "Roadmap tied to the raise.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "This round takes us from three pilots to twenty grids"
+          },
+          "timeline": {
+            "type": "timeline",
+            "current": 0,
+            "items": [
+              {
+                "label": "Now",
+                "title": "3 pilots live",
+                "text": "Proven on three regional grids."
+              },
+              {
+                "label": "Q1 2027",
+                "title": "First contract",
+                "text": "Convert two pilots to paid."
+              },
+              {
+                "label": "Q3 2027",
+                "title": "10 grids",
+                "text": "Second country launched."
+              },
+              {
+                "label": "2028",
+                "title": "20 grids",
+                "text": "Series A ready."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "closing",
+        "intent": "The ask, callback to the hook.",
+        "tone": "accent",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "display",
+            "text": "Help us keep every megawatt on the grid"
+          },
+          "cta": {
+            "type": "cta",
+            "text": "Raising €4M seed to scale from 3 to 20 grids",
+            "detail": "anna@northwind.example"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "sales-deck",
+    "title": "Enterprise sales deck",
+    "purpose": "A first call with a buyer at a larger company: the cost of the problem, the solution, proof from a customer, how rollout works, pricing and one clear next step.",
+    "audience": "Enterprise buyers and department heads",
+    "why": [
+      "It opens with the buyer's problem and its cost in their numbers, not with the product.",
+      "The customer quote and the results chart come before pricing, so the price is read as a bargain.",
+      "The rollout timeline answers the unspoken question: how much effort will this be for us?",
+      "Pricing is a small table with one highlighted column, never a wall of features.",
+      "The ask is a single next step with a date, not a vague invitation.",
+      "The deck barely moves: fades only, so the buyer reads evidence instead of watching effects. The chart growing is the single motion that carries meaning."
+    ],
+    "design": {
+      "colors": {
+        "bg": "#FFFFFF",
+        "fg": "#12162B",
+        "accent": "#3B4BD6",
+        "accent2": "#9AA5F2",
+        "muted": "#555B78",
+        "surface": "#F3F4FB"
+      },
+      "fonts": {
+        "heading": {
+          "source": "google",
+          "family": "IBM Plex Sans"
+        },
+        "body": {
+          "source": "google",
+          "family": "IBM Plex Sans"
+        }
+      },
+      "type": {
+        "base": 28,
+        "scale": "major-third",
+        "headingWeight": 700,
+        "headingTracking": -0.01,
+        "headingCase": "none"
+      },
+      "space": {
+        "unit": 12,
+        "density": "balanced"
+      },
+      "shape": {
+        "radius": 8,
+        "cards": "outline"
+      }
+    },
+    "motion": {
+      "intensity": "subtle",
+      "rationale": "Enterprise buyers read for risk. Fades keep attention on the proof, counting numbers and growing charts carry the only motion.",
+      "entrance": "fade",
+      "transition": "fade",
+      "tempo": "calm",
+      "heroes": true
+    },
+    "slides": [
+      {
+        "layout": "title",
+        "intent": "Name the topic in the buyer's terms.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "display",
+            "text": "Fewer ==stockouts==, less cash tied up"
+          },
+          "subtitle": {
+            "type": "text",
+            "size": "lead",
+            "text": "How Brightline helps retail operations teams plan stock with confidence."
+          },
+          "meta": {
+            "type": "text",
+            "size": "small",
+            "text": "Prepared for the operations team"
+          }
+        }
+      },
+      {
+        "layout": "statement",
+        "intent": "Problem the buyer already feels.",
+        "blocks": {
+          "statement": {
+            "type": "heading",
+            "level": "display",
+            "text": "Every empty shelf is a ==lost== sale."
+          },
+          "support": {
+            "type": "text",
+            "size": "lead",
+            "text": "Yet most teams still plan stock in spreadsheets that are outdated by Monday noon."
+          }
+        }
+      },
+      {
+        "layout": "stats",
+        "intent": "Quantify what the problem costs.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Planning by spreadsheet quietly costs a retailer millions"
+          },
+          "stats": {
+            "type": "stats",
+            "items": [
+              {
+                "value": 8,
+                "suffix": "%",
+                "label": "of sales lost to stockouts",
+                "detail": "Illustrative, replace with the buyer's data"
+              },
+              {
+                "value": 22,
+                "suffix": "%",
+                "label": "of stock sits unsold for 90 days"
+              },
+              {
+                "value": 15,
+                "suffix": "h",
+                "label": "per week spent on manual planning"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "cards",
+        "intent": "Solution as three pillars.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Brightline replaces the spreadsheet with three connected tools"
+          },
+          "cards": {
+            "type": "cards",
+            "items": [
+              {
+                "title": "Demand forecast",
+                "text": "Daily forecasts per store and product, with the reasoning shown."
+              },
+              {
+                "title": "Replenishment",
+                "text": "Order proposals your planners approve, edit or reject."
+              },
+              {
+                "title": "Alerts",
+                "text": "A short morning list of the ten risks that need a human."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "comparison",
+        "intent": "Before and after.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "The week looks different when planning runs itself"
+          },
+          "comparison": {
+            "type": "comparison",
+            "columns": [
+              {
+                "title": "Today",
+                "items": [
+                  "Monday spent merging exports",
+                  "Surprises found on the shelf",
+                  "One planner knows the formulas"
+                ]
+              },
+              {
+                "title": "With Brightline",
+                "highlight": true,
+                "items": [
+                  "Monday spent on decisions",
+                  "Risks flagged days ahead",
+                  "Everyone sees the same plan"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "quote",
+        "intent": "Proof from a peer.",
+        "blocks": {
+          "quote": {
+            "type": "quote",
+            "text": "We stopped arguing about the numbers and started arguing about the strategy.",
+            "author": "Petra Svobodova",
+            "role": "Head of Supply Chain, a regional grocery chain"
+          }
+        }
+      },
+      {
+        "layout": "chart",
+        "intent": "Results over time.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Stockouts fell by half within two quarters of rollout"
+          },
+          "chart": {
+            "type": "chart",
+            "kind": "line",
+            "categories": [
+              "Start",
+              "Month 1",
+              "Month 2",
+              "Month 3",
+              "Month 4",
+              "Month 5",
+              "Month 6"
+            ],
+            "series": [
+              {
+                "name": "Stockout rate",
+                "values": [
+                  8,
+                  7.2,
+                  6.1,
+                  5.2,
+                  4.6,
+                  4.2,
+                  4
+                ]
+              }
+            ],
+            "unit": "%",
+            "caption": "Illustrative customer data, replace before presenting"
+          }
+        }
+      },
+      {
+        "layout": "timeline",
+        "intent": "Show how little effort rollout takes.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Your first stores are live in six weeks"
+          },
+          "timeline": {
+            "type": "timeline",
+            "current": 0,
+            "items": [
+              {
+                "label": "Week 1",
+                "title": "Connect data",
+                "text": "Read-only link to your ERP."
+              },
+              {
+                "label": "Week 3",
+                "title": "Pilot stores",
+                "text": "Ten stores plan with Brightline."
+              },
+              {
+                "label": "Week 6",
+                "title": "Review",
+                "text": "Compare against your own baseline."
+              },
+              {
+                "label": "Week 12",
+                "title": "Roll out",
+                "text": "All stores, with training."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "table",
+        "intent": "Pricing, simple and comparable.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Pricing scales with the number of stores"
+          },
+          "table": {
+            "type": "table",
+            "columns": [
+              "Feature",
+              "Pilot",
+              "Standard",
+              "Enterprise"
+            ],
+            "rows": [
+              [
+                "Stores",
+                "Up to 10",
+                "Up to 100",
+                "Unlimited"
+              ],
+              [
+                "Forecast horizon",
+                "4 weeks",
+                "12 weeks",
+                "12 weeks"
+              ],
+              [
+                "Support",
+                "Email",
+                "Named contact",
+                "24/7"
+              ],
+              [
+                "Price per store",
+                "Free",
+                "€120 a month",
+                "On request"
+              ]
+            ],
+            "highlightColumn": 2
+          }
+        }
+      },
+      {
+        "layout": "closing",
+        "intent": "One next step with a date.",
+        "tone": "accent",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "display",
+            "text": "Start with ten stores"
+          },
+          "cta": {
+            "type": "cta",
+            "text": "Book the pilot kickoff before the end of the month",
+            "detail": "sales@brightline.example"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "product-launch",
+    "title": "Product launch",
+    "purpose": "Announcing a product to customers, press or partners: a bold hook, the three things it does, why it is different, early reactions, what comes next.",
+    "audience": "Customers, press and partners",
+    "why": [
+      "Short, energetic headlines. Nine slides is enough when every slide earns its place.",
+      "Features appear as three cards with a title and one sentence, never as a bullet list.",
+      "One big number carries the proof, and a customer voice carries the emotion.",
+      "The roadmap is short and honest: what ships now, what is next, what is later.",
+      "A brisk tempo and a rising entrance give it energy without adding decoration.",
+      "Slides push in from the right on every step, which turns the deck into forward motion. Brisk tempo keeps the energy without making anyone wait."
+    ],
+    "design": {
+      "colors": {
+        "bg": "#FFFAF5",
+        "fg": "#241A17",
+        "accent": "#E8604A",
+        "accent2": "#F5A25D",
+        "muted": "#6B5B55",
+        "surface": "#FBEFE4"
+      },
+      "fonts": {
+        "heading": {
+          "source": "google",
+          "family": "Bricolage Grotesque"
+        },
+        "body": {
+          "source": "google",
+          "family": "Figtree"
+        }
+      },
+      "type": {
+        "base": 28,
+        "scale": "perfect-fourth",
+        "headingWeight": 700,
+        "headingTracking": -0.02,
+        "headingCase": "none"
+      },
+      "space": {
+        "unit": 12,
+        "density": "balanced"
+      },
+      "shape": {
+        "radius": 20,
+        "cards": "filled"
+      }
+    },
+    "motion": {
+      "intensity": "expressive",
+      "rationale": "A launch should feel like momentum: every slide pushes the story forward, content rises briskly, one hero moment per slide.",
+      "entrance": "rise",
+      "transition": "slide",
+      "tempo": "brisk",
+      "heroes": true
+    },
+    "slides": [
+      {
+        "layout": "title",
+        "intent": "Announce the product and its promise.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "display",
+            "text": "Meet ==Pocket Ledger=="
+          },
+          "subtitle": {
+            "type": "text",
+            "size": "lead",
+            "text": "Know where your money goes without opening a spreadsheet."
+          },
+          "meta": {
+            "type": "text",
+            "size": "small",
+            "text": "Launching 3 November"
+          }
+        }
+      },
+      {
+        "layout": "statement",
+        "intent": "Hook: the everyday problem.",
+        "tone": "inverse",
+        "blocks": {
+          "statement": {
+            "type": "heading",
+            "level": "display",
+            "text": "Where did my ==money== go?"
+          },
+          "support": {
+            "type": "text",
+            "size": "lead",
+            "text": "Everyone asks it at the end of the month. Nobody enjoys finding out."
+          }
+        }
+      },
+      {
+        "layout": "cards",
+        "intent": "What the product does, in three things.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Pocket Ledger does three things, and does them well"
+          },
+          "cards": {
+            "type": "cards",
+            "items": [
+              {
+                "title": "Sorts itself",
+                "text": "Every payment lands in the right category without you tagging it."
+              },
+              {
+                "title": "Shows the month",
+                "text": "One screen answers whether you are on track, right now."
+              },
+              {
+                "title": "Nudges early",
+                "text": "A calm heads up before a bill or a budget runs out."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "headline-stat",
+        "intent": "Proof: it saves time and money.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Beta users find their first saving in the first week"
+          },
+          "stat": {
+            "type": "stat",
+            "value": 47,
+            "prefix": "€",
+            "label": "saved per month on average",
+            "detail": "Illustrative beta result, replace with real data"
+          },
+          "support": {
+            "type": "text",
+            "size": "body",
+            "text": "Mostly from forgotten subscriptions and duplicate fees."
+          }
+        }
+      },
+      {
+        "layout": "points",
+        "intent": "How it works in three steps.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Set up in two minutes, then forget about it"
+          },
+          "body": {
+            "type": "bullets",
+            "items": [
+              "Link your bank in the app, read-only.",
+              "Pick the one goal that matters to you this year.",
+              "Check the home screen when you are curious."
+            ]
+          }
+        }
+      },
+      {
+        "layout": "quote",
+        "intent": "Emotional proof from a user.",
+        "blocks": {
+          "quote": {
+            "type": "quote",
+            "text": "It is the first money app I opened on day thirty without being reminded.",
+            "author": "Lucie",
+            "role": "Beta tester, designer"
+          }
+        }
+      },
+      {
+        "layout": "stats",
+        "intent": "Momentum before the launch.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "The beta already has a loyal following"
+          },
+          "stats": {
+            "type": "stats",
+            "items": [
+              {
+                "value": 4200,
+                "label": "beta users"
+              },
+              {
+                "value": 71,
+                "suffix": "%",
+                "label": "open it every week"
+              },
+              {
+                "value": 4.8,
+                "decimals": 1,
+                "label": "average rating"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "timeline",
+        "intent": "What ships now and what comes next.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "h1",
+            "text": "Launch is the start, here is what follows"
+          },
+          "timeline": {
+            "type": "timeline",
+            "current": 0,
+            "items": [
+              {
+                "label": "3 Nov",
+                "title": "Launch",
+                "text": "iOS and Android, free."
+              },
+              {
+                "label": "Dec",
+                "title": "Shared budgets",
+                "text": "Plan together with a partner."
+              },
+              {
+                "label": "Q1",
+                "title": "Savings goals",
+                "text": "Automatic round ups."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "closing",
+        "intent": "One clear call to action.",
+        "tone": "accent",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "level": "display",
+            "text": "Get it on day one"
+          },
+          "cta": {
+            "type": "cta",
+            "text": "Join the launch list and get three months free",
+            "detail": "pocketledger.example"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "board-update",
+    "title": "Quarterly board update",
+    "purpose": "A board or investor update: results against plan, risks and the decisions needed. Professional and minimal, the deck does not move.",
+    "audience": "Board of directors and existing investors",
+    "why": [
+      "The second slide gives the answer first: ahead on revenue, behind on hiring. The board knows the headline before any detail.",
+      "Every number is shown against plan, so the board judges progress, not raw figures.",
+      "Risks get their own slide in plain language. Boards trust decks that name problems.",
+      "It ends with the exact decisions and amounts needed, not a thank you.",
+      "Nothing moves: intensity still, no entrances, a quiet fade between slides, numbers shown at their final value. Stillness reads as confidence and keeps every second on the discussion."
+    ],
+    "design": {
+      "colors": {
+        "bg": "#FFFFFF",
+        "fg": "#14171C",
+        "accent": "#1F4FD1",
+        "accent2": "#9DB3EE",
+        "muted": "#5B6270",
+        "surface": "#F3F4F6"
+      },
+      "fonts": {
+        "heading": {
+          "source": "google",
+          "family": "IBM Plex Sans"
+        },
+        "body": {
+          "source": "google",
+          "family": "IBM Plex Sans"
+        }
+      },
+      "type": {
+        "base": 28,
+        "scale": "major-third",
+        "headingWeight": 600,
+        "headingTracking": -0.01,
+        "headingCase": "none"
+      },
+      "space": {
+        "unit": 12,
+        "density": "airy"
+      },
+      "shape": {
+        "radius": 6,
+        "cards": "outline"
+      }
+    },
+    "motion": {
+      "intensity": "still",
+      "rationale": "A board reads numbers and decides. Nothing moves, slides change with a quiet fade, so every second goes to the content and the discussion.",
+      "entrance": "none",
+      "transition": "fade",
+      "tempo": "calm",
+      "heroes": false
+    },
+    "slides": [
+      {
+        "layout": "title",
+        "intent": "Frame the meeting: Q3 results and two decisions.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Q3 2026 board update",
+            "level": "display"
+          },
+          "subtitle": {
+            "type": "text",
+            "text": "Results against plan and two decisions for Q4.",
+            "size": "lead"
+          },
+          "meta": {
+            "type": "text",
+            "text": "Harborline, board meeting, October 2026",
+            "size": "small"
+          }
+        }
+      },
+      {
+        "layout": "statement",
+        "intent": "The answer first: ahead on revenue, behind on hiring.",
+        "blocks": {
+          "statement": {
+            "type": "heading",
+            "text": "Ahead on revenue, ==behind on hiring==.",
+            "level": "display"
+          },
+          "support": {
+            "type": "text",
+            "text": "Revenue beat plan by 8%. Two engineering roles are still open and now gate the Q4 roadmap.",
+            "size": "lead"
+          }
+        }
+      },
+      {
+        "layout": "stats",
+        "intent": "The quarter in four numbers.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Revenue and retention beat plan, burn stayed flat",
+            "level": "h1"
+          },
+          "stats": {
+            "type": "stats",
+            "items": [
+              {
+                "value": 4.1,
+                "decimals": 1,
+                "prefix": "$",
+                "suffix": "M",
+                "label": "Q3 revenue",
+                "detail": "Plan: $3.8M"
+              },
+              {
+                "value": 112,
+                "suffix": "%",
+                "label": "Net revenue retention",
+                "detail": "Plan: 108%"
+              },
+              {
+                "value": 0.9,
+                "decimals": 1,
+                "prefix": "$",
+                "suffix": "M",
+                "label": "Monthly burn",
+                "detail": "Flat on Q2"
+              },
+              {
+                "value": 26,
+                "label": "Months of runway",
+                "detail": "At current burn"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "chart",
+        "intent": "Revenue has beaten plan for three quarters in a row.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Revenue has beaten plan three quarters in a row",
+            "level": "h1"
+          },
+          "chart": {
+            "type": "chart",
+            "kind": "column",
+            "categories": [
+              "Q4 25",
+              "Q1 26",
+              "Q2 26",
+              "Q3 26"
+            ],
+            "series": [
+              {
+                "name": "Actual",
+                "values": [
+                  2.6,
+                  3,
+                  3.5,
+                  4.1
+                ]
+              },
+              {
+                "name": "Plan",
+                "values": [
+                  2.7,
+                  2.9,
+                  3.3,
+                  3.8
+                ]
+              }
+            ],
+            "unit": "M",
+            "caption": "Revenue in $M, illustrative figures"
+          }
+        }
+      },
+      {
+        "layout": "comparison",
+        "intent": "Where we stand against the Q3 plan.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Two of three Q3 goals are done, hiring slipped",
+            "level": "h1"
+          },
+          "comparison": {
+            "type": "table",
+            "columns": [
+              "Goal",
+              "Plan",
+              "Actual",
+              "Status"
+            ],
+            "rows": [
+              [
+                "Revenue",
+                "$3.8M",
+                "$4.1M",
+                "Done"
+              ],
+              [
+                "Enterprise logos",
+                "4",
+                "5",
+                "Done"
+              ],
+              [
+                "Engineering hires",
+                "5",
+                "3",
+                "Behind"
+              ]
+            ],
+            "highlightColumn": 2
+          }
+        }
+      },
+      {
+        "layout": "points",
+        "intent": "Risks the board should know about.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Three risks to watch in Q4",
+            "level": "h1"
+          },
+          "body": {
+            "type": "bullets",
+            "items": [
+              "Two open senior roles delay the analytics release by about six weeks.",
+              "Our largest customer renews in December and asked for a price review.",
+              "A competitor launched a free tier aimed at small fleets."
+            ]
+          }
+        }
+      },
+      {
+        "layout": "timeline",
+        "intent": "The Q4 plan in four steps.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Q4 plan: ship analytics, renew, hire",
+            "level": "h1"
+          },
+          "timeline": {
+            "type": "timeline",
+            "items": [
+              {
+                "label": "October",
+                "title": "Close two hires",
+                "text": "Offers out for both senior roles"
+              },
+              {
+                "label": "November",
+                "title": "Analytics beta",
+                "text": "Ten design partners"
+              },
+              {
+                "label": "December",
+                "title": "Key renewal",
+                "text": "Multi year term proposed"
+              },
+              {
+                "label": "January",
+                "title": "Analytics launch",
+                "text": "General availability"
+              }
+            ],
+            "current": 0
+          }
+        }
+      },
+      {
+        "layout": "closing",
+        "intent": "The decisions we need today.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Two decisions for today",
+            "level": "h1"
+          },
+          "cta": {
+            "type": "cta",
+            "text": "Approve the Q4 plan and ==$1.2M== for hiring",
+            "detail": "Details in the appendix sent on Monday"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "kinetic-launch",
+    "title": "Consumer app launch",
+    "purpose": "A launch event or keynote for a playful consumer brand: hook, how it works, proof, a reveal and the ask. Motion is part of the brand.",
+    "audience": "Creators, press and early users",
+    "why": [
+      "The hook is a surprising fact about the problem, landed with the one dramatic entrance of the deck.",
+      "The product is explained in three verbs on cards, then proven with one number and one real voice.",
+      "The price is held back for a reveal near the end, where the headline glides from the previous slide into place.",
+      "The deck writes its own motion vocabulary: a springy pop for content and a card like swipe between slides, both echoing how the app feels.",
+      "Two exceptions only (the hook and the reveal), so the custom motion stays a language and never turns into noise."
+    ],
+    "design": {
+      "colors": {
+        "bg": "#FFF8F0",
+        "fg": "#1A1423",
+        "accent": "#D12A4F",
+        "accent2": "#FFB238",
+        "muted": "#5E5468",
+        "surface": "#FBE9DD"
+      },
+      "fonts": {
+        "heading": {
+          "source": "google",
+          "family": "Bricolage Grotesque"
+        },
+        "body": {
+          "source": "google",
+          "family": "Figtree"
+        }
+      },
+      "type": {
+        "base": 28,
+        "scale": "perfect-fourth",
+        "headingWeight": 700,
+        "headingTracking": -0.02,
+        "headingCase": "none"
+      },
+      "space": {
+        "unit": 12,
+        "density": "balanced"
+      },
+      "shape": {
+        "radius": 20,
+        "cards": "filled"
+      }
+    },
+    "motion": {
+      "intensity": "kinetic",
+      "rationale": "Tandem is a playful app for people who learn together. The deck should feel like the app: springy, quick and a little cheeky, still one thing moving at a time.",
+      "entrance": "pop",
+      "transition": "swipe",
+      "tempo": "brisk",
+      "heroes": true,
+      "vocabulary": {
+        "entrances": {
+          "pop": {
+            "purpose": "Content springs up into place, like a card in the app.",
+            "keyframes": [
+              {
+                "opacity": 0,
+                "transform": "translateY(60px) scale(0.92)"
+              }
+            ],
+            "duration": 700,
+            "easing": "linear(0, 0.55 22%, 1.06 48%, 0.99 70%, 1)"
+          },
+          "slam": {
+            "purpose": "The big claim lands from close to the viewer, once per deck.",
+            "keyframes": [
+              {
+                "opacity": 0,
+                "transform": "scale(1.35)",
+                "filter": "blur(10px)"
+              }
+            ],
+            "duration": 620,
+            "easing": "out-back"
+          }
+        },
+        "transitions": {
+          "swipe": {
+            "purpose": "Slides swipe like cards: the next one comes in with a slight tilt, the old one flies out.",
+            "duration": 650,
+            "easing": "out-expo",
+            "exit": [
+              {
+                "opacity": 0,
+                "transform": "translateX(-1200px) rotate(-4deg)"
+              }
+            ],
+            "enter": [
+              {
+                "transform": "translateX(1920px) rotate(4deg)"
+              }
+            ],
+            "over": "enter"
+          },
+          "glide": {
+            "purpose": "The headline glides into its new place while the slide around it fades in, for the reveal.",
+            "duration": 750,
+            "easing": "out-expo",
+            "exit": [
+              {
+                "opacity": 0
+              }
+            ],
+            "enter": [
+              {
+                "opacity": 0,
+                "transform": "scale(1.04)"
+              }
+            ],
+            "shared": true
+          }
+        }
+      }
+    },
+    "slides": [
+      {
+        "layout": "title",
+        "intent": "Promise: learning a language is better together.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Learn together with ==Tandem==",
+            "level": "display"
+          },
+          "subtitle": {
+            "type": "text",
+            "text": "The language app where you practice with a real person, ten minutes a day.",
+            "size": "lead"
+          },
+          "meta": {
+            "type": "text",
+            "text": "Launch day, November 2026",
+            "size": "small"
+          }
+        }
+      },
+      {
+        "layout": "statement",
+        "intent": "Hook: most learners quit alone.",
+        "tone": "inverse",
+        "blocks": {
+          "statement": {
+            "type": "heading",
+            "text": "Most learners quit in ==three weeks==.",
+            "level": "display"
+          },
+          "support": {
+            "type": "text",
+            "text": "Not because the lessons are hard. Because nobody is waiting for them.",
+            "size": "lead"
+          }
+        },
+        "motion": {
+          "zones": {
+            "statement": "slam"
+          }
+        }
+      },
+      {
+        "layout": "cards",
+        "intent": "How Tandem works in three moves.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Match, talk, and keep each other going",
+            "level": "h1"
+          },
+          "cards": {
+            "type": "cards",
+            "items": [
+              {
+                "title": "Match",
+                "text": "We pair you with someone learning your language while you learn theirs."
+              },
+              {
+                "title": "Talk",
+                "text": "Ten minute voice sessions with prompts, so you never run out of things to say."
+              },
+              {
+                "title": "Keep going",
+                "text": "Shared streaks: miss a day and your partner's streak breaks too."
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "headline-stat",
+        "intent": "Proof: pairs keep going.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Pairs stick with it far longer than solo learners",
+            "level": "h1"
+          },
+          "stat": {
+            "type": "stat",
+            "value": 3.4,
+            "decimals": 1,
+            "suffix": "x",
+            "label": "longer streaks than learning alone",
+            "detail": "Beta, 6,000 learners, illustrative figure"
+          },
+          "support": {
+            "type": "text",
+            "text": "The partner is the reminder. No push notification beats a friend waiting for you.",
+            "size": "body"
+          }
+        }
+      },
+      {
+        "layout": "quote",
+        "intent": "A user voice makes it real.",
+        "blocks": {
+          "quote": {
+            "type": "quote",
+            "text": "I skipped my app for months. I never skip Ana.",
+            "author": "Jonas, 24",
+            "role": "Learning Portuguese in the beta"
+          }
+        }
+      },
+      {
+        "layout": "stats",
+        "intent": "The beta in three numbers.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "The beta grew by word of mouth alone",
+            "level": "h1"
+          },
+          "stats": {
+            "type": "stats",
+            "items": [
+              {
+                "value": 6000,
+                "label": "beta learners"
+              },
+              {
+                "value": 41,
+                "label": "languages paired"
+              },
+              {
+                "value": 72,
+                "suffix": "%",
+                "label": "invited a friend"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "layout": "timeline",
+        "intent": "What launches today and what comes next.",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Today is the start, groups come next",
+            "level": "h1"
+          },
+          "timeline": {
+            "type": "timeline",
+            "items": [
+              {
+                "label": "Today",
+                "title": "Tandem for everyone",
+                "text": "iOS and Android"
+              },
+              {
+                "label": "January",
+                "title": "Video sessions"
+              },
+              {
+                "label": "Spring",
+                "title": "Groups of four"
+              }
+            ],
+            "current": 0
+          }
+        }
+      },
+      {
+        "layout": "statement",
+        "intent": "The reveal: it is free.",
+        "blocks": {
+          "statement": {
+            "type": "heading",
+            "text": "And it is ==free== to start.",
+            "level": "display"
+          },
+          "support": {
+            "type": "text",
+            "text": "Your first partner and unlimited sessions, no card needed.",
+            "size": "lead"
+          }
+        },
+        "motion": {
+          "transition": "glide"
+        }
+      },
+      {
+        "layout": "closing",
+        "intent": "The ask: download today.",
+        "tone": "accent",
+        "blocks": {
+          "title": {
+            "type": "heading",
+            "text": "Find your partner today",
+            "level": "h1"
+          },
+          "cta": {
+            "type": "cta",
+            "text": "Download Tandem now",
+            "detail": "tandem.example, App Store and Google Play"
+          }
+        }
+      }
+    ]
+  }
+]

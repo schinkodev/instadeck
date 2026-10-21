@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Povinné kontroly větve main (ruleset): validate a secrets. Bez paths-ignore, aby hlásily vždy.
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: gitleaks (pinned release, checksum verified)
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          curl -sSfL "$base/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o gitleaks.tgz
+          curl -sSfL "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt" -o checksums.txt
+          grep "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" checksums.txt | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+          ./gitleaks git --redact --no-banner -v .
+
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      # Emulátor S3 pro kontraktní test úložiště hostovaného konektoru (tests/files.test.ts)
+      s3:
+        image: adobe/s3mock:latest
+        env:
+          COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: test
+        ports:
+          - 9090:9090
+    env:
+      S3_TEST_ENDPOINT: http://localhost:9090
+      # Headless Chromium (PDF, PNG, měření přetečení) na runneru bez povoleného sandboxu
+      INSTADECK_CHROME_NO_SANDBOX: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Tests
+        run: npm test
+      - name: Package (npm pack, install into an empty folder, run the bin over MCP)
+        run: node scripts/smoke-pack.mjs
+      - name: Lambda bundle (build and call it like a Function URL)
+        run: npm run build:lambda && node scripts/smoke-lambda.mjs
