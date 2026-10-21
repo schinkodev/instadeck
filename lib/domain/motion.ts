@@ -120,48 +120,7 @@ export const TRANSITIONS = {
     exit: [{ opacity: 0 }],
     shared: true,
   },
-  wipe: {
-    purpose: "The new slide is uncovered left to right over the old one. A clean chapter change, works at any intensity because nothing travels.",
-    duration: 650,
-    easing: "out-expo",
-    enter: [{ clipPath: "inset(0 100% 0 0)" }, { offset: 0.999, clipPath: "inset(0 0 0 0)" }],
-    over: "enter",
-  },
-  curtain: {
-    purpose: "The new slide rises from below like a curtain while the old one drifts up. Editorial, a new section or a turn in the story.",
-    duration: 700,
-    easing: "out-expo",
-    enter: [{ clipPath: "inset(100% 0 0 0)" }, { offset: 0.999, clipPath: "inset(0 0 0 0)" }],
-    exit: [{ transform: "translateY(-96px)", opacity: 0.4 }],
-    over: "enter",
-  },
-  iris: {
-    purpose: "The new slide opens from the center as a growing circle. The hook, the reveal, the big moment.",
-    duration: 800,
-    easing: "out-expo",
-    enter: [{ clipPath: "circle(0% at 50% 50%)" }, { offset: 0.999, clipPath: "circle(75% at 50% 50%)" }],
-    over: "enter",
-  },
-  zoom: {
-    purpose: "The camera pushes through: the old slide grows past the viewer and fades while the new one settles in from slightly far. Product and vision moments.",
-    duration: 750,
-    easing: "out-expo",
-    exit: [{ transform: "scale(1.12)", opacity: 0 }],
-    enter: [{ transform: "scale(0.92)", opacity: 0 }],
-  },
 } as const satisfies Record<string, TransitionSpec>;
-
-/**
- * Přechod podle místa v příběhu. Pohyb mezi slidy je znamení: co se opakuje, je neviditelné a nese
- * obsah, výjimka označí zlom. Jazyk decku (výchozí přechod) tedy nese kontinuitu a výjimky zlomy.
- */
-export const TRANSITION_BY_BEAT = {
-  continues: { use: "The same headline, logo, image or number lives on to the next slide.", transition: "morph" },
-  chapter: { use: "A new section starts, the story turns to a different topic.", transition: "wipe or curtain" },
-  hook: { use: "The opening claim, the reveal of the product, the big number, the ask.", transition: "iris or zoom" },
-  progress: { use: "Steps of a sequence, a roadmap, a timeline, a flow from left to right.", transition: "slide" },
-  proof: { use: "Evidence, data and quotes that should be read, not watched.", transition: "fade" },
-} as const;
 
 export interface HeroDef {
   purpose: string;
