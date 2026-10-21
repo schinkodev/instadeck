@@ -19,6 +19,7 @@
     "url": "https://github.com/schinkodev/instadeck/issues"
   },
   "license": "MIT",
+  "mcpName": "io.github.schinkodev/instadeck",
   "author": "Jakub Schinko",
   "type": "module",
   "bin": {
@@ -30,6 +31,9 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
