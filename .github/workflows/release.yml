@@ -18,7 +18,7 @@ jobs:
     env:
       INSTADECK_CHROME_NO_SANDBOX: "1"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
         with:
           node-version: 22

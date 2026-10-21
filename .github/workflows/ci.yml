@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: gitleaks (pinned release, checksum verified)
@@ -48,7 +48,7 @@ jobs:
       # Headless Chromium (PDF, PNG, měření přetečení) na runneru bez povoleného sandboxu
       INSTADECK_CHROME_NO_SANDBOX: "1"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
         with:
           node-version: 22
