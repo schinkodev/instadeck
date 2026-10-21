@@ -51,7 +51,7 @@ Co je dobré vědět:
 
 ## 4. Každé další vydání
 
-1. Na větvi `release/0.1.1` zvyš verzi: `npm version 0.1.1 --no-git-tag-version`. Otevři PR, nech projít CI a sluč.
+1. Na větvi `release/0.1.1` zvyš verzi: `npm version 0.1.1 --no-git-tag-version`. Stejné číslo dej do `server.json` (`version` a `packages[0].version`), ať záznam v MCP Registry nezastará. Otevři PR, nech projít CI a sluč.
 2. Z čistého `main` vytvoř tag a pushni ho (smíš jen ty, hlídá to ruleset na tagy):
 
    ```bash
@@ -78,3 +78,16 @@ Co je dobré vědět:
 | Chybí provenance | repo nebylo veřejné, nebo se publikovalo ručně |
 
 Doporučení po prvním úspěšném běhu: v nastavení balíčku na npmjs.com zvaž zakázání publikace pomocí tokenů, aby šlo publikovat jen přes workflow (zkontroluj nabídku v UI, nevím jistě, jak se položka jmenuje).
+
+## 6. MCP Registry (oficiální katalog MCP serverů)
+
+Registr drží jen metadata (`server.json`), balíček musí být už na npm a jeho `package.json` musí mít `mcpName` shodné s `name` v `server.json`. Publikuje vlastník ručně po vydání na npm:
+
+```bash
+brew install mcp-publisher
+mcp-publisher login github      # účet vlastníka organizace schinkodev
+mcp-publisher validate
+mcp-publisher publish
+```
+
+Ověř: `curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.schinkodev/instadeck"`. Při každé nové verzi zvyš číslo v `server.json` a publikuj znovu.
