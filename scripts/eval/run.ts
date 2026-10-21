@@ -1,10 +1,10 @@
 /**
  * Eval kvality decků (V008). Volá model přes `claude -p`, proto je mimo `npm test` a stojí peníze.
  *
- *   npm run eval -- generate <label> [--brief id] [--model name]
+ *   npm run eval -- generate <label> [--brief id] [--model name] [--repo path]
  *       Pro každý brief nechá model vytvořit deck přes InstaDeck z TOHOTO checkoutu a uloží PNG slidů,
- *       nálezy a cenu do out/eval/<label>/<brief>/. Verze guide porovnáváš tak, že generuješ
- *       z různých větví (worktree) pod různými štítky.
+ *       nálezy a cenu do out/eval/<label>/<brief>/. Verze porovnáváš tak, že generuješ z různých větví
+ *       (worktree) pod různými štítky: --repo ukáže na checkout, jehož server se použije.
  *   npm run eval -- compare <labelA> <labelB> [--brief id] [--model name]
  *       Vision model posoudí dvojice decků podle rubriky, každou dvakrát s prohozeným pořadím.
  *       Zpráva je v out/eval/report-<A>-vs-<B>.md. Nejednoznačné dvojice rozhoduje člověk.
@@ -20,6 +20,9 @@ import { generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, rep
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const OUT = join(ROOT, "out/eval");
+/** Checkout, jehož InstaDeck se měří (--repo). Výchozí tento. Výstupy evalu zůstávají tady, aby šly porovnat. */
+const repoArg = process.argv.indexOf("--repo");
+const REPO = repoArg >= 0 ? resolve(process.argv[repoArg + 1]!) : ROOT;
 const GEN_TIMEOUT_MS = 20 * 60_000;
 const JUDGE_TIMEOUT_MS = 10 * 60_000;
 
@@ -68,13 +71,26 @@ async function generate(label: string) {
     const home = join(dir, "home");
     mkdirSync(home, { recursive: true });
     const config = join(dir, "mcp.json");
-    writeFileSync(config, JSON.stringify({ mcpServers: { instadeck: { command: join(ROOT, "node_modules/.bin/tsx"), args: ["--tsconfig", join(ROOT, "tsconfig.json"), join(ROOT, "server/stdio.ts")], env: { INSTADECK_HOME: home } } } }));
-    const work = mkdtempSync(join(tmpdir(), "instadeck-eval-"));
-    console.error(`[${label}] ${brief.id}: generating`);
-    const run = await claude(["--mcp-config", config, "--strict-mcp-config", "--allowedTools", "mcp__instadeck", "--max-turns", "60", ...(model ? ["--model", model] : []), generationPrompt(brief)], work, GEN_TIMEOUT_MS);
-
+    writeFileSync(config, JSON.stringify({ mcpServers: { instadeck: { command: join(REPO, "node_modules/.bin/tsx"), args: ["--tsconfig", join(REPO, "tsconfig.json"), join(REPO, "server/stdio.ts")], env: { INSTADECK_HOME: home } } } }));
+    if (existsSync(join(dir, "stats.json")) && !process.argv.includes("--force")) {
+      console.error(`[${label}] ${brief.id}: done before, skipped (--force to redo)`);
+      continue;
+    }
     const store = Store.local(home);
-    const decks = (await store.listDecks()).sort((a, b) => String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? "")));
+    // Navázání po přerušení: deck, který model už vytvořil, se jen vykreslí, negeneruje se znovu.
+    let run: ClaudeResult;
+    const metaPath = join(dir, "run.json");
+    if ((await store.listDecks()).length && existsSync(metaPath) && !process.argv.includes("--force")) {
+      run = JSON.parse(readFileSync(metaPath, "utf8")) as ClaudeResult;
+      console.error(`[${label}] ${brief.id}: deck exists, rendering only`);
+    } else {
+      const work = mkdtempSync(join(tmpdir(), "instadeck-eval-"));
+      console.error(`[${label}] ${brief.id}: generating`);
+      run = await claude(["--mcp-config", config, "--strict-mcp-config", "--allowedTools", "mcp__instadeck", "--max-turns", "60", ...(model ? ["--model", model] : []), generationPrompt(brief)], work, GEN_TIMEOUT_MS);
+      writeFileSync(metaPath, JSON.stringify(run));
+    }
+
+    const decks = await store.listDecks();
     if (!decks.length) {
       console.error(`[${label}] ${brief.id}: no deck created (${run.is_error ? "error" : run.result.slice(0, 120)})`);
       writeFileSync(join(dir, "stats.json"), JSON.stringify({ briefId: brief.id, errors: 0, warnings: 0, slides: 0, costUsd: run.total_cost_usd, failed: true }));
