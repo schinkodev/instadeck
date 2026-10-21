@@ -47,8 +47,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'If two elements serve different functions, make the visual difference obvious.',
     why: 'Subtle differences look like mistakes. Readers need instant signals about information hierarchy.',
     slideApplication: 'Heading must be visibly larger than body. Stat numbers must dwarf their labels. No 2px differences.',
-    enforced: [{ layer: 2, by: 'the type scale ratio separates heading, lead and body' }],
-    gap: "Measure the heading to body size ratio per slide in the browser",
+    enforced: [{ layer: 2, by: 'the type scale ratio separates heading, lead and body' }, { layer: 3, by: 'type-contrast: the heading is at least 1.5x the text below it, measured in the browser' }],
   },
   {
     id: 'data-ink-ratio',
@@ -167,8 +166,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: '40-50% empty space signals authority, not waste.',
     why: 'Crowded slides signal desperation. Generous space signals confidence and editorial control.',
     slideApplication: 'Content area uses 50-60% of the canvas. Padding is generous. Never fill all available space.',
-    enforced: [],
-    gap: "The share of the canvas that content covers is not measured",
+    enforced: [{ layer: 2, by: 'figures (cards, timeline, table, team, comparison) sit in the optical center of the space under the heading' }, { layer: 3, by: 'layout-balance: content of a medium or dense slide reaches at least 60% of the slide height, measured in the browser' }],
+    gap: "Crowding (too little white space) is caught only as overflow",
   },
   {
     id: 'figure-ground',

@@ -26,6 +26,31 @@ describe("overflow", () => {
   });
 });
 
+describe("layout measurement", () => {
+  const layoutRules = async (d: Deck) => (await measureDeck(d, SAMPLE_ASSETS)).filter((f) => f.rule === "layout-balance" || f.rule === "type-contrast");
+
+  it("finds a points slide whose short content leaves the lower part empty", async () => {
+    const d = sampleDeck();
+    d.slides[2] = { ...d.slides[2]!, layout: "points", blocks: { title: { type: "heading", level: "h1", text: "Three steps from inbox to approved payment" }, body: { type: "bullets", items: ["Connect", "Match", "Review"] } } };
+    const f = await layoutRules(d);
+    expect(f.map((x) => [x.rule, x.slideId])).toContainEqual(["layout-balance", d.slides[2]!.id]);
+  });
+
+  it("leaves intentionally sparse layouts alone", async () => {
+    const d = sampleDeck();
+    d.slides[2] = { ...d.slides[2]!, layout: "statement", blocks: { statement: { type: "heading", level: "display", text: "Finance teams lose a week every month" } } };
+    expect((await layoutRules(d)).filter((x) => x.slideId === d.slides[2]!.id)).toEqual([]);
+  });
+
+  it("flags a heading that is barely larger than its text", async () => {
+    const d = sampleDeck();
+    d.design.type = { ...d.design.type, scale: "minor-third", base: 30 };
+    d.slides[2] = { ...d.slides[2]!, layout: "points", blocks: { title: { type: "heading", level: "h2", text: "Matching takes three steps and no migration" }, body: { type: "bullets", items: ["Connect your ERP and the invoice inbox", "Every invoice is checked against its order", "Your team reviews only the exceptions", "Payments go out on the same day"] } } };
+    const f = await layoutRules(d);
+    expect(f.map((x) => x.rule)).toContain("type-contrast");
+  });
+});
+
 describe("motion measurement", () => {
   const withEntrance = (patch: Partial<Deck["motion"]>, spec: { keyframes: object[]; easing: string; duration?: number }) => {
     const d = sampleDeck();

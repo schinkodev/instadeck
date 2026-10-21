@@ -2,6 +2,7 @@
  * Měření a exporty nad statickým HTML (koncový stav všech slidů).
  */
 import type { Deck, MotionSample } from "@/lib/domain";
+import type { LayoutMeasure } from "@/lib/domain/layout-limits";
 import { withPage } from "./browser";
 import type { AssetData } from "./render/blocks";
 import { playerConfig } from "./motion";
@@ -9,6 +10,7 @@ import { buildPptx } from "./pptx";
 import { renderDeckHtml } from "./render/document";
 import { MEASURE_JS } from "./render/measure-source";
 import type { SlideSnapshot } from "./snapshot";
+import { layoutFindings } from "./validate/layout";
 import { motionFindings } from "./validate/motion";
 import type { Finding } from "./validate/rules";
 
@@ -34,7 +36,7 @@ export function overflowFindings(raw: OverflowMeasure[]): Finding[] {
 }
 
 /**
- * Měření v Chromiu nad statickým HTML: přetečení obsahu a pohyb (vzorkování každého použitého
+ * Měření v Chromiu nad statickým HTML: přetečení obsahu, kompozice (rovnováha, kontrast velikostí) a pohyb (vzorkování každého použitého
  * vstupu a přechodu proti intenzitě decku).
  */
 export async function measureDeck(deck: Deck, assets: Record<string, AssetData>): Promise<Finding[]> {
@@ -43,12 +45,13 @@ export async function measureDeck(deck: Deck, assets: Record<string, AssetData>)
   const raw = await withPage(
     html,
     (page) =>
-      page.evaluate(`${MEASURE_JS}\n({ overflow: measureInstaDeck(document), motion: measureMotionInstaDeck(document.body, ${JSON.stringify(config)}) })`) as Promise<{
+      page.evaluate(`${MEASURE_JS}\n({ overflow: measureInstaDeck(document), layout: measureLayoutInstaDeck(document), motion: measureMotionInstaDeck(document.body, ${JSON.stringify(config)}) })`) as Promise<{
         overflow: OverflowMeasure[];
+        layout: LayoutMeasure[];
         motion: MotionSample[];
       }>,
   );
-  return [...overflowFindings(raw.overflow), ...motionFindings(config.measure, raw.motion)];
+  return [...overflowFindings(raw.overflow), ...layoutFindings(raw.layout), ...motionFindings(config.measure, raw.motion)];
 }
 
 /** Snímek vykreslených slidů v Chromiu (statické HTML: koncový stav, měřítko 1). */

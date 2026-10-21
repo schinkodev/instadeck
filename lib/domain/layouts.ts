@@ -8,7 +8,11 @@ export interface Zone {
   name: string;
   accepts: readonly BlockType[];
   required: boolean;
-  /** Svislé zarovnání obsahu v buňce mřížky. */
+  /**
+   * Svislé zarovnání obsahu v buňce mřížky. Text (odrážky, odstavec) navazuje pod nadpisem (start).
+   * Figury (karty, timeline, tabulka, tým, srovnání) sedí v optickém středu zbylé plochy (center), jinak
+   * krátký obsah nechá dolní část slidu prázdnou a slide působí nedokončeně (Arnheim, aktivní bílé místo).
+   */
   align?: "start" | "center" | "end";
 }
 
@@ -164,7 +168,7 @@ export const LAYOUTS: readonly LayoutDef[] = [
     purpose: "Two to four parallel ideas: product pillars, features, use cases, revenue streams.",
     zones: [
       { name: "title", accepts: H, required: true, align: "start" },
-      { name: "cards", accepts: ["cards"], required: true, align: "start" },
+      { name: "cards", accepts: ["cards"], required: true, align: "center" },
       { name: "support", accepts: SUPPORT, required: false, align: "end" },
     ],
     grid: { areas: ["title", "cards", "support"], columns: "1fr", rows: "auto 1fr auto" },
@@ -175,7 +179,7 @@ export const LAYOUTS: readonly LayoutDef[] = [
     purpose: "Us versus them, before versus after, old way versus new way.",
     zones: [
       { name: "title", accepts: H, required: true, align: "start" },
-      { name: "comparison", accepts: ["comparison", "table"], required: true, align: "start" },
+      { name: "comparison", accepts: ["comparison", "table"], required: true, align: "center" },
     ],
     grid: { areas: ["title", "comparison"], columns: "1fr", rows: "auto 1fr" },
     density: "high",
@@ -185,7 +189,7 @@ export const LAYOUTS: readonly LayoutDef[] = [
     purpose: "Roadmap, milestones, or how we got here.",
     zones: [
       { name: "title", accepts: H, required: true, align: "start" },
-      { name: "timeline", accepts: ["timeline"], required: true, align: "start" },
+      { name: "timeline", accepts: ["timeline"], required: true, align: "center" },
     ],
     grid: { areas: ["title", "timeline"], columns: "1fr", rows: "auto 1fr" },
     density: "medium",
@@ -195,7 +199,7 @@ export const LAYOUTS: readonly LayoutDef[] = [
     purpose: "The people and why they win.",
     zones: [
       { name: "title", accepts: H, required: true, align: "start" },
-      { name: "team", accepts: ["team"], required: true, align: "start" },
+      { name: "team", accepts: ["team"], required: true, align: "center" },
     ],
     grid: { areas: ["title", "team"], columns: "1fr", rows: "auto 1fr" },
     density: "medium",
@@ -226,7 +230,7 @@ export const LAYOUTS: readonly LayoutDef[] = [
     purpose: "Structured detail: pricing tiers, use of funds, competitive features.",
     zones: [
       { name: "title", accepts: H, required: true, align: "start" },
-      { name: "table", accepts: ["table"], required: true, align: "start" },
+      { name: "table", accepts: ["table"], required: true, align: "center" },
     ],
     grid: { areas: ["title", "table"], columns: "1fr", rows: "auto 1fr" },
     density: "high",

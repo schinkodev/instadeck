@@ -6,6 +6,7 @@ import { auditMarkdown } from "@/lib/tools/audit";
 
 const rulesSource = readFileSync(new URL("../lib/engine/validate/rules.ts", import.meta.url), "utf8");
 const motionSource = readFileSync(new URL("../lib/engine/validate/motion.ts", import.meta.url), "utf8");
+const layoutSource = readFileSync(new URL("../lib/engine/validate/layout.ts", import.meta.url), "utf8");
 const all = [...DESIGN_PRINCIPLES, ...STORYTELLING_PRINCIPLES];
 
 describe("principles audit", () => {
@@ -21,7 +22,7 @@ describe("principles audit", () => {
     for (const p of all) {
       for (const e of p.enforced.filter((x) => x.layer === 3)) {
         const rule = e.by.split(":")[0]!.trim();
-        expect(rulesSource + motionSource, `${p.id}: rule ${rule}`).toContain(`"${rule}"`);
+        expect(rulesSource + motionSource + layoutSource, `${p.id}: rule ${rule}`).toContain(`"${rule}"`);
       }
     }
   });
