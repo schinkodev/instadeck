@@ -47,7 +47,8 @@
     "gen": "tsx scripts/gen.ts",
     "example": "tsx scripts/promote-example.ts",
     "serve": "tsx server/serve.ts",
-    "build:lambda": "node scripts/build-lambda.mjs"
+    "build:lambda": "node scripts/build-lambda.mjs",
+    "eval": "tsx scripts/eval/run.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1153.0",
