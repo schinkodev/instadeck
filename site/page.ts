@@ -301,7 +301,7 @@ footer{padding:var(--s4) 0 var(--s5);border-top:1px solid var(--line);font-size:
   });
 
   fetch("https://api.github.com/repos/${REPO.split("github.com/")[1]}").then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
-    if (!j || typeof j.stargazers_count !== "number") return;
+    if (!j || typeof j.stargazers_count !== "number" || j.stargazers_count < 50) return;
     var el = document.getElementById("stars");
     el.textContent = j.stargazers_count.toLocaleString("en");
     el.hidden = false;
