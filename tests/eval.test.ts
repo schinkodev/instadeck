@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BRIEFS } from "@/scripts/eval/briefs";
-import { CRITERIA, expandRuns, generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, tally, type Criterion, type PairResult, type Verdict } from "@/scripts/eval/core";
+import { CRITERIA, RUN_ID, expandRuns, generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, tally, type Criterion, type PairResult, type Verdict } from "@/scripts/eval/core";
 
 const scores = (n: number) => Object.fromEntries(CRITERIA.map((c) => [c, n])) as Record<Criterion, number>;
 const verdict = (winner: Verdict["winner"], first = 3, second = 3): Verdict => ({ scores: { first: scores(first), second: scores(second) }, winner, reason: "r" });
@@ -25,6 +25,7 @@ describe("eval design", () => {
     const b = BRIEFS[0]!;
     expect(generationPrompt(b)).not.toContain("design school");
     expect(generationPrompt(b, "swiss")).toContain('design school "swiss"');
+    expect(generationPrompt(b, "swiss")).toContain('brief.concept.school to "swiss"');
     expect(generationPrompt(b, "swiss")).toContain("do not ask questions");
   });
 
@@ -35,6 +36,10 @@ describe("eval design", () => {
     expect(expandRuns(BRIEFS, 1)).toEqual([...BRIEFS]);
     expect(() => expandRuns(BRIEFS, 0)).toThrow(/at least 1/);
     expect(() => expandRuns(BRIEFS, 1.5)).toThrow(/whole number/);
+    // A brief id that looks like a run would collide with the ids of the runs.
+    expect(() => expandRuns([{ ...BRIEFS[0]!, id: "devtools-r2" }], 2)).toThrow(/looks like a run/);
+    for (const b of BRIEFS) expect(RUN_ID.test(b.id), b.id).toBe(false);
+    expect("seed-saas-r2".replace(RUN_ID, "$1")).toBe("seed-saas");
   });
 });
 
