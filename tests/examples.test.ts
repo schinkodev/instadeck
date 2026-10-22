@@ -39,7 +39,7 @@ describe("examples", () => {
   it.each(EXAMPLES.map((e) => [e.id, e] as const))("%s builds a deck without errors or warnings", async (_id, e) => {
     const r = await call("create_deck", {
       title: e.title,
-      brief: { company: "Example", topic: e.purpose, language: "en", frame: e.frame },
+      brief: { company: "Example", topic: e.purpose, language: "en", frame: e.frame, concept: e.concept },
       design: e.design,
       motion: e.motion,
       slides: e.slides,

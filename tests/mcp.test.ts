@@ -13,7 +13,7 @@ import { CAPABILITIES, capabilitiesFor } from "@/server/capabilities";
 import { instructions } from "@/server/instructions";
 import { createMcpServer, toolsFor } from "@/server/mcp";
 import { GUIDE_RESOURCES } from "@/server/resources";
-import { LOGO_SVG, SAMPLE_SLIDES } from "./fixtures/sample-deck";
+import { LOGO_SVG, SAMPLE_SLIDES, SAMPLE_CONCEPT } from "./fixtures/sample-deck";
 
 let home: string;
 let client: Client;
@@ -124,7 +124,7 @@ describe("end to end", () => {
     });
     const created = await call("create_deck", {
       title: "Northwind seed",
-      brief: { company: "Northwind Grid", topic: "Seed round", language: "en" },
+      brief: { company: "Northwind Grid", topic: "Seed round", language: "en", concept: SAMPLE_CONCEPT },
       brand_kit_id: kit.id,
       motion: { tempo: "calm" },
       slides,
@@ -220,7 +220,7 @@ describe("hosted connector", () => {
       name: "create_deck",
       arguments: {
         title: "Northwind seed",
-        brief: { company: "Northwind", topic: "Seed", language: "en" },
+        brief: { company: "Northwind", topic: "Seed", language: "en", concept: SAMPLE_CONCEPT },
         slides: [{ layout: "title", intent: "Open", blocks: { logo: { type: "logo", assetId, alt: "Northwind" }, title: { type: "heading", level: "display", text: "Northwind" } } }],
       },
     })) as CallToolResult;

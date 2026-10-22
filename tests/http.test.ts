@@ -11,7 +11,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { LocalFiles, Store } from "@/lib/state";
 import { Service } from "@/lib/tools";
 import { createHandler, RateLimiter } from "@/server/http";
-import { LOGO_SVG } from "./fixtures/sample-deck";
+import { LOGO_SVG, SAMPLE_CONCEPT } from "./fixtures/sample-deck";
 
 let dir: string;
 let server: Server;
@@ -57,7 +57,7 @@ describe("hosted connector over HTTP", () => {
       name: "create_deck",
       arguments: {
         title: "HTTP deck",
-        brief: { company: "A", topic: "B", language: "en" },
+        brief: { company: "A", topic: "B", language: "en", concept: SAMPLE_CONCEPT },
         slides: [{ layout: "title", intent: "x", blocks: { logo: { type: "logo", assetId, alt: "A" }, title: { type: "heading", level: "display", text: "Hello" } } }],
       },
     })) as CallToolResult;

@@ -5,6 +5,15 @@
     "purpose": "A first meeting with investors for an early stage company: hook, problem, solution, proof, market, competition, team, ask.",
     "audience": "Seed investors",
     "frame": "story-spine",
+    "concept": {
+      "idea": "A calm, confident investor deck where one number per slide makes the case that clean energy is being thrown away",
+      "references": [
+        "Stripe annual letter",
+        "Swiss grid posters"
+      ],
+      "avoid": "Stock photos of wind farms, gradients, crowded bullet slides",
+      "signature": "Teal appears only on the one number or word that proves each slide"
+    },
     "why": [
       "The first slide is a promise, the second is a surprising fact. The deck earns attention before it explains anything.",
       "Every content headline is a full sentence that states the takeaway. The slide body only proves it.",
@@ -393,6 +402,12 @@
     "purpose": "A first call with a buyer at a larger company: the cost of the problem, the solution, proof from a customer, how rollout works, pricing and one clear next step.",
     "audience": "Enterprise buyers and department heads",
     "frame": "monroe",
+    "concept": {
+      "idea": "A sober buyer's document: the customer's own cost numbers, laid out with engineering order",
+      "school": "functional",
+      "avoid": "Marketing superlatives, hero images, playful shapes",
+      "signature": "Outline cards and one indigo number per slide"
+    },
     "why": [
       "It opens with the buyer's problem and its cost in their numbers, not with the product.",
       "The customer quote and the results chart come before pricing, so the price is read as a bargain.",
@@ -746,6 +761,12 @@
     "purpose": "Announcing a product to customers, press or partners: a bold hook, the three things it does, why it is different, early reactions, what comes next.",
     "audience": "Customers, press and partners",
     "frame": "sparkline",
+    "concept": {
+      "idea": "A warm, energetic launch that shows everyday life getting easier, one short line at a time",
+      "school": "humanist",
+      "avoid": "Technical spec sheets and a dark corporate look",
+      "signature": "Short punchy headlines with one coral highlighted word"
+    },
     "why": [
       "Short, energetic headlines. Nine slides is enough when every slide earns its place.",
       "Features appear as three cards with a title and one sentence, never as a bullet list.",
@@ -1014,6 +1035,12 @@
     "purpose": "A board or investor update: results against plan, risks and the decisions needed. Professional and minimal, the deck does not move.",
     "audience": "Board of directors and existing investors",
     "frame": "scqa",
+    "concept": {
+      "idea": "A board pack that gives the answer first and lets the numbers speak in plain, consistent order",
+      "school": "ibcs",
+      "avoid": "Animation, decorative color and slides without a stated message",
+      "signature": "Every headline is the finding with its number"
+    },
     "why": [
       "The second slide gives the answer first: ahead on revenue, behind on hiring. The board knows the headline before any detail.",
       "Every number is shown against plan, so the board judges progress, not raw figures.",
@@ -1317,6 +1344,15 @@
     "purpose": "A launch event or keynote for a playful consumer brand: hook, how it works, proof, a reveal and the ask. Motion is part of the brand.",
     "audience": "Creators, press and early users",
     "frame": "sparkline",
+    "concept": {
+      "idea": "A playful, kinetic launch where the motion itself shows that learning together is more fun",
+      "references": [
+        "Duolingo brand motion",
+        "Spotify Wrapped"
+      ],
+      "avoid": "Static corporate slides and long text",
+      "signature": "One crimson word per headline that moves first"
+    },
     "why": [
       "The hook is a surprising fact about the problem, landed with the one dramatic entrance of the deck.",
       "The product is explained in three verbs on cards, then proven with one number and one real voice.",

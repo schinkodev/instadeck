@@ -225,3 +225,6 @@ export function sampleDeck(): Deck {
     updatedAt: "2026-10-18T00:00:00.000Z",
   });
 }
+
+/** Koncept decku pro testy create_deck (povinný v create_deck). */
+export const SAMPLE_CONCEPT = { idea: "A calm investor deck where one number per slide makes the case", school: "swiss", avoid: "Stock photos and gradients", signature: "One accent number per slide" } as const;

@@ -11,6 +11,7 @@ export * from "./brand";
 export * from "./examples";
 export * from "./pitch";
 export * from "./narrative";
+export * from "./schools";
 export * from "./layout-limits";
 export * from "./principles/enforcement";
 export * from "./principles/design";
