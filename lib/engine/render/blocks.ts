@@ -52,7 +52,7 @@ function statHtml(s: StatItem, ctx: RenderContext, counting: boolean): string {
   const count = counting ? ` data-part="count" data-value="${s.value}" data-decimals="${decimals}"` : "";
   return `<div class="stat">
 <div class="stat-value">${s.prefix ? `<span class="affix">${esc(s.prefix)}</span>` : ""}<span class="num"${count}>${value}</span>${s.suffix ? `<span class="affix">${esc(s.suffix)}</span>` : ""}</div>
-<div class="stat-label">${inline(s.label)}</div>${s.detail ? `\n<div class="stat-detail">${inline(s.detail)}</div>` : ""}
+<div class="stat-label">${inline(s.label, ctx.locale)}</div>${s.detail ? `\n<div class="stat-detail">${inline(s.detail, ctx.locale)}</div>` : ""}
 </div>`;
 }
 
@@ -145,7 +145,7 @@ function chart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): string
     b.series.length > 1 && b.kind !== "donut"
       ? `<ul class="series-legend">${b.series.map((s, si) => `<li><i style="background:${seriesColor(ctx, si, 0, undefined)}"></i>${esc(s.name)}</li>`).join("")}</ul>`
       : "";
-  return `<figure class="block block-chart"${stepAttr(b.step)}${hero(b, ctx)}>${legend}${body}${b.caption ? `<figcaption>${inline(b.caption)}</figcaption>` : ""}</figure>`;
+  return `<figure class="block block-chart"${stepAttr(b.step)}${hero(b, ctx)}>${legend}${body}${b.caption ? `<figcaption>${inline(b.caption, ctx.locale)}</figcaption>` : ""}</figure>`;
 }
 
 function initials(name: string): string {
@@ -163,12 +163,12 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
   switch (block.type) {
     case "heading": {
       const tag = block.level === "h2" ? "h3" : "h2";
-      return `<${tag} class="block heading heading-${block.level}"${s}>${inline(block.text)}</${tag}>`;
+      return `<${tag} class="block heading heading-${block.level}"${s}>${inline(block.text, ctx.locale)}</${tag}>`;
     }
     case "text":
-      return `<p class="block text text-${block.size}"${s}>${inline(block.text)}</p>`;
+      return `<p class="block text text-${block.size}"${s}>${inline(block.text, ctx.locale)}</p>`;
     case "bullets":
-      return `<ul class="block bullets"${s}>${block.items.map((t, i) => `<li${itemStep(block, i)}>${inline(t)}</li>`).join("")}</ul>`;
+      return `<ul class="block bullets"${s}>${block.items.map((t, i) => `<li${itemStep(block, i)}>${inline(t, ctx.locale)}</li>`).join("")}</ul>`;
     case "stat":
       return `<div class="block block-stat"${s}${hero(block, ctx)}>${statHtml(block, ctx, ctx.heroBlock === block)}</div>`;
     case "stats":
@@ -189,40 +189,40 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
         .map((l) => `<div class="logos-item"><img src="${asset(ctx, l.assetId).src}" data-asset="${esc(l.assetId)}" alt="${esc(l.alt)}"/></div>`)
         .join("")}</div>`;
     case "quote":
-      return `<figure class="block block-quote"${s}><blockquote>${inline(block.text)}</blockquote><figcaption><b>${esc(block.author)}</b>${block.role ? `<span>${esc(block.role)}</span>` : ""}</figcaption></figure>`;
+      return `<figure class="block block-quote"${s}><blockquote>${inline(block.text, ctx.locale)}</blockquote><figcaption><b>${esc(block.author)}</b>${block.role ? `<span>${esc(block.role)}</span>` : ""}</figcaption></figure>`;
     case "timeline":
       return `<div class="block block-timeline" style="--n:${block.items.length}"${s}${hero(block, ctx)}><div class="timeline-axis" data-part="axis"></div>${block.items
         .map(
           (it, i) =>
-            `<div class="timeline-item${block.current === i ? " is-current" : ""}${block.current !== undefined && i < block.current ? " is-past" : ""}"${itemStep(block, i)} data-part="milestone"><i class="timeline-dot"></i><div class="timeline-label">${esc(it.label)}</div><div class="timeline-title">${inline(it.title)}</div>${it.text ? `<div class="timeline-text">${inline(it.text)}</div>` : ""}</div>`,
+            `<div class="timeline-item${block.current === i ? " is-current" : ""}${block.current !== undefined && i < block.current ? " is-past" : ""}"${itemStep(block, i)} data-part="milestone"><i class="timeline-dot"></i><div class="timeline-label">${esc(it.label)}</div><div class="timeline-title">${inline(it.title, ctx.locale)}</div>${it.text ? `<div class="timeline-text">${inline(it.text, ctx.locale)}</div>` : ""}</div>`,
         )
         .join("")}</div>`;
     case "team":
       return `<div class="block block-team" style="--cols:${block.people.length <= 4 ? block.people.length : 3}"${s}>${block.people
         .map((p) => {
           const photo = p.photoAssetId ? `<img src="${asset(ctx, p.photoAssetId).src}" data-asset="${esc(p.photoAssetId)}" alt="${esc(p.name)}"/>` : `<span>${esc(initials(p.name))}</span>`;
-          return `<div class="person"><div class="person-photo">${photo}</div><div class="person-name">${esc(p.name)}</div><div class="person-role">${esc(p.role)}</div>${p.bio ? `<div class="person-bio">${inline(p.bio)}</div>` : ""}</div>`;
+          return `<div class="person"><div class="person-photo">${photo}</div><div class="person-name">${esc(p.name)}</div><div class="person-role">${esc(p.role)}</div>${p.bio ? `<div class="person-bio">${inline(p.bio, ctx.locale)}</div>` : ""}</div>`;
         })
         .join("")}</div>`;
     case "comparison":
       return `<div class="block block-comparison" style="--n:${block.columns.length}"${s}>${block.columns
         .map(
           (c, i) =>
-            `<div class="comparison-col${c.highlight ? " is-highlight" : ""}"${itemStep(block, i)}><div class="comparison-title">${esc(c.title)}</div><ul>${c.items.map((t) => `<li>${inline(t)}</li>`).join("")}</ul></div>`,
+            `<div class="comparison-col${c.highlight ? " is-highlight" : ""}"${itemStep(block, i)}><div class="comparison-title">${esc(c.title)}</div><ul>${c.items.map((t) => `<li>${inline(t, ctx.locale)}</li>`).join("")}</ul></div>`,
         )
         .join("")}</div>`;
     case "cards":
       return `<div class="block block-cards" style="--n:${block.items.length}"${s}>${block.items
-        .map((c, i) => `<div class="card"${itemStep(block, i)}><div class="card-title">${inline(c.title)}</div><div class="card-text">${inline(c.text)}</div></div>`)
+        .map((c, i) => `<div class="card"${itemStep(block, i)}><div class="card-title">${inline(c.title, ctx.locale)}</div><div class="card-text">${inline(c.text, ctx.locale)}</div></div>`)
         .join("")}</div>`;
     case "table": {
       const hc = (i: number) => (block.highlightColumn === i ? ' class="is-highlight"' : "");
       return `<div class="block block-table"${s}><table><thead><tr>${block.columns.map((c, i) => `<th${hc(i)}>${esc(c)}</th>`).join("")}</tr></thead><tbody>${block.rows
-        .map((r) => `<tr>${r.map((cell, i) => `<td${hc(i)}>${inline(cell)}</td>`).join("")}</tr>`)
+        .map((r) => `<tr>${r.map((cell, i) => `<td${hc(i)}>${inline(cell, ctx.locale)}</td>`).join("")}</tr>`)
         .join("")}</tbody></table></div>`;
     }
     case "cta":
-      return `<div class="block block-cta"${s}><div class="cta-text">${inline(block.text)}</div>${block.detail ? `<div class="cta-detail">${inline(block.detail)}</div>` : ""}</div>`;
+      return `<div class="block block-cta"${s}><div class="cta-text">${inline(block.text, ctx.locale)}</div>${block.detail ? `<div class="cta-detail">${inline(block.detail, ctx.locale)}</div>` : ""}</div>`;
   }
 }
 

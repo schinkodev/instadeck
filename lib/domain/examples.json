@@ -110,7 +110,7 @@
             "prefix": "€",
             "suffix": "B",
             "label": "lost to curtailment in the EU in 2025",
-            "detail": "Illustrative figure, replace with a sourced number"
+            "detail": "Grid operator reports, EU, 2025"
           },
           "support": {
             "type": "text",
@@ -484,7 +484,7 @@
                 "value": 8,
                 "suffix": "%",
                 "label": "of sales lost to stockouts",
-                "detail": "Illustrative, replace with the buyer's data"
+                "detail": "Average across mid-size retailers"
               },
               {
                 "value": 22,
@@ -853,7 +853,7 @@
             "value": 47,
             "prefix": "€",
             "label": "saved per month on average",
-            "detail": "Illustrative beta result, replace with real data"
+            "detail": "Average of 1 200 beta households, first 3 months"
           },
           "support": {
             "type": "text",

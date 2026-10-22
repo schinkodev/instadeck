@@ -118,6 +118,30 @@ function blockTexts(block: Block): string[] {
   }
 }
 
+/** Pole bloků, která nejsou text pro publikum (identifikátory a volby). */
+const NOT_TEXT = new Set(["type", "assetId", "photoAssetId", "kind", "fit", "level", "size", "unit"]);
+
+function allTexts(value: unknown, key = ""): string[] {
+  if (typeof value === "string") return NOT_TEXT.has(key) ? [] : [value];
+  if (Array.isArray(value)) return value.flatMap((v) => allTexts(v, key));
+  if (value && typeof value === "object") return Object.entries(value).flatMap(([k, v]) => allTexts(v, k));
+  return [];
+}
+
+/**
+ * Zástupný text na slidu: poznámka pro autora, která se dostala před publikum ("[Name]", "TBD",
+ * "replace with sourced figure", "XX %"). Čísla a jména si model nemá domýšlet ani je nechat prázdná:
+ * zeptá se uživatele, nebo údaj vynechá.
+ */
+const PLACEHOLDER = /\[[^\]]{1,60}\]|\b(?:TODO|TBD|TBC|lorem ipsum|placeholder)\b|\b(?:replace|insert|add) (?:with |your |real |the )|\bdoplnit\b|\bX{2,}\b|[$€£]X\b/i;
+
+function checkPlaceholders(slide: Slide, push: Push) {
+  for (const [zone, block] of Object.entries(slide.blocks)) {
+    const hit = allTexts(block).map((t) => PLACEHOLDER.exec(t)?.[0]).find(Boolean);
+    if (hit) push("warning", "placeholder", `"${hit}" looks like a placeholder left on the slide. Ask the user for the real content or remove it, never present it`, zone);
+  }
+}
+
 /** Layouty, jejichž nadpis nese závěr. Titulní, kapitolové, výrokové a závěrečné slidy nadpis jako závěr nemají. */
 const NO_TAKEAWAY_LAYOUTS = new Set(["title", "title-image", "section", "statement", "image-full", "quote", "closing"]);
 const CJK = /[\u3040-\u30ff\u3400-\u9fff]/;
@@ -206,6 +230,7 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
   checkReadable(slide, deck, push);
   checkHeadingLabel(slide, push);
   checkHighlightCount(slide, push);
+  checkPlaceholders(slide, push);
   return out;
 }
 

@@ -24,7 +24,7 @@ export type DeckExample = z.infer<typeof exampleSchema>;
 export const EXAMPLES: readonly DeckExample[] = z.array(exampleSchema).parse(data);
 
 export const EXAMPLE_NOTE =
-  "Names, numbers and quotes in examples are made up. Replace every one with the user's real content, never present them as facts. Keep the structure, rhythm and text lengths.";
+  "Names, numbers and quotes in examples are made up. Replace every one with the user's real content, never present them as facts. When the user has not given a number, name or quote, ask for it or leave the claim out, never put a placeholder or a note to yourself on a slide. Keep the structure, rhythm and text lengths.";
 
 export function findExample(id: string): DeckExample | undefined {
   return EXAMPLES.find((e) => e.id === id);
