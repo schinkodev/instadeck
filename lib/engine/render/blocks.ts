@@ -9,6 +9,7 @@
  */
 import { heroMotionOf, type Block, type Palette } from "@/lib/domain";
 import { esc, formatNumber, inline } from "../text";
+import { plotChart } from "./plot";
 
 export interface AssetData {
   mime: string;
@@ -85,10 +86,12 @@ function columnChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext, h
 function lineChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): string {
   const W = 1000;
   const H = 400;
-  const max = Math.max(...b.series.flatMap((s) => s.values));
+  const all = b.series.flatMap((s) => s.values);
+  const lo = Math.min(0, ...all);
+  const span = Math.max(0, ...all) - lo || 1;
   const n = b.categories.length;
   const x = (i: number) => (i / (n - 1)) * W;
-  const y = (v: number) => (max === 0 ? H : H - (v / max) * H);
+  const y = (v: number) => H - ((v - lo) / span) * H;
   const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(2)}%`;
   const color = (si: number) => (b.highlight !== undefined ? (si === 0 ? ctx.palette.accent : ctx.palette.line) : seriesColor(ctx, si, 0, undefined));
   const paths = b.series
@@ -140,7 +143,7 @@ function donutChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): s
 }
 
 function chart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): string {
-  const body = b.kind === "line" ? lineChart(b, ctx) : b.kind === "donut" ? donutChart(b, ctx) : columnChart(b, ctx, b.kind === "bar");
+  const body = b.kind === "line" ? lineChart(b, ctx) : b.kind === "donut" ? donutChart(b, ctx) : b.kind === "bar" ? columnChart(b, ctx, true) : plotChart(b, ctx);
   const legend =
     b.series.length > 1 && b.kind !== "donut"
       ? `<ul class="series-legend">${b.series.map((s, si) => `<li><i style="background:${seriesColor(ctx, si, 0, undefined)}"></i>${esc(s.name)}</li>`).join("")}</ul>`

@@ -53,6 +53,25 @@ describe("pptx", () => {
     expect(files.some((f) => /^ppt\/charts\/chart\d+\.xml$/.test(f))).toBe(true);
   });
 
+  it("draws a waterfall as a stacked chart on an invisible base, and stacked as stacked", async () => {
+    for (const kind of ["waterfall", "stacked"] as const) {
+      const deck = sampleDeck();
+      const at = deck.slides.findIndex((s) => Object.values(s.blocks).some((b) => b.type === "chart"));
+      const zone = Object.entries(deck.slides[at]!.blocks).find(([, b]) => b.type === "chart")![0];
+      deck.slides[at]!.blocks[zone] =
+        kind === "waterfall"
+          ? { type: "chart", kind, categories: ["2023", "Robotics", "FX", "2024"], series: [{ name: "Revenue", values: [540, 48, -2, 586] }] }
+          : { type: "chart", kind, categories: ["Q1", "Q2"], series: [{ name: "A", values: [1, 2] }, { name: "B", values: [3, 4] }] };
+      const snap = snapshotFor(deck);
+      snap[at]!.items.push({ kind: "chart", x: 700, y: 300, w: 1000, h: 600, zone });
+      const { files, read } = await unzip(await buildPptx(deck, snap, {}));
+      const chart = await read(files.find((f) => /^ppt\/charts\/chart\d+\.xml$/.test(f))!);
+      expect(chart, kind).toContain('<c:grouping val="stacked"/>');
+      // Robotics stojí na základně 540 (start), FX na 586 (po Robotics 588 minus 2).
+      if (kind === "waterfall") for (const v of ["540", "586"]) expect(chart.split(`<c:v>${v}</c:v>`).length - 1, v).toBeGreaterThanOrEqual(2);
+    }
+  });
+
   it("refuses a snapshot that misses a slide or points to a missing block", async () => {
     const deck = sampleDeck();
     await expect(buildPptx(deck, snapshotFor(deck).slice(1), {})).rejects.toThrow(/measure the current revision/i);
