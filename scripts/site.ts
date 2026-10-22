@@ -1,33 +1,50 @@
 /**
- * Landing page into site/dist: index.html, a live sample deck (demo/deck.html), the icon and the OG image.
- * Static files for S3 behind CloudFront (instadeck.app, deploy workflow). Publishes nothing.
+ * Landing page into site/dist: index.html, the example decks live (demo/<id>.html) with their covers and the slides
+ * of the wall, the icon and the OG image. Static files for S3 behind CloudFront (instadeck.app, deploy workflow).
+ * Publishes nothing.
  */
-import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { EXAMPLES, type Deck } from "@/lib/domain";
 import { closeBrowser, renderDeckHtml, renderPng } from "@/lib/engine";
-import { SAMPLE_ASSETS, sampleDeck } from "@/tests/fixtures/sample-deck";
-import { landingHtml } from "@/site/page";
+import { LocalFiles, Store } from "@/lib/state";
+import { IMAGE_SCALE, deckFiles, landingHtml } from "@/site/page";
+import { SHOWCASE, WALL } from "@/site/showcase";
 
 const out = "site/dist";
 const version = JSON.parse(readFileSync("package.json", "utf8")).version;
 rmSync(out, { recursive: true, force: true });
-mkdirSync(`${out}/demo`, { recursive: true });
 
-const deck = sampleDeck();
-// The demo on the landing shows the motion language from V006: the headline flows from slide to slide (morph), content enters in blocks.
-deck.motion = {
-  intensity: "expressive",
-  rationale: "A seed pitch that should feel like one continuous story: the headline glides from slide to slide and each number counts up once.",
-  entrance: "rise",
-  transition: "morph",
-  tempo: "confident",
-  heroes: true,
-};
-// Slides without a shared headline, logo or image with the previous one change with the fade, morph has nothing to carry there.
-for (const s of deck.slides) if (["quote", "image-full"].includes(s.layout)) s.motion = { transition: "fade" };
+// The decks go through the same createDeck as a deck from create_deck, so the landing shows exactly what a user gets.
+const home = mkdtempSync(join(tmpdir(), "instadeck-site-"));
+const store = new Store(new LocalFiles(home), { mode: "local" });
+const decks = new Map<string, Deck>();
+for (const { id } of SHOWCASE) {
+  const e = EXAMPLES.find((x) => x.id === id)!;
+  const r = await store.createDeck(
+    { title: e.title, brief: { company: "Example", topic: e.purpose, audience: e.audience, language: "en", frame: e.frame, concept: e.concept }, design: e.design, motion: e.motion, slides: e.slides },
+    "mcp",
+  );
+  decks.set(id, r.deck);
+}
+rmSync(home, { recursive: true, force: true });
+
+for (const [id, deck] of decks) {
+  const files = deckFiles(id);
+  mkdirSync(`${out}/demo/${id}`, { recursive: true });
+  writeFileSync(`${out}/${files.html}`, renderDeckHtml(deck, {}, "present"));
+  const [cover] = await renderPng(deck, {}, [0], IMAGE_SCALE.cover);
+  writeFileSync(`${out}/${files.cover}`, cover!);
+  const wall = WALL.filter((w) => w.deck === id);
+  const shots = await renderPng(deck, {}, wall.map((w) => w.slide), IMAGE_SCALE.slide);
+  wall.forEach((w, i) => writeFileSync(`${out}/${files.slide(w.slide)}`, shots[i]!));
+}
+// The old address of the demo stays: it is in the sitemap, in llms.txt and in links shared before.
+copyFileSync(`${out}/${deckFiles(SHOWCASE[0]!.id).html}`, `${out}/demo/deck.html`);
 writeFileSync(`${out}/index.html`, landingHtml(version));
-writeFileSync(`${out}/demo/deck.html`, renderDeckHtml(deck, SAMPLE_ASSETS, "present"));
 // 1200x675 for the link preview (og:image)
-const [og] = await renderPng(deck, SAMPLE_ASSETS, [0], 0.625);
+const [og] = await renderPng(decks.get(SHOWCASE[0]!.id)!, {}, [0], 0.625);
 writeFileSync(`${out}/og.png`, og!);
 copyFileSync("brand/mark.svg", `${out}/icon.svg`);
 // For search engines and indexing tools: robots, sitemap and llms.txt.
