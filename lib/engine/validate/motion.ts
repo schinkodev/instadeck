@@ -1,7 +1,7 @@
 /**
  * Scoring of the measured motion (measure.js, measureMotionInstaDeck) against the deck intensity and the thresholds
  * of perception. Runs locally after measurement in Chromium and in the MCP App in the user's browser, so it imports only
- * moduly bez zod (motion-limits).
+ * modules without zod (motion-limits).
  */
 import { INTENSITY, MOTION_LIMITS, type Intensity, type MotionSample } from "@/lib/domain/motion-limits";
 import type { Finding } from "./rules";

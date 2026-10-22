@@ -6,7 +6,7 @@
  * browser, sends the result to the model (updateModelContext) and mounts the player with animations.
  * Works the same with the hosted connector and the local server. The Edit slide button sends
  * a message to the chat saying which slide to change and how.
- * Bundluje se esbuildem do server/app/view-source.ts (npm run gen).
+ * Bundled with esbuild into server/app/view-source.ts (npm run gen).
  */
 import { App } from "@modelcontextprotocol/ext-apps";
 import type { LayoutMeasure } from "@/lib/domain/layout-limits";

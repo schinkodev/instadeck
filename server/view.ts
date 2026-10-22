@@ -1,7 +1,7 @@
 /**
  * MCP App: a resource with the app HTML and a link from the tools that show a deck. The hosted connector and the local
  * server (Claude Desktop). The app loads the deck with the tool get_deck_view.
- * Klienti bez MCP Apps (Claude Code) dostanou jen text s odkazem presentation.url.
+ * Clients without MCP Apps (Claude Code) get only text with the link presentation.url.
  */
 import { RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";

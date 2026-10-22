@@ -1,6 +1,6 @@
 /**
  * Slide composition thresholds measured in a browser (measure.js, measureLayoutInstaDeck).
- * Bez zod, aby je mohla importovat MCP App. Principy jsou v principles/design.ts.
+ * No zod, so the MCP App can import it. The principles are in principles/design.ts.
  */
 
 export const LAYOUT_LIMITS = {
