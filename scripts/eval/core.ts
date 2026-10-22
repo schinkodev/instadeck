@@ -31,8 +31,8 @@ export function askPrompt(b: EvalBrief): string {
 Brief: ${b.text}`;
 }
 
-/** Answer to the first round of questions: accept every suggested default. */
-export const ASK_REPLY = "Yes, use your suggested defaults for everything.";
+/** Answer to the first round of questions: accept the defaults, and pick an answer where there is none (a person would). */
+export const ASK_REPLY = "Yes, use your suggested defaults. Where there is no default, pick the most plausible answer yourself and tell me what you picked.";
 
 export interface AskResult {
   /** The model created a deck before the user could confirm anything. */
@@ -48,7 +48,7 @@ export interface AskResult {
   pass: boolean;
 }
 
-const LISTED = /^\s*(?:\d+[.)]|[-*\u2022])\s+\S/;
+const LISTED = /^\s*(?:\d+[.)]|[-*\u2022]|\|\s*\d+\s*\|)\s*\S/;
 
 /** Judges the two replies of the asking eval by what they contain. Deterministic, so it can be tested. */
 export function scoreAsk(first: string, second: string, deckCreated: boolean): AskResult {

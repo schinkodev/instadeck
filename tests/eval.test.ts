@@ -33,6 +33,11 @@ describe("asking eval", () => {
     expect(scoreAsk(asks, storyline, false)).toMatchObject({ askedDelivery: true, askedBigIdea: true, questions: 3, showedStoryline: true, pass: true });
   });
 
+  it("reads a storyline given as a table", () => {
+    const table = ["| # | Beat | Headline |", "|---|---|---|", ...[1, 2, 3, 4, 5].map((n) => `| ${n} | hook | Headline ${n} |`)].join("\n");
+    expect(scoreAsk(asks, table, false).showedStoryline).toBe(true);
+  });
+
   it("fails when the model builds early, skips delivery or skips the storyline", () => {
     expect(scoreAsk(asks, storyline, true).pass).toBe(false);
     expect(scoreAsk("What is the topic?", storyline, false).pass).toBe(false);
