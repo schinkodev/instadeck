@@ -1,9 +1,9 @@
 /**
- * Prahy pohybu odvozené z vnímání (viz principles/motion.ts). Bez zod: modul se bundluje i do MCP App,
- * kde se měří pohyb v prohlížeči uživatele.
+ * Motion thresholds derived from perception (see principles/motion.ts). No zod: the module is also bundled into the MCP App,
+ * where motion is measured in the user's browser.
  *
- * Intenzita je deklarace modelu, jak moc se deck smí hýbat. Měření v prohlížeči porovná skutečnou
- * energii pohybu (dráha, měřítko, rozmazání, rotace, překmit) s deklarací.
+ * Intensity is the model's declaration of how much the deck may move. Measurement in the browser compares the real
+ * energy of the motion (travel, scale, blur, rotation, overshoot) with the declaration.
  */
 
 export const INTENSITIES = ["still", "subtle", "expressive", "kinetic"] as const;
@@ -11,17 +11,17 @@ export type Intensity = (typeof INTENSITIES)[number];
 
 export interface IntensityDef {
   purpose: string;
-  /** Největší posun obsahu při vstupu v px slidu (1920x1080). */
+  /** Largest content offset on entrance, in slide px (1920x1080). */
   travelPx: number;
-  /** Největší odchylka měřítka od 1 při vstupu. */
+  /** Largest deviation of scale from 1 on entrance. */
   scale: number;
   blurPx: number;
   rotateDeg: number;
-  /** Největší posun slidu při přechodu (sdílené prvky se nepočítají, ty nesou kontinuitu). */
+  /** Largest slide offset during a transition (shared elements do not count, they carry continuity). */
   transitionTravelPx: number;
-  /** Smí pohyb přestřelit klidový stav (pružina, bounce). */
+  /** Whether motion may overshoot the resting state (spring, bounce). */
   overshoot: boolean;
-  /** Smí deck animovat čísla, grafy a osy. */
+  /** Whether the deck may animate numbers, charts and timelines. */
   heroes: boolean;
 }
 
@@ -68,35 +68,35 @@ export const INTENSITY: Record<Intensity, IntensityDef> = {
   },
 };
 
-/** Prahy vnímání a pozornosti, platí pro každou intenzitu. */
+/** Thresholds of perception and attention, valid for every intensity. */
 export const MOTION_LIMITS = {
-  /** Kratší pohyb oko nevidí jako pohyb, ale jako skok (cyklus vnímání kolem 100 ms). 0 ms je střih. */
+  /** The eye sees a shorter motion not as motion but as a jump (perception cycle around 100 ms). 0 ms is a cut. */
   minMs: 120,
-  /** Delší vstup jednoho prvku nechá publikum čekat. */
+  /** A longer entrance of one element keeps the audience waiting. */
   maxEntranceMs: 1200,
-  /** Delší přechod zdržuje řečníka. */
+  /** A longer transition holds up the presenter. */
   maxTransitionMs: 1000,
-  /** Všechen obsah vstupu slidu stojí a jde číst do této doby. */
+  /** All content of a slide entrance is still and readable by this time. */
   readableMs: 2400,
-  /** Na kolik slidů připadá jedna výjimka z pohybového jazyka (jiný vstup nebo přechod). */
+  /** How many slides one exception from the motion language may cover (a different entrance or transition). */
   slidesPerException: 5,
-  /** Kliknutí na odkrytí obsahu jednoho slidu. */
+  /** Clicks to reveal the content of one slide. */
   stepsPerSlide: 4,
-  /** Hero pohyby (čísla, grafy, osy) na slide. */
+  /** Hero motions (numbers, charts, timelines) per slide. */
   heroesPerSlide: 1,
-  /** Překmit: posun za klidový stav v px, nebo měřítko za 1. */
+  /** Overshoot: offset past the resting state in px, or scale past 1. */
   overshootPx: 2,
   overshootScale: 0.005,
-  /** Kolik pohybu zbývá v polovině času. Víc znamená, že prvek do klidu zrychluje místo zpomalení. */
+  /** How much motion remains at half time. More means the element speeds up into rest instead of slowing down. */
   remainingAtHalf: 0.6,
 } as const;
 
-/** Podíl trvání přechodu, po kterém začne vstup obsahu nového slidu. */
+/** Share of the transition duration after which the content entrance of the new slide starts. */
 export const CONTENT_DELAY = 0.45;
 
 /**
- * Změřený pohyb jedné definice (measure.js, vzorkování animace na sondě v prohlížeči).
- * part: entrance (vstup obsahu), enter (přicházející slide), exit (odcházející slide).
+ * Measured motion of one definition (measure.js, sampling the animation on a probe in the browser).
+ * part: entrance (content entrance), enter (incoming slide), exit (outgoing slide).
  */
 export interface MotionSample {
   name: string;
@@ -106,6 +106,6 @@ export interface MotionSample {
   blurPx: number;
   rotateDeg: number;
   overshoot: boolean;
-  /** Podíl pohybu, který zbývá v polovině času (0 až 1). Jen u entrance a enter. */
+  /** Share of the motion remaining at half time (0 to 1). Only for entrance and enter. */
   remainingAtHalf: number;
 }

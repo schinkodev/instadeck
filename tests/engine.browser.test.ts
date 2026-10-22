@@ -1,5 +1,5 @@
 /**
- * Engine v headless Chromiu: měření přetečení, PDF, PNG a player prezentace.
+ * The engine in headless Chromium: overflow measurement, PDF, PNG and the presentation player.
  */
 import { afterAll, describe, expect, it } from "vitest";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
@@ -70,7 +70,7 @@ describe("motion measurement", () => {
   it("measures transitions against the intensity", async () => {
     const d = sampleDeck();
     d.motion.transition = "slide";
-    // Přicházející i odcházející slide jedou dál, než subtle dovolí.
+    // Both the incoming and the outgoing slide travel further than subtle allows.
     expect(await motionRules(d)).toEqual(["motion-intensity", "motion-intensity"]);
     d.motion.intensity = "expressive";
     expect(await motionRules(d)).toEqual([]);
@@ -99,7 +99,7 @@ describe("exports", () => {
     const bytes = await withPage(renderDeckHtml(deck, SAMPLE_ASSETS, "present"), (page) => page.pdf({ printBackground: true, preferCSSPageSize: true }));
     const pdf = await getDocument({ data: bytes }).promise;
     expect(pdf.numPages).toBe(deck.slides.length);
-    // slide 4 má odrážky na kliknutí: v tisku musí být všechny
+    // slide 4 has bullets on click: in print all of them must be there
     const text = (await (await pdf.getPage(4)).getTextContent()).items.map((i) => ("str" in i ? i.str : "")).join(" ");
     expect(text).toContain("Plugs into existing SCADA");
   });
@@ -110,7 +110,7 @@ describe("exports", () => {
     expect(snap).toHaveLength(deck.slides.length);
     const kinds = new Set(snap.flatMap((s) => s.items.map((i) => i.kind)));
     for (const k of ["text", "box", "line", "image", "chart", "scrim"]) expect(kinds, k).toContain(k);
-    // Iniciály v kruhu: jeden řádek, poloha podle textu, ne podle kruhu.
+    // Initials in a circle: one line, positioned by the text, not by the circle.
     const quote = snap.find((s) => s.slideId === deck.slides.find((x) => x.layout === "quote")!.id)!;
     expect(quote.items.some((i) => i.kind === "text" && i.runs.some((r) => r.text.includes("\u201C")))).toBe(true);
     const zip = await JSZip.loadAsync(await exportPptx(deck, SAMPLE_ASSETS));
@@ -162,7 +162,7 @@ describe("player", () => {
     });
     expect(result.errors).toEqual([]);
     const ids = result.seen.map((s) => s.active);
-    // slide 4 má odrážky po kliknutí: dvě kliknutí zůstávají na slidu 4
+    // slide 4 has bullets on click: two clicks stay on slide 4
     expect(ids).toEqual(["slide-1", "slide-2", "slide-3", "slide-4", "slide-4", "slide-4", "slide-4", "slide-15"]);
     expect(result.seen[3]!.pending).toBe(2);
     expect(result.seen[5]!.pending).toBe(0);
@@ -180,7 +180,7 @@ describe("player", () => {
       await page.waitForFunction(() => document.querySelector(".slide.is-active"));
       const bar = await page.evaluate(() => ({
         buttons: Array.from(document.querySelectorAll(".controls .ctl")).map((b) => b.getAttribute("aria-label")),
-        // Stránka ze setContent nemá http adresu: HTML ke stažení se nenabízí, PDF tiskem ano.
+        // A page from setContent has no http address: HTML download is not offered, PDF through print is.
         downloads: Array.from(document.querySelectorAll(".ctl-menu b")).map((b) => b.textContent),
       }));
       await page.keyboard.press("g");

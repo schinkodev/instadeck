@@ -1,6 +1,6 @@
 /**
- * Principy designu (převzato ze slyde-saas, src/lib/layers/design-principles.ts).
- * Znalostní báze pro rozhodování o vizuálním systému, ne katalog presetů.
+ * Design principles (taken from slyde-saas, src/lib/layers/design-principles.ts).
+ * A knowledge base for decisions about the visual system, not a catalog of presets.
  */
 
 import type { Enforced } from './enforcement';

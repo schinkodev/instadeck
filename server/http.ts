@@ -1,14 +1,14 @@
 /**
- * Hostovaný konektor jako jeden handler Request → Response (Web standard): stejný kód lokálně
- * (server/serve.ts) i v Lambdě (server/lambda.ts).
+ * The hosted connector as one Request to Response handler (Web standard): the same code locally
+ * (server/serve.ts) and in Lambda (server/lambda.ts).
  *
- *   POST /mcp      MCP Streamable HTTP, bezstavový (server a transport na každý request)
- *   GET  /d/<id>   prezentace decku (samostatné HTML, jde vytisknout do PDF)
- *   POST /d/<id>/deck.pptx  PowerPoint ze snímku, který změřil prohlížeč diváka (bez prohlížeče na serveru)
- *   GET  /a/<id>   asset (obrázek, font) pro MCP App
+ *   POST /mcp      MCP Streamable HTTP, stateless (server and transport per request)
+ *   GET  /d/<id>   deck presentation (standalone HTML, can be printed to PDF)
+ *   POST /d/<id>/deck.pptx  PowerPoint from a snapshot measured by the viewer's browser (no browser on the server)
+ *   GET  /a/<id>   asset (image, font) for the MCP App
  *   GET  /health   stav a verze
  *
- * Bez přihlášení: ID decků a assetů jsou neuhodnutelná. Ochrana: rate limit na IP, limit velikosti těla.
+ * No sign in: deck and asset ids are unguessable. Protection: a rate limit per IP, a body size limit.
  */
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { exportRequestSchema } from "@/lib/engine";
@@ -18,15 +18,15 @@ import { createMcpServer, SERVER_VERSION } from "./mcp";
 
 export interface HttpOptions {
   service: Service;
-  /** Povolená volání /mcp za minutu na IP adresu. */
+  /** Allowed calls to /mcp per minute per IP address. */
   ratePerMinute?: number;
-  /** Největší tělo požadavku na /mcp (create_deck se slidy a malým logem v base64). */
+  /** Largest request body for /mcp (create_deck with slides and a small base64 logo). */
   maxBodyBytes?: number;
 }
 
 const WINDOW_MS = 60_000;
 
-/** Klouzavé okno v paměti instance. Lambda má víc instancí, limit je tedy na instanci (V004). */
+/** A sliding window in the instance memory. Lambda has several instances, so the limit is per instance (V004). */
 export class RateLimiter {
   private readonly hits = new Map<string, number[]>();
   constructor(readonly limit: number) {}
@@ -96,8 +96,8 @@ export function createHandler(opts: HttpOptions): (req: Request) => Promise<Resp
   }
 
   /**
-   * PowerPoint: prohlížeč diváka změřil vykreslené slidy (snapshotInstaDeck) a pošle snímek,
-   * server z něj a z decku složí soubor. Bezstavové, žádné Chromium.
+   * PowerPoint: the viewer's browser measured the rendered slides (snapshotInstaDeck) and sends the snapshot,
+   * the server assembles the file from it and the deck. Stateless, no Chromium.
    */
   async function pptx(req: Request, id: string): Promise<Response> {
     if (req.method !== "POST") return json(405, { error: "Use POST with the measured slides" }, { allow: "POST" });

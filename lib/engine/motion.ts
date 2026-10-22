@@ -1,6 +1,6 @@
 /**
- * Pohybový jazyk decku pro player a validaci: který vstup a přechod platí kde, sdílené prvky
- * mezi slidy a překlad definic z domény do konfigurace Web Animations (tempo, křivky).
+ * Motion language of the deck for the player and validation: which entrance and transition applies where, shared elements
+ * between slides and translating domain definitions into Web Animations configuration (tempo, easings).
  */
 import {
   CONTENT_DELAY,
@@ -19,8 +19,8 @@ import {
 } from "@/lib/domain";
 
 /**
- * Klíč prvku, který může přeletět na další slide (přechod se `shared`): první nadpis slidu,
- * logo a obrázek podle assetu, samostatné číslo podle hodnoty.
+ * Key of an element that may glide to the next slide (transition with `shared`): the first heading of the slide,
+ * a logo and an image by asset, a standalone number by value.
  */
 export function sharedKeys(slide: Slide): Map<Block, string> {
   const out = new Map<Block, string>();
@@ -42,13 +42,13 @@ export function sharedKeys(slide: Slide): Map<Block, string> {
 export const slideEntrance = (slide: Slide, deck: Deck) => slide.motion?.entrance ?? deck.motion.entrance;
 export const slideTransition = (slide: Slide, deck: Deck) => slide.motion?.transition ?? deck.motion.transition;
 
-/** Vstup každé zóny slidu s obsahem: přepis zóny, jinak vstup slidu. */
+/** Entrance of every slide zone with content: the zone override, otherwise the slide entrance. */
 export function zoneEntrances(slide: Slide, deck: Deck): Record<string, string> {
   const base = slideEntrance(slide, deck);
   return Object.fromEntries(Object.keys(slide.blocks).map((z) => [z, slide.motion?.zones?.[z] ?? base]));
 }
 
-/** Kde se který vstup a přechod používá (ID slidů), v pořadí decku. Přechod do prvního slidu se nehraje. */
+/** Where each entrance and transition is used (slide ids), in deck order. The transition into the first slide does not play. */
 export function motionUsage(deck: Deck): { entrances: Record<string, string[]>; transitions: Record<string, string[]> } {
   const entrances: Record<string, string[]> = {};
   const transitions: Record<string, string[]> = {};
@@ -70,7 +70,7 @@ const scaled = (deck: Deck) => {
 
 const compileKeyframes = (k: readonly Keyframe[]) => k.map((f) => (f.easing ? { ...f, easing: cssEasing(f.easing) } : { ...f }));
 
-/** Všechny vstupy decku (presety a slovník) s trváním podle tempa. */
+/** Every entrance of the deck (presets and vocabulary) with its duration by tempo. */
 export function compiledEntrances(deck: Deck) {
   const { t, ms } = scaled(deck);
   const all: Record<string, EntranceSpec> = { ...ENTRANCES, ...deck.motion.vocabulary?.entrances };
@@ -103,13 +103,13 @@ export function compiledTransitions(deck: Deck) {
 export type CompiledEntrance = ReturnType<typeof compiledEntrances>[string];
 export type CompiledTransition = ReturnType<typeof compiledTransitions>[string];
 
-/** Co měřit v prohlížeči a komu nález patří (motionFindings). */
+/** What to measure in the browser and whom a finding belongs to (motionFindings). */
 export interface MotionMeasureInput {
   intensity: Deck["motion"]["intensity"];
   usage: ReturnType<typeof motionUsage>;
 }
 
-/** Konfigurace playeru a měření (JSON do stránky). */
+/** Configuration of the player and measurement (JSON into the page). */
 export function playerConfig(deck: Deck) {
   const { t, ms } = scaled(deck);
   return {

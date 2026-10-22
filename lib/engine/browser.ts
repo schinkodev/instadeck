@@ -1,24 +1,24 @@
 /**
- * Prohlížeč uživatele pro měření layoutu, PDF a PNG. InstaDeck běží lokálně a používá nainstalovaný
- * Chrome, Edge nebo Chromium (všechny mluví DevTools protokolem). Žádné stahování prohlížeče.
+ * The user's browser for layout measurement, PDF and PNG. InstaDeck runs locally and uses an installed
+ * Chrome, Edge or Chromium (all of them speak the DevTools protocol). No browser download.
  *
- *   INSTADECK_CHROME              cesta k prohlížeči, má přednost
- *   INSTADECK_CHROME_NO_SANDBOX=1 vypne sandbox (CI runnery, kde ho jádro nepovolí)
+ *   INSTADECK_CHROME              path to the browser, takes precedence
+ *   INSTADECK_CHROME_NO_SANDBOX=1 turns the sandbox off (CI runners where the kernel does not allow it)
  *
- * Puppeteer se načítá až při prvním použití: hostovaný konektor (Lambda) prohlížeč nemá ani nepotřebuje.
+ * Puppeteer loads on first use: the hosted connector (Lambda) has no browser and needs none.
  */
 import { existsSync } from "node:fs";
 import type { Browser, Page } from "puppeteer-core";
 import { SLIDE } from "@/lib/domain";
 
-/** Známá umístění prohlížečů podle systému, v pořadí, ve kterém je zkoušíme. */
+/** Known browser locations per system, in the order we try them. */
 async function candidates(): Promise<string[]> {
   const { Browser: BrowserKind, ChromeReleaseChannel, computeSystemExecutablePath } = await import("@puppeteer/browsers");
   const chrome = [ChromeReleaseChannel.STABLE, ChromeReleaseChannel.BETA, ChromeReleaseChannel.CANARY].flatMap((channel) => {
     try {
       return [computeSystemExecutablePath({ browser: BrowserKind.CHROME, channel })];
     } catch {
-      // Kanál na tomto systému neexistuje (např. Canary na Linuxu).
+      // The channel does not exist on this system (e.g. Canary on Linux).
       return [];
     }
   });

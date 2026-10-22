@@ -1,21 +1,21 @@
 /**
- * Stavební kameny pitch decku. Inspirace, ne předpis: pevná kostra dává všem deckům stejný
- * tvar (lekce ze slyde-saas). Model vybírá a řadí beaty podle publika a cíle,
- * řídí se principy storytellingu (principles/storytelling.ts).
+ * Building blocks of a pitch deck. Inspiration, not a prescription: a fixed skeleton gives every deck the same
+ * shape (a lesson from slyde-saas). The model picks and orders beats by audience and goal,
+ * following the storytelling principles (principles/storytelling.ts).
  */
 
 export interface PitchBeat {
   id: string;
-  /** Otázka publika, na kterou beat odpovídá. */
+  /** The audience question the beat answers. */
   question: string;
-  /** Na co se zeptat uživatele, když důkaz v briefu chybí. Číslo, jméno ani citaci si model nedomýšlí. */
+  /** What to ask the user when the evidence is missing from the brief. The model never makes up a number, a name or a quote. */
   askUser: string;
-  /** Beat stojí na důkazu: slide jen s textem tvrdí, ale nedokládá (assertion-evidence). */
+  /** The beat rests on evidence: a slide with text only claims but does not prove (assertion-evidence). */
   needsEvidence: boolean;
-  /** Co musí slide doložit, aby beat obstál. */
+  /** What the slide must prove for the beat to hold. */
   evidence: string;
   layouts: readonly string[];
-  /** Pro které publikum je beat nutný. */
+  /** For which audience the beat is essential. */
   essentialFor: readonly ("investors" | "customers" | "partners" | "board")[];
 }
 

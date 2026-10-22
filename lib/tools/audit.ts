@@ -1,6 +1,6 @@
 /**
- * Audit principů podle vrstev vynucení (V008), generovaný z domény do docs/principles-audit.md.
- * Soubor se nepíše ručně: test hlídá, že odpovídá kódu.
+ * Audit of principles by enforcement layer (V008), generated from the domain into docs/principles-audit.md.
+ * The file is not written by hand: a test checks that it matches the code.
  */
 import { DESIGN_PRINCIPLES, LAYER_NAMES, MOTION_PRINCIPLES, STORYTELLING_PRINCIPLES, isCovered, type Enforced } from "@/lib/domain";
 

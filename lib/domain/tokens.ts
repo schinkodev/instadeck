@@ -1,6 +1,6 @@
 /**
- * Design system decku. Model volí generativní parametry (barvy, písma, základ a poměr škály,
- * hustotu), doména z nich odvodí konkrétní hodnoty. Žádné ad hoc velikosti (princip modular-scale).
+ * Design system of a deck. The model chooses generative parameters (colors, fonts, base and ratio of the scale,
+ * density), the domain derives concrete values from them. No ad hoc sizes (principle modular-scale).
  */
 import { z } from "zod";
 import { bestContrast, isHex, mix } from "./color";
@@ -10,7 +10,7 @@ export const SLIDE = { width: 1920, height: 1080 } as const;
 
 const hex = z.string().refine(isHex, "Expected #RRGGBB");
 
-/** Pojmenované modulární škály (Bringhurst, Brown). */
+/** Named modular scales (Bringhurst, Brown). */
 export const TYPE_SCALES = {
   "minor-third": 1.2,
   "major-third": 1.25,
@@ -21,7 +21,7 @@ export const TYPE_SCALES = {
 } as const;
 export type TypeScaleName = keyof typeof TYPE_SCALES;
 
-/** Hustota mění okraje a mezery, ne velikost písma. */
+/** Density changes margins and gaps, not the font size. */
 export const DENSITY = { airy: 1.25, balanced: 1, compact: 0.8 } as const;
 
 export const designSchema = z.strictObject({
@@ -52,7 +52,7 @@ export const designSchema = z.strictObject({
 });
 export type Design = z.infer<typeof designSchema>;
 
-/** Tón slidu: hlavní barvy, prohozené, nebo akcentová plocha (pro silné momenty jako ask). */
+/** Tone of a slide: main colors, swapped, or an accent field (for strong moments like the ask). */
 export const TONES = ["default", "inverse", "accent"] as const;
 export type Tone = (typeof TONES)[number];
 
@@ -78,10 +78,10 @@ export interface Tokens {
   cards: Design["shape"]["cards"];
 }
 
-/** Nejmenší přípustné písmo na slidu 1920x1080 (čitelnost z poslední řady). */
+/** Smallest allowed font on a 1920x1080 slide (legible from the back row). */
 export const MIN_FONT_PX = 18;
 
-/** Strop velkých stupňů škály: u velkých poměrů by jinak nadpis nevešel na šířku 1920 px. */
+/** Cap of the large scale steps: with large ratios the heading would not fit the 1920 px width. */
 export const MAX_PX = { h1: 104, display: 180, stat: 200 } as const;
 
 const round = (n: number) => Math.round(n);
@@ -97,7 +97,7 @@ function palettes(c: Design["colors"]): Record<Tone, Palette> {
     surface: mix(c.fg, c.bg, 0.08),
     line: mix(c.fg, c.bg, 0.18),
   };
-  // Na akcentové ploše je text ta z hlavních barev, která má vůči akcentu vyšší kontrast.
+  // On an accent field the text is whichever main color has higher contrast against the accent.
   const onAccent = bestContrast(c.accent, [c.fg, c.bg]);
   const offAccent = onAccent === c.fg ? c.bg : c.fg;
   const accent: Palette = {
@@ -140,7 +140,7 @@ export function deriveTokens(d: Design): Tokens {
   };
 }
 
-/** Výchozí design: neutrální, čitelný. Brand kit nebo model ho přepíše. */
+/** Default design: neutral, legible. A brand kit or the model overrides it. */
 export const DEFAULT_DESIGN: Design = {
   colors: { bg: "#FFFFFF", fg: "#111318", accent: "#2F5BFF", accent2: "#8AA2FF", muted: "#5F6675", surface: "#F3F4F7" },
   fonts: { heading: { source: "google", family: "Inter Tight" }, body: { source: "google", family: "Inter" } },

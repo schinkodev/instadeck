@@ -1,5 +1,5 @@
-// Build balíčku pro npm: jeden ESM soubor dist/instadeck.js (bin).
-// Závislosti zůstávají v node_modules (--packages=external), npm je nainstaluje s balíčkem.
+// Build of the npm package: one ESM file dist/instadeck.js (bin).
+// Dependencies stay in node_modules (--packages=external), npm installs them with the package.
 import { chmodSync, mkdirSync, rmSync } from "node:fs";
 import { build } from "esbuild";
 

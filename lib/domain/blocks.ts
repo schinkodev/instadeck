@@ -1,17 +1,17 @@
 /**
- * Bloky: obsahové stavební kameny slidu. Počty položek jsou tvrdé limity schématu
- * (kognitivní limit kolem 4 položek, Miller a Cowan). Délky textu jsou doporučení,
- * skutečné přetečení měří engine v prohlížeči.
+ * Blocks: the content building blocks of a slide. Item counts are hard schema limits
+ * (a cognitive limit of about 4 items, Miller and Cowan). Text lengths are recommendations,
+ * the engine measures real overflow in a browser.
  *
- * Zvýraznění v textu: ==slovo== se vykreslí akcentem (jen u nadpisů, výroků a čísel).
+ * Highlighting in text: ==word== renders in the accent (only in headings, statements and numbers).
  */
 import { z } from "zod";
 
 const text = (max: number, what: string) => z.string().min(1).describe(`${what}. Aim for at most ${max} characters`);
 
-/** Kdy se blok objeví: 0 = se vstupem slidu, 1 a výš = na kliknutí v daném pořadí. */
+/** When a block appears: 0 = with the slide entrance, 1 and up = on click, in that order. */
 const step = z.number().int().min(0).max(5).optional().describe("Reveal step: 0 or omitted = with slide entrance, 1..5 = on click, in order");
-/** U seznamů: položky naráz, nebo každá na své kliknutí. */
+/** For lists: all items at once, or each on its own click. */
 const build = z.enum(["together", "items"]).optional().describe("together = all items with the block, items = one item per click");
 
 const statItem = z.strictObject({
@@ -143,7 +143,7 @@ export const BLOCK_TYPES = blockSchema.options.map((o) => o.shape.type.value) as
 
 export interface BlockInfo {
   purpose: string;
-  /** Výchozí zvýrazňující pohyb bloku (viz motion.ts), pokud nějaký má. */
+  /** Default hero motion of the block (see motion.ts), if it has one. */
   hero?: "count-up" | "chart-grow" | "line-draw" | "donut-sweep" | "timeline-draw";
 }
 
@@ -167,20 +167,20 @@ export const BLOCK_INFO: Record<BlockType, BlockInfo> = {
 };
 
 /**
- * Když má slide víc bloků s hero pohybem, animuje se jen jeden (MOTION_BUDGET.heroesPerSlide):
- * ten s nejvyšší prioritou. Graf a osa nesou příběh dat, čísla je doplňují.
+ * When a slide has several blocks with a hero motion, only one animates (MOTION_BUDGET.heroesPerSlide):
+ * the one with the highest priority. A chart or timeline carries the data story, numbers complement it.
  */
 export const HERO_PRIORITY: readonly BlockType[] = ["chart", "timeline", "stats", "stat"];
 
-/** Typ zvýrazňujícího pohybu bloku, s ohledem na druh grafu. */
+/** Hero motion type of a block, taking the chart kind into account. */
 export function heroMotionOf(block: Block): BlockInfo["hero"] {
   if (block.type === "chart") return block.kind === "line" ? "line-draw" : block.kind === "donut" ? "donut-sweep" : "chart-grow";
   return BLOCK_INFO[block.type].hero;
 }
 
 /**
- * Doporučené délky textu ve znacích (bez značek zvýraznění). Delší text se často vejde,
- * ale slide pak čte řečník za publikum. Skutečné přetečení měří engine.
+ * Recommended text lengths in characters (without highlight marks). Longer text often fits,
+ * but then the slide reads for the presenter instead of the audience. The engine measures real overflow.
  */
 export const TEXT_LIMITS = {
   heading: { display: 40, h1: 70, h2: 90 },

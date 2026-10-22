@@ -1,7 +1,7 @@
 /**
- * Brandový systém, deterministicky: z primární barvy a nálady vyrobí paletu s ověřeným kontrastem,
- * dvojici písem a tvar typografie. Co značka je, rozhoduje model, kód navrhne čísla a hlídá čitelnost.
- * Kontrola hotového brand kitu (checkBrandKit) používá stejná pravidla jako validace decku.
+ * Brand system, deterministic: from a primary color and a mood it makes a palette with verified contrast,
+ * a font pair and the shape of the typography. The model decides what the brand is, the code proposes numbers and guards legibility.
+ * Checking a finished brand kit (checkBrandKit) uses the same rules as deck validation.
  */
 import {
   CONTRAST,
@@ -106,7 +106,7 @@ export function suggestBrandSystem(input: BrandSystemInput) {
   };
 }
 
-/** Kontrola brand kitu před tím, než podle něj vznikne deck. Stejná prahová pravidla jako validace decku. */
+/** Check of a brand kit before a deck is built from it. The same threshold rules as deck validation. */
 export function checkBrandKit(kit: BrandKitInput, design?: DesignPatch): Finding[] {
   const out: Finding[] = [];
   const push = (severity: Finding["severity"], rule: string, message: string) => out.push({ severity, rule, message });

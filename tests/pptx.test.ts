@@ -1,4 +1,4 @@
-/** PowerPoint ze snímku vykreslených slidů: skládání bez prohlížeče, schéma vstupu z prohlížeče. */
+/** PowerPoint from a snapshot of rendered slides: assembly without a browser, schema of the input from the browser. */
 import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 import { buildPptx, exportRequestSchema, type SlideSnapshot } from "@/lib/engine";

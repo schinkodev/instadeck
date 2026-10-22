@@ -1,7 +1,7 @@
 /**
- * Testovací hostitel MCP App (jako claude.ai): načte aplikaci do iframe, pošle výsledek toolu
- * a zaznamená, co aplikace pošle zpět (kontext pro model, režim zobrazení, odkazy).
- * Bundluje se esbuildem v testu a běží v headless Chromiu.
+ * MCP App test host (like claude.ai): loads the app into an iframe, sends the tool result
+ * and records what the app sends back (context for the model, display mode, links).
+ * Bundled with esbuild in the test and runs in headless Chromium.
  */
 import { AppBridge, PostMessageTransport } from "@modelcontextprotocol/ext-apps/app-bridge";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -17,7 +17,7 @@ declare global {
 window.hostLog = { context: [], displayModes: [], links: [], messages: [], initialized: false };
 
 window.startHost = async (html, toolResult, mcpUrl) => {
-  // Jako skutečný hostitel: volání tools z aplikace jdou na MCP server.
+  // Like a real host: tool calls from the app go to the MCP server.
   const client = new Client({ name: "TestHost", version: "1.0.0" });
   await client.connect(new StreamableHTTPClientTransport(new URL(mcpUrl)));
   const iframe = document.createElement("iframe");
@@ -44,7 +44,7 @@ window.startHost = async (html, toolResult, mcpUrl) => {
     window.hostLog.initialized = true;
     void bridge.sendToolResult(toolResult as never);
   };
-  // Jako skutečný hostitel: naslouchat dřív, než aplikace pošle initialize.
+  // Like a real host: listen before the app sends initialize.
   await bridge.connect(new PostMessageTransport(iframe.contentWindow!, iframe.contentWindow!));
   iframe.srcdoc = html;
 };

@@ -1,5 +1,5 @@
 /**
- * Ukázkový pitch deck fiktivní firmy Northwind Grid: pokrývá všechny typy bloků a většinu layoutů.
+ * Sample pitch deck of the fictional company Northwind Grid: covers every block type and most layouts.
  */
 import { DEFAULT_DESIGN, DEFAULT_MOTION, type Deck, type SlideInput } from "@/lib/domain";
 import type { AssetData, AssetIndex } from "@/lib/engine";
@@ -206,7 +206,7 @@ export const SAMPLE_SLIDES: SlideInput[] = [
   },
 ];
 
-/** Hluboká kopie: testy deck mění a nesmí ovlivnit sdílené konstanty domény. */
+/** Deep copy: tests change the deck and must not affect shared domain constants. */
 export function sampleDeck(): Deck {
   return structuredClone({
     id: "deck_sample",
@@ -226,5 +226,5 @@ export function sampleDeck(): Deck {
   });
 }
 
-/** Koncept decku pro testy create_deck (povinný v create_deck). */
+/** Deck concept for create_deck tests (required in create_deck). */
 export const SAMPLE_CONCEPT = { idea: "A calm investor deck where one number per slide makes the case", school: "swiss", avoid: "Stock photos and gradients", signature: "One accent number per slide" } as const;

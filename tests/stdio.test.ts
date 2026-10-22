@@ -1,4 +1,4 @@
-/** Skutečný stdio proces, jak ho spouští Claude Code nebo Claude Desktop. */
+/** A real stdio process, as Claude Code or Claude Desktop starts it. */
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

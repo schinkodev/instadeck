@@ -28,7 +28,7 @@ describe("color", () => {
   it("computes WCAG contrast", () => {
     expect(contrastRatio("#000000", "#FFFFFF")).toBeCloseTo(21, 5);
     expect(contrastRatio("#FFFFFF", "#FFFFFF")).toBeCloseTo(1, 5);
-    // známá hodnota: #767676 na bílé je hranice AA (4.54)
+    // known value: #767676 on white is the AA boundary (4.54)
     expect(contrastRatio("#767676", "#FFFFFF")).toBeCloseTo(4.54, 1);
   });
 

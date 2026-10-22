@@ -1,13 +1,13 @@
 /**
- * Eval kvality decků (V008). Volá model přes `claude -p`, proto je mimo `npm test` a stojí peníze.
+ * Deck quality eval (V008). Calls the model through `claude -p`, so it is outside `npm test` and costs money.
  *
  *   npm run eval -- generate <label> [--brief id] [--model name] [--repo path]
- *       Pro každý brief nechá model vytvořit deck přes InstaDeck z TOHOTO checkoutu a uloží PNG slidů,
- *       nálezy a cenu do out/eval/<label>/<brief>/. Verze porovnáváš tak, že generuješ z různých větví
- *       (worktree) pod různými štítky: --repo ukáže na checkout, jehož server se použije.
+ *       For every brief the model creates a deck through InstaDeck from THIS checkout, and the slide PNGs,
+ *       findings and cost are saved to out/eval/<label>/<brief>/. Compare versions by generating from different branches
+ *       (worktrees) under different labels: --repo points at the checkout whose server is used.
  *   npm run eval -- compare <labelA> <labelB> [--brief id] [--model name]
- *       Vision model posoudí dvojice decků podle rubriky, každou dvakrát s prohozeným pořadím.
- *       Zpráva je v out/eval/report-<A>-vs-<B>.md. Nejednoznačné dvojice rozhoduje člověk.
+ *       A vision model judges pairs of decks by a rubric, each twice with the order swapped.
+ *       The report is in out/eval/report-<A>-vs-<B>.md. A person decides the ambiguous pairs.
  */
 import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -18,7 +18,7 @@ import { generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, rep
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const OUT = join(ROOT, "out/eval");
-/** Checkout, jehož InstaDeck se měří (--repo). Výchozí tento. Výstupy evalu zůstávají tady, aby šly porovnat. */
+/** The checkout whose InstaDeck is measured (--repo). Default this one. Eval outputs stay here so they can be compared. */
 const repoArg = process.argv.indexOf("--repo");
 const REPO = repoArg >= 0 ? resolve(process.argv[repoArg + 1]!) : ROOT;
 const GEN_TIMEOUT_MS = 20 * 60_000;
@@ -50,7 +50,7 @@ function claude(args: string[], cwd: string, timeoutMs: number): Promise<ClaudeR
   });
 }
 
-/** Vykreslí a změří deck kódem měřeného checkoutu (render.ts v podprocesu s jeho tsconfig). */
+/** Renders and measures a deck with the code of the measured checkout (render.ts in a subprocess with its tsconfig). */
 function renderIn(home: string, out: string): Promise<{ slides: number; errors?: number; warnings?: number }> {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(join(REPO, "node_modules/.bin/tsx"), ["--tsconfig", join(REPO, "tsconfig.json"), join(ROOT, "scripts/eval/render.ts"), home, out], { cwd: REPO, stdio: ["ignore", "pipe", "pipe"] });
@@ -92,7 +92,7 @@ async function generate(label: string) {
       console.error(`[${label}] ${brief.id}: done before, skipped (--force to redo)`);
       continue;
     }
-    // Navázání po přerušení: deck, který model už vytvořil, se jen vykreslí, negeneruje se znovu.
+    // Resuming after an interruption: a deck the model already created is only rendered, not generated again.
     let run: ClaudeResult;
     const metaPath = join(dir, "run.json");
     if (readdirSync(home).length && existsSync(metaPath) && !process.argv.includes("--force")) {
@@ -125,8 +125,8 @@ function deckRef(label: string, briefId: string): DeckRef | undefined {
 }
 
 /**
- * Posudek jedné dvojice v jednom pořadí. Uloží se na disk, takže opakovaný compare hotové dvojice přeskočí.
- * Odpověď bez platného JSON se jednou zopakuje (model občas odpoví prózou), surový text zůstane v .raw.txt.
+ * Judgement of one pair in one order. It is saved to disk, so a repeated compare skips a finished pair.
+ * An answer without valid JSON is retried once (the model sometimes answers in prose), the raw text stays in .raw.txt.
  */
 async function judge(first: DeckRef, second: DeckRef, cache: string): Promise<Verdict> {
   if (existsSync(cache)) return JSON.parse(readFileSync(cache, "utf8")) as Verdict;

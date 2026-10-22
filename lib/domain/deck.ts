@@ -1,6 +1,6 @@
 /**
- * Deck, slide a operace. Slide má stabilní ID, které se přesunem nemění.
- * Operace (Op) jsou jediný způsob, jak se deck mění (applyOps v lib/state).
+ * Deck, slide and operations. A slide has a stable id that does not change when it moves.
+ * Operations (Op) are the only way a deck changes (applyOps in lib/state).
  */
 import { z } from "zod";
 import { blockSchema } from "./blocks";
@@ -31,7 +31,7 @@ export const briefSchema = z.strictObject({
 });
 export type Brief = z.infer<typeof briefSchema>;
 
-/** Brief pro create_deck: koncept je povinný, model se rozhodne dřív, než volí barvy a písma. */
+/** Brief for create_deck: the concept is required, the model decides it before choosing colors and fonts. */
 export const createBriefSchema = briefSchema.extend({ concept: conceptSchema });
 
 export const slideInputSchema = z.strictObject({

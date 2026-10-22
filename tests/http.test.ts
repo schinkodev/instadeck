@@ -1,4 +1,4 @@
-/** Hostovaný konektor přes HTTP: MCP klient, prezentace, assety, ochrana a adaptér Lambdy. */
+/** The hosted connector over HTTP: MCP client, presentation, assets, protection and the Lambda adapter. */
 import { mkdtemp, rm } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";

@@ -1,5 +1,5 @@
-// Ověří balíček jako uživatel: npm pack, instalace do prázdné složky, spuštění bin přes MCP klienta,
-// vytvoření decku a kontrola, že vznikla složka s deck.html.
+// Checks the package as a user: npm pack, install into an empty folder, run the bin through an MCP client,
+// create a deck and check that a folder with deck.html appeared.
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

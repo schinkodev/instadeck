@@ -1,7 +1,7 @@
 /**
- * Landing page instadeck.app. Statická, bez frameworku. Co InstaDeck umí, se bere z registru
- * schopností (server/capabilities.ts) a z domény, takže stránka neslibuje nic, co server nemá.
- * Vizuál ze slyde-saas: bílá plocha, Plus Jakarta Sans, logo v JetBrains Mono, akcent #B86B6B, bez zaoblení.
+ * Landing page of instadeck.app. Static, no framework. What InstaDeck can do comes from the capability
+ * registry (server/capabilities.ts) and the domain, so the page promises nothing the server does not have.
+ * Visual from slyde-saas: a white surface, Plus Jakarta Sans, the logo in JetBrains Mono, accent #B86B6B, no rounding.
  */
 import { LAYOUTS, BLOCK_TYPES, GOOGLE_FONTS } from "@/lib/domain";
 import { capabilitiesFor } from "@/server/capabilities";
@@ -12,7 +12,7 @@ const CODE_REMOTE = `claude mcp add --transport http instadeck ${CONNECTOR_URL}`
 const CODE_LOCAL = "claude mcp add instadeck -- npx -y instadeck";
 const DESKTOP_DOWNLOAD = `${REPO}/releases/latest/download/instadeck.mcpb`;
 
-/** Jak přidat hostovaný konektor v běžných MCP klientech. Každý klient má vlastní krok a vlastní text ke zkopírování. */
+/** How to add the hosted connector in common MCP clients. Every client has its own step and its own text to copy. */
 const CLIENTS = [
   { id: "claude", name: "Claude", steps: "Settings, Connectors, Add custom connector, paste the link. Works in claude.ai and Claude Desktop on every plan, and the deck plays right in the chat.", label: "Connector link", code: CONNECTOR_URL },
   { id: "claude-code", name: "Claude Code", steps: "Run this once, then ask for a deck in any project.", label: "Terminal", code: CODE_REMOTE },
@@ -89,7 +89,7 @@ export function landingHtml(version: string): string {
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Spacing a velikosti jen ze stupnice po 8 px, aby se rytmus stránky nerozjel: --s1 8, --s2 16, --s3 24, --s4 32, --s5 48, --s6 64, --s7 96. */
+/* Spacing and sizes only from an 8 px scale so the rhythm of the page holds: --s1 8, --s2 16, --s3 24, --s4 32, --s5 48, --s6 64, --s7 96. */
 :root{--bg:#FFFFFF;--subtle:#F5F5F3;--fg:#111111;--muted:#555E70;--dim:#6F7A8E;--accent:#B86B6B;--accent-hover:#A55E5E;--line:rgba(26,26,26,.09);--line-strong:rgba(26,26,26,.16);--inset:#F0F2F7;
 --s1:8px;--s2:16px;--s3:24px;--s4:32px;--s5:48px;--s6:64px;--s7:96px;--gutter:24px;--max:1120px;--control:44px;--section:var(--s7)}
 *{box-sizing:border-box}
@@ -100,7 +100,7 @@ a{color:inherit}
 .mono{font-family:"JetBrains Mono",monospace}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* Ovládací prvky: jedna výška, jedno písmo */
+/* Controls: one height, one font */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s1);height:var(--control);padding:0 var(--s3);background:var(--accent);color:#FFF;border:1.5px solid var(--accent);font:inherit;font-size:14px;font-weight:500;line-height:1;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
 .btn:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn-outline{background:transparent;color:var(--fg);border-color:var(--fg)}
@@ -120,7 +120,7 @@ nav .wrap{display:flex;justify-content:space-between;align-items:center;height:7
 .hero h1 em{font-style:normal;color:var(--accent)}
 .hero .sub{margin:var(--s3) auto 0;max-width:640px;font-size:clamp(17px,2vw,20px);color:var(--muted);text-wrap:pretty}
 
-/* Výběr klienta: záložky nad jedním blokem kódu */
+/* Client picker: tabs above one code block */
 .picker{max-width:800px;margin:var(--s5) auto 0;text-align:left}
 .tabs{display:flex;flex-wrap:wrap;gap:var(--s1);margin-bottom:var(--s3)}
 .tabs button{height:36px;padding:0 14px;background:transparent;border:1.5px solid var(--line-strong);color:var(--muted);font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,color .15s,border-color .15s}

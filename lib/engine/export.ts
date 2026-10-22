@@ -1,5 +1,5 @@
 /**
- * Měření a exporty nad statickým HTML (koncový stav všech slidů).
+ * Measurement and exports over static HTML (the final state of every slide).
  */
 import type { Deck, MotionSample } from "@/lib/domain";
 import type { LayoutMeasure } from "@/lib/domain/layout-limits";
@@ -21,7 +21,7 @@ export interface OverflowMeasure {
   axis: "x" | "y";
 }
 
-/** Výsledek měření (measure.js) jako nálezy validace. */
+/** Measurement result (measure.js) as validation findings. */
 export function overflowFindings(raw: OverflowMeasure[]): Finding[] {
   return raw.map((o) => ({
     severity: "error" as const,
@@ -36,8 +36,8 @@ export function overflowFindings(raw: OverflowMeasure[]): Finding[] {
 }
 
 /**
- * Měření v Chromiu nad statickým HTML: přetečení obsahu, kompozice (rovnováha, kontrast velikostí) a pohyb (vzorkování každého použitého
- * vstupu a přechodu proti intenzitě decku).
+ * Measurement in Chromium over static HTML: content overflow, composition (balance, size contrast) and motion (sampling every used
+ * entrance and transition against the deck intensity).
  */
 export async function measureDeck(deck: Deck, assets: Record<string, AssetData>): Promise<Finding[]> {
   const html = renderDeckHtml(deck, assets, "static");
@@ -54,13 +54,13 @@ export async function measureDeck(deck: Deck, assets: Record<string, AssetData>)
   return [...overflowFindings(raw.overflow), ...layoutFindings(raw.layout), ...motionFindings(config.measure, raw.motion)];
 }
 
-/** Snímek vykreslených slidů v Chromiu (statické HTML: koncový stav, měřítko 1). */
+/** Snapshot of the rendered slides in Chromium (static HTML: final state, scale 1). */
 export async function snapshotDeck(deck: Deck, assets: Record<string, AssetData>): Promise<SlideSnapshot[]> {
   const html = renderDeckHtml(deck, assets, "static");
   return withPage(html, (page) => page.evaluate(`${MEASURE_JS}\nsnapshotInstaDeck(document.querySelectorAll(".slide"))`) as Promise<SlideSnapshot[]>);
 }
 
-/** PPTX lokálně: geometrie z Chromia, soubor ze snímku a decku. */
+/** PPTX locally: geometry from Chromium, the file from the snapshot and the deck. */
 export async function exportPptx(deck: Deck, assets: Record<string, AssetData>): Promise<Uint8Array> {
   return buildPptx(deck, await snapshotDeck(deck, assets), assets);
 }
@@ -70,7 +70,7 @@ export async function exportPdf(deck: Deck, assets: Record<string, AssetData>): 
   return withPage(html, (page) => page.pdf({ printBackground: true, preferCSSPageSize: true }));
 }
 
-/** PNG slidů (indexy od 0). scale 0.5 dává 960x540. */
+/** PNG of slides (indexes from 0). scale 0.5 gives 960x540. */
 export async function renderPng(deck: Deck, assets: Record<string, AssetData>, indexes: number[], scale = 0.5): Promise<Uint8Array[]> {
   const html = renderDeckHtml(deck, assets, "static");
   return withPage(

@@ -1,6 +1,6 @@
 /**
- * Kontrakt úložiště: disk vždy, S3 když běží emulátor nebo je dané S3_TEST_ENDPOINT
- * (lokálně: docker run -p 9090:9090 -e COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=test adobe/s3mock).
+ * Storage contract: disk always, S3 when an emulator runs or S3_TEST_ENDPOINT is set
+ * (locally: docker run -p 9090:9090 -e COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=test adobe/s3mock).
  */
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -49,8 +49,8 @@ describe.each(backends)("files: %s", (name, make) => {
   it("lets exactly one exclusive write win", async () => {
     const f = await make();
     if (name === "s3") {
-      // Atomicitu souběžných podmíněných zápisů garantuje S3, emulátor ji nedrží (kontrola a zápis ve dvou krocích).
-      // Tady se ověřuje mapování: druhý výhradní zápis skončí ExistsError. Souběh se ověří proti skutečnému S3.
+      // S3 guarantees the atomicity of concurrent conditional writes, the emulator does not (check and write in two steps).
+      // Here the mapping is checked: a second exclusive write ends in ExistsError. The race is checked against real S3.
       await f.put("d/.revisions/2.json", "1", { exclusive: true });
       await expect(f.put("d/.revisions/2.json", "2", { exclusive: true })).rejects.toBeInstanceOf(ExistsError);
     } else {

@@ -1,6 +1,6 @@
 /**
- * AWS Lambda (Function URL, payload 2.0) → stejný handler jako lokálně.
- * Binární odpovědi (assety) jdou jako base64, text jako text.
+ * AWS Lambda (Function URL, payload 2.0) to the same handler as locally.
+ * Binary responses (assets) go as base64, text as text.
  */
 import { hostedHandler } from "./hosted";
 
@@ -26,7 +26,7 @@ const TEXT = /^(text\/|application\/(json|javascript)|image\/svg\+xml)/;
 export async function handle(event: FunctionUrlEvent): Promise<FunctionUrlResult> {
   const headers = new Headers();
   for (const [k, v] of Object.entries(event.headers)) if (v !== undefined) headers.set(k, v);
-  // Za CloudFrontem nese x-forwarded-for adresu klienta, bez něj adresu volajícího z requestContext.
+  // Behind CloudFront x-forwarded-for carries the client address, without it the caller address from requestContext.
   if (!headers.has("x-forwarded-for")) headers.set("x-forwarded-for", event.requestContext.http.sourceIp);
   const method = event.requestContext.http.method;
   const body = event.body === undefined ? undefined : event.isBase64Encoded ? Buffer.from(event.body, "base64") : event.body;

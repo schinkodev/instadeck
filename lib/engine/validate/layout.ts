@@ -1,6 +1,6 @@
 /**
- * Hodnocení změřené kompozice (measure.js, measureLayoutInstaDeck): pasivní bílé místo a kontrast velikostí.
- * Běží lokálně po měření v Chromiu i v MCP App, proto importuje jen moduly bez zod.
+ * Scoring of the measured composition (measure.js, measureLayoutInstaDeck): passive white space and size contrast.
+ * Runs locally after measurement in Chromium and in the MCP App, so it imports only modules without zod.
  */
 import { LAYOUT_LIMITS, SPARSE_LAYOUTS, type LayoutMeasure } from "@/lib/domain/layout-limits";
 import type { Finding } from "./rules";

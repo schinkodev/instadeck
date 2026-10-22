@@ -1,6 +1,6 @@
 /**
- * Brand kit: co značka předepisuje (barvy, písma, loga, tón). Z brand kitu se deterministicky
- * odvodí design decku. Interpretaci assetů (co je logo, jaký je tón) dělá model, ne kód.
+ * Brand kit: what the brand prescribes (colors, fonts, logos, tone). The deck design is derived
+ * from the brand kit deterministically. Interpreting assets (what is the logo, what is the tone) is the model's job, not code.
  */
 import { z } from "zod";
 import { CONTRAST, isHex, mix, reachContrast } from "./color";
@@ -34,7 +34,7 @@ export type BrandKit = z.infer<typeof brandKitSchema>;
 const DEFAULT_DARK = "#111318";
 const DEFAULT_LIGHT = "#FFFFFF";
 
-/** Barvy a písma brandu do designu. Typografie, mezery a tvary zůstávají z výchozího designu. */
+/** Brand colors and fonts into the design. Typography, spacing and shapes stay from the default design. */
 export function designFromBrand(brand: BrandKit | BrandKitInput, base: Design): Design {
   const fg = brand.colors.dark ?? DEFAULT_DARK;
   const bg = brand.colors.light ?? DEFAULT_LIGHT;

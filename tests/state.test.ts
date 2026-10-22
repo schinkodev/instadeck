@@ -42,7 +42,7 @@ describe("decks", () => {
     expect(r.deck.slides.map((s) => s.id)).toEqual([c, a]);
     expect(r.deck.title).toBe("New");
 
-    // druhá operace selže: nic se nezapíše
+    // the second operation fails: nothing is written
     await expect(store.applyOps(deck.id, 2, [{ op: "set_title", title: "X" }, { op: "remove_slide", slide_id: "nope" }], "mcp", "bad")).rejects.toBeInstanceOf(OpError);
     expect((await store.getDeck(deck.id)).title).toBe("New");
     expect((await store.getDeck(deck.id)).revision).toBe(2);

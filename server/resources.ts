@@ -5,7 +5,7 @@ import { capabilitiesFor } from "./capabilities";
 
 const json = (uri: string, data: unknown) => ({ contents: [{ uri, mimeType: "application/json", text: JSON.stringify(data, null, 2) }] });
 
-/** Statické resources: URI → sekce průvodce. */
+/** Static resources: URI to a section of the guide. */
 export const GUIDE_RESOURCES: Record<string, { name: string; description: string; section: GuideSection }> = {
   "instadeck://guide": { name: "workflow", description: "Step by step workflow for building a deck", section: "workflow" },
   "instadeck://layouts": { name: "layouts", description: "Slide layouts with their zones and accepted blocks", section: "layouts" },
@@ -41,7 +41,7 @@ export function registerResources(mcp: McpServer, service: Service, mode: Mode):
   );
   mcp.registerResource(
     "deck",
-    // Hostovaný konektor decky nevypisuje: ID decku je capability, cizí decky nikdo neuvidí.
+    // The hosted connector does not list decks: a deck id is a capability, nobody sees other people's decks.
     new ResourceTemplate("instadeck://deck/{deck_id}", {
       list:
         mode === "local"

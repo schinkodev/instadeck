@@ -1,4 +1,4 @@
-/** Vykreslí ukázkový deck do out/sample (HTML prezentace, PDF, PNG) pro ruční kontrolu. */
+/** Renders the sample deck into out/sample (HTML presentation, PDF, PNG) for a manual check. */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { closeBrowser, exportPdf, measureDeck, renderDeckHtml, renderPng, validateDeck } from "@/lib/engine";
 import { SAMPLE_ASSET_INDEX, SAMPLE_ASSETS, sampleDeck } from "@/tests/fixtures/sample-deck";

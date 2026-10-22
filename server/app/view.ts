@@ -1,11 +1,11 @@
 /**
- * MCP App: deck přímo v chatu (claude.ai, Claude Desktop). Běží v sandboxu klienta.
+ * MCP App: the deck right in the chat (claude.ai, Claude Desktop). Runs in the client's sandbox.
  *
- * Tool vrátí deckId a presentation.url. Aplikace si vykreslené části decku načte toolem
- * get_deck_view (jen pro aplikaci), vloží je do stránky, změří přetečení a pohyb v prohlížeči
- * uživatele, výsledek pošle modelu (updateModelContext) a připojí player s animacemi.
- * Funguje stejně s hostovaným konektorem i s lokálním serverem. Tlačítko Upravit slide pošle
- * do chatu zprávu, který slide a jak změnit.
+ * A tool returns deckId and presentation.url. The app loads the rendered parts of the deck with the tool
+ * get_deck_view (app only), puts them into the page, measures overflow and motion in the user's
+ * browser, sends the result to the model (updateModelContext) and mounts the player with animations.
+ * Works the same with the hosted connector and the local server. The Edit slide button sends
+ * a message to the chat saying which slide to change and how.
  * Bundluje se esbuildem do server/app/view-source.ts (npm run gen).
  */
 import { App } from "@modelcontextprotocol/ext-apps";
@@ -13,7 +13,7 @@ import type { LayoutMeasure } from "@/lib/domain/layout-limits";
 import type { MotionSample } from "@/lib/domain/motion-limits";
 import { MEASURE_JS } from "@/lib/engine/render/measure-source";
 import { PLAYER_JS } from "@/lib/engine/render/player-source";
-// Přímo z modulů bez zod: bundle MCP App má zůstat malý.
+// Directly from modules without zod: the MCP App bundle should stay small.
 import { layoutFindings } from "@/lib/engine/validate/layout";
 import { motionFindings, type MotionMeasureContext } from "@/lib/engine/validate/motion";
 
@@ -60,7 +60,7 @@ const deckCss = document.getElementById("deck-css")!;
 const fonts = document.getElementById("deck-fonts") as HTMLLinkElement;
 const openButton = document.getElementById("open") as HTMLButtonElement;
 
-// Player a měření jsou klasické skripty (stejné jako v samostatném deck.html), vloží se jednou.
+// The player and measurement are classic scripts (the same as in a standalone deck.html), inserted once.
 for (const source of [PLAYER_JS, MEASURE_JS]) {
   const s = document.createElement("script");
   s.textContent = source;
@@ -106,7 +106,7 @@ async function show(deckId: string, revision: number, url: string) {
   if (key === shown) return;
   shown = key;
   presentationUrl = url;
-  // Lokální soubor (file://) z chatu otevřít nejde, odkaz má jen hostovaný deck.
+  // A local file (file://) cannot be opened from the chat, only a hosted deck has a link.
   openButton.hidden = !/^https?:/.test(url);
   setStatus("Rendering the deck");
   const res = await app.callServerTool({ name: "get_deck_view", arguments: { deck_id: deckId } });
@@ -122,13 +122,13 @@ async function show(deckId: string, revision: number, url: string) {
   root.innerHTML = `<main class="stage">${parts.slides}</main><aside class="hud"><div class="hud-count"></div><div class="hud-notes"></div><div class="hud-keys">Arrows or click: next | G: all slides | F: full screen | N: notes</div></aside>`;
   await document.fonts.ready;
 
-  // Měří se koncový stav před připojením playeru, animace by posouvaly obdélníky.
+  // The final state is measured before the player mounts, animation would move the rectangles.
   const raw = window.measureInstaDeck(root);
   const motion = [...layoutFindings(window.measureLayoutInstaDeck(root)), ...motionFindings(parts.config.measure, window.measureMotionInstaDeck(root, parts.config))];
   if (app.getHostCapabilities()?.updateModelContext) {
     await app.updateModelContext({ content: [{ type: "text", text: report(deckId, revision, raw, motion) }], structuredContent: { deckId, revision, overflow: raw, motion } });
   }
-  // V chatu bez okna řečníka a bez stahování (sandbox klienta). Stahuje se z odkazu, který otevře Open.
+  // In the chat no presenter window and no downloads (client sandbox). Downloads come from the link that Open opens.
   const canAsk = !!app.getHostCapabilities()?.message;
   player = window.mountInstaDeck({
     root,

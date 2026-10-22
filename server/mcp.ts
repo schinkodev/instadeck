@@ -1,6 +1,6 @@
 /**
- * MCP server: tools z lib/tools, resources z domény, prompt a instructions.
- * Obecný MCP podle standardu, nepředpokládá konkrétního klienta.
+ * MCP server: tools from lib/tools, resources from the domain, a prompt and instructions.
+ * A generic MCP server by the standard, it assumes no particular client.
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
@@ -43,7 +43,7 @@ export async function callTool(t: ToolDef, args: unknown, ctx: ToolContext): Pro
   }
 }
 
-/** Tools dostupné v režimu (lokální server, nebo hostovaný konektor). */
+/** Tools available in a mode (local server, or hosted connector). */
 export function toolsFor(mode: ToolContext["mode"]): ToolDef[] {
   return TOOLS.filter((t) => !t.modes || t.modes.includes(mode));
 }

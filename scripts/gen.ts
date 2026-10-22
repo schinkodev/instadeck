@@ -1,10 +1,10 @@
 /**
- * Generované soubory (test hlídá, že jsou aktuální):
- *   lib/engine/render/player-source.ts  player jako řetězec, aby engine nepotřeboval fs (Lambda, prohlížeč)
- *   lib/engine/render/measure-source.ts měření přetečení jako řetězec (Chromium i MCP App)
- *   skills/instadeck/SKILL.md           skill pro Claude Code z domény
- *   docs/principles-audit.md            audit principů podle vrstev vynucení (V008)
- *   server/app/view-source.ts           MCP App (view.html + bundle view.ts) jako řetězec
+ * Generated files (a test checks they are up to date):
+ *   lib/engine/render/player-source.ts  the player as a string, so the engine does not need fs (Lambda, browser)
+ *   lib/engine/render/measure-source.ts overflow measurement as a string (Chromium and the MCP App)
+ *   skills/instadeck/SKILL.md           the Claude Code skill from the domain
+ *   docs/principles-audit.md            audit of principles by enforcement layer (V008)
+ *   server/app/view-source.ts           the MCP App (view.html + bundle of view.ts) as a string
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { measureModule, playerModule } from "@/lib/engine/render/player-module";

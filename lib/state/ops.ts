@@ -1,6 +1,6 @@
 /**
- * Aplikace operací na deck, čistá funkce. Neplatná operace (neznámý slide, pozice mimo deck)
- * vyhodí OpError a nezmění nic: buď projdou všechny operace, nebo žádná.
+ * Applying operations to a deck, a pure function. An invalid operation (unknown slide, position outside the deck)
+ * throws OpError and changes nothing: either all operations pass, or none.
  */
 import { designFromBrand, patchMotion, type BrandKit, type Deck, type DesignPatch, type Op, type Slide } from "@/lib/domain";
 
@@ -36,9 +36,9 @@ function indexOf(deck: Deck, slideId: string, i: number): number {
 
 export interface Applied {
   deck: Deck;
-  /** ID slidů, které operace přidaly nebo změnily (pro náhledy). */
+  /** Ids of slides the operations added or changed (for previews). */
   touched: string[];
-  /** Operace změnily vzhled celého decku (design, pohyb, brand). */
+  /** The operations changed the look of the whole deck (design, motion, brand). */
   global: boolean;
 }
 
@@ -107,7 +107,7 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
       case "apply_brand": {
         const brand = ctx.brandKit(op.brand_kit_id);
         if (!brand) throw new OpError(`brand kit ${op.brand_kit_id} does not exist`, i);
-        // Barvy z brandu, písma z brandu jen pokud je předepisuje, jinak zůstávají z decku.
+        // Colors from the brand, fonts from the brand only if it prescribes them, otherwise they stay from the deck.
         deck.design = designFromBrand(brand, deck.design);
         deck.brandKitId = brand.id;
         global = true;

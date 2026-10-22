@@ -1,11 +1,11 @@
 /**
- * Pevné briefy pro eval (V008). Žádné assety: eval měří, co model udělá z textu a nástrojů.
- * Briefy s fotkami a logem přibudou s obrazovou vrstvou.
+ * Fixed briefs for the eval (V008). No assets: the eval measures what the model makes from text and tools.
+ * Briefs with photos and a logo come with the image layer.
  */
 export interface EvalBrief {
   id: string;
   language: "en" | "cs";
-  /** Co brief prověřuje, aby šlo číst výsledky. */
+  /** What the brief tests, so the results can be read. */
   probes: string;
   text: string;
 }

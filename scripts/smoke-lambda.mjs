@@ -1,5 +1,5 @@
-// Načte postavený balíček pro Lambdu a zavolá ho jako Function URL: /health, MCP initialize a tools/list,
-// založení decku a /d/<id>. Úložiště na disku, bez AWS.
+// Loads the built Lambda package and calls it as a Function URL: /health, MCP initialize and tools/list,
+// creating a deck and /d/<id>. Storage on disk, no AWS.
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

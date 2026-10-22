@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// Pravidla z CLAUDE.md: v uživatelských textech žádné slovo "AI", nikde em dash.
+// Rules from CLAUDE.md: no word "AI" in user facing copy, no em dash anywhere.
 const ROOT = new URL("..", import.meta.url).pathname;
 const SKIP = new Set(["node_modules", ".git", ".data", "dist", "dist-bundle", "dist-lambda", "out"]);
 

@@ -78,7 +78,7 @@ describe("contract", () => {
       for (const t of c.tools ?? []) expect(modes.some((m) => toolsFor(m).some((x) => x.name === t)), `${c.id}: ${t} exists in none of its modes`).toBe(true);
     }
     for (const uri of Object.keys(GUIDE_RESOURCES)) expect(uris).toContain(uri);
-    // Přehrávač v chatu nabízí hostovaný konektor i lokální server (Claude Desktop).
+    // The player in the chat is offered by the hosted connector and the local server (Claude Desktop).
     expect(instructions("local")).toContain(capabilitiesFor("hosted").find((c) => c.id === "in-chat")!.claim);
   });
 
@@ -200,9 +200,9 @@ describe("hosted connector", () => {
     expect(c.mimeType).toBe("text/html;profile=mcp-app");
     expect(c.text).toContain('id="deck"');
     expect(c._meta.ui.csp.resourceDomains).toEqual(["https://instadeck.test", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]);
-    // Části decku si aplikace bere toolem jen pro aplikaci, model ho nevidí.
+    // The app takes the deck parts through an app only tool, the model does not see it.
     expect(tools.find((t) => t.name === "get_deck_view")!._meta).toEqual({ ui: { visibility: ["app"] } });
-    // Lokální server nabízí stejnou aplikaci (Claude Desktop), assety jsou v decku.
+    // The local server offers the same app (Claude Desktop), assets are in the deck.
     const local = (await client.listTools()).tools;
     expect((local.find((t) => t.name === "create_deck")!._meta as { ui: { resourceUri: string } }).ui.resourceUri).toBe("ui://instadeck/deck.html");
     const lc = (await client.readResource({ uri: "ui://instadeck/deck.html" })).contents[0] as unknown as { _meta: { ui: { csp: { resourceDomains: string[] } } } };
@@ -229,7 +229,7 @@ describe("hosted connector", () => {
     expect(d.deckId).toMatch(/^d[a-z0-9]{20}$/);
     expect(d.presentation).toEqual({ url: `https://instadeck.test/d/${d.deckId}` });
     expect(r.content.filter((c) => c.type === "image")).toHaveLength(0);
-    // vykreslená prezentace je v úložišti a assety má jako data URI (funguje i offline a v tisku)
+    // the rendered presentation is in the storage and has assets as data URIs (works offline and in print too)
     const html = await readFile(join(dir, "decks", d.deckId, "deck.html"), "utf8");
     expect(html).toContain("data:image/svg+xml;base64,");
     const colors = (await hosted.callTool({ name: "extract_brand_colors", arguments: { asset_id: assetId } })) as CallToolResult;

@@ -1,7 +1,7 @@
 /**
- * Snímek vykreslených slidů (measure.js, snapshotInstaDeck): geometrie a styl prvků v pixelech
- * slidu 1920x1080. Vzniká v prohlížeči (lokálně Chromium, hostovaně prohlížeč diváka), server z něj
- * skládá PPTX. Schéma hlídá, co přijde zvenku: tvary, meze a jen barvy jako hex.
+ * Snapshot of rendered slides (measure.js, snapshotInstaDeck): geometry and style of elements in pixels
+ * of the 1920x1080 slide. It is made in a browser (locally Chromium, hosted the viewer's browser), the server
+ * assembles PPTX from it. The schema guards what comes from outside: shapes, bounds and colors only as hex.
  */
 import { z } from "zod";
 
@@ -54,7 +54,7 @@ export const slideSnapshotSchema = z.strictObject({
 });
 export type SlideSnapshot = z.infer<typeof slideSnapshotSchema>;
 
-/** Tělo požadavku na export z prohlížeče: snímek patří ke konkrétní revizi decku. */
+/** Body of an export request from the browser: the snapshot belongs to a specific deck revision. */
 export const exportRequestSchema = z.strictObject({
   revision: z.number().int().min(1),
   slides: z.array(slideSnapshotSchema).min(1).max(100),

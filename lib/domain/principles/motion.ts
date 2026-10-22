@@ -1,7 +1,7 @@
 /**
- * Principy pohybu: proč se v prezentaci něco hýbe a kdy ne. Z výzkumu vnímání, animace a vizualizace dat.
- * Měřitelné prahy, které z nich plynou, jsou v motion-limits.ts. Pravidlo `measured` říká,
- * kterým nálezem validace se princip hlídá.
+ * Motion principles: why something moves in a presentation and when it does not. From research on perception, animation and data visualization.
+ * The measurable thresholds that follow from them are in motion-limits.ts. The `measured` rule says
+ * which validation finding guards the principle.
  */
 
 export interface MotionPrinciple {
@@ -11,7 +11,7 @@ export interface MotionPrinciple {
   principle: string;
   why: string;
   slideApplication: string;
-  /** Pravidlo validace, které princip měří (rule ve findings). */
+  /** Validation rule that measures the principle (rule in findings). */
   measured?: string;
 }
 
