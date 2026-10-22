@@ -2,6 +2,7 @@
 export * from "./color";
 export * from "./fonts";
 export * from "./tokens";
+export * from "./composition";
 export * from "./blocks";
 export * from "./layouts";
 export * from "./motion";

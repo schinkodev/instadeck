@@ -65,11 +65,15 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
           if (block === null) delete blocks[zone];
           else blocks[zone] = structuredClone(block);
         }
-        const { background: _drop, ...rest } = s;
+        const { background: _bg, composition: _comp, ...rest } = s;
         const background = op.background === undefined ? s.background : (op.background ?? undefined);
+        // A composition fits the layout it was set for: a new layout starts without one unless the op gives it.
+        const relayout = op.layout !== undefined && op.layout !== s.layout;
+        const composition = op.composition === undefined ? (relayout ? undefined : s.composition) : (op.composition ?? undefined);
         deck.slides[at] = {
           ...rest,
           ...(background && { background }),
+          ...(composition && { composition }),
           ...(op.layout !== undefined && { layout: op.layout }),
           ...(op.intent !== undefined && { intent: op.intent }),
           ...(op.beat !== undefined && { beat: op.beat }),

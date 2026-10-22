@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BRIEFS } from "@/scripts/eval/briefs";
-import { CRITERIA, generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, tally, type Criterion, type PairResult, type Verdict } from "@/scripts/eval/core";
+import { BRIEFS, SPARSE_BRIEFS } from "@/scripts/eval/briefs";
+import { CRITERIA, RUN_ID, askPrompt, expandRuns, generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, scoreAsk, tally, type Criterion, type PairResult, type Verdict } from "@/scripts/eval/core";
 
 const scores = (n: number) => Object.fromEntries(CRITERIA.map((c) => [c, n])) as Record<Criterion, number>;
 const verdict = (winner: Verdict["winner"], first = 3, second = 3): Verdict => ({ scores: { first: scores(first), second: scores(second) }, winner, reason: "r" });
@@ -17,6 +17,61 @@ describe("eval briefs", () => {
     const cs = BRIEFS.find((b) => b.language === "cs")!;
     expect(generationPrompt(cs)).toContain("Czech");
     expect(generationPrompt(cs)).toContain("do not ask questions");
+  });
+});
+
+describe("eval design", () => {
+  it("can fix the school of every deck in the prompt", () => {
+    const b = BRIEFS[0]!;
+    expect(generationPrompt(b)).not.toContain("design school");
+    expect(generationPrompt(b, "swiss")).toContain('design school "swiss"');
+    expect(generationPrompt(b, "swiss")).toContain('brief.concept.school to "swiss"');
+    expect(generationPrompt(b, "swiss")).toContain("do not ask questions");
+  });
+
+  it("generates several decks per brief and keeps the id of run one", () => {
+    const two = expandRuns(BRIEFS.slice(0, 2), 3);
+    expect(two.map((b) => b.id)).toEqual([BRIEFS[0]!.id, `${BRIEFS[0]!.id}-r2`, `${BRIEFS[0]!.id}-r3`, BRIEFS[1]!.id, `${BRIEFS[1]!.id}-r2`, `${BRIEFS[1]!.id}-r3`]);
+    expect(two[1]!.text).toBe(BRIEFS[0]!.text);
+    expect(expandRuns(BRIEFS, 1)).toEqual([...BRIEFS]);
+    expect(() => expandRuns(BRIEFS, 0)).toThrow(/at least 1/);
+    expect(() => expandRuns(BRIEFS, 1.5)).toThrow(/whole number/);
+    // A brief id that looks like a run would collide with the ids of the runs.
+    expect(() => expandRuns([{ ...BRIEFS[0]!, id: "devtools-r2" }], 2)).toThrow(/looks like a run/);
+    for (const b of BRIEFS) expect(RUN_ID.test(b.id), b.id).toBe(false);
+    expect("seed-saas-r2".replace(RUN_ID, "$1")).toBe("seed-saas");
+  });
+});
+
+describe("asking eval", () => {
+  const asks = "Before I build:\n1. Will you present this live or send it as a pre-read?\n2. What is the big idea: what should the audience take away?\n3. How long is the slot?";
+  const storyline = ["1. Hook: Margins are thinning", "2. Problem: Cost drift", "3. Traction: Q3 bridge", "4. Risks: Fuel prices", "5. Ask: Approve budget"].join("\n");
+
+  it("keeps sparse briefs out of the quality eval and lets the model ask", () => {
+    expect(BRIEFS.some((b) => SPARSE_BRIEFS.some((s) => s.id === b.id))).toBe(false);
+    expect(askPrompt(SPARSE_BRIEFS[0]!)).not.toContain("do not ask questions");
+  });
+
+  it("passes when the model asks first and shows the storyline before building", () => {
+    expect(scoreAsk(asks, storyline, false)).toMatchObject({ askedDelivery: true, askedBigIdea: true, questions: 3, showedStoryline: true, pass: true });
+  });
+
+  it("reads a storyline given as a table", () => {
+    const table = ["| # | Beat | Headline |", "|---|---|---|", ...[1, 2, 3, 4, 5].map((n) => `| ${n} | hook | Headline ${n} |`)].join("\n");
+    expect(scoreAsk(asks, table, false).showedStoryline).toBe(true);
+  });
+
+  it("does not credit a statement, a list of picked answers or a list without beats", () => {
+    expect(scoreAsk("I will treat this as a live talk, and the big idea is one sentence.", storyline, false).pass).toBe(false);
+    expect(scoreAsk(asks, "I picked:\n1. live\n2. twelve minutes\n3. navy\n4. no logo\n5. yes", false).showedStoryline).toBe(false);
+    expect(scoreAsk("Ready.", storyline, false).questions).toBe(0);
+    expect(scoreAsk("Ready.", storyline, false).pass).toBe(false);
+  });
+
+  it("fails when the model builds early, skips delivery or skips the storyline", () => {
+    expect(scoreAsk(asks, storyline, true).pass).toBe(false);
+    expect(scoreAsk("What is the topic?", storyline, false).pass).toBe(false);
+    expect(scoreAsk(asks, "I will build it now.", false).pass).toBe(false);
   });
 });
 

@@ -172,6 +172,10 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .brand-visual{position:absolute;inset:0;pointer-events:none}
 .brand-visual>div{position:absolute}
 .brand-numeral-text{bottom:24px;font-family:var(--font-heading);font-weight:var(--hw);font-size:880px;line-height:.8;letter-spacing:-.04em;white-space:nowrap}
+.axis-center .grid{justify-content:center}
+.axis-center .zone{text-align:center}
+.axis-center .heading,.axis-center .text,.axis-center .cta-text{margin-inline:auto}
+.axis-center .block-logo img{margin-inline:auto;object-position:center}
 .bleed{position:absolute;inset:0}
 .bleed .block-image{position:absolute;inset:0;border-radius:0}
 .scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.74) 0%,rgba(0,0,0,.4) 50%,rgba(0,0,0,0) 82%)}

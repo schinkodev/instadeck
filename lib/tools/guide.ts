@@ -40,19 +40,20 @@ export type Mode = StoreMode;
 export function workflow(mode: Mode): string[] {
   const local = mode === "local";
   return [
-    "1. Brief: company, topic, audience, goal and content language. Ask the user only for what you cannot infer.",
+    "1. Brief: company, topic, audience, goal and content language, and what decides a deck more than its brand: delivery (live, pre-read or both), the big idea (what the audience should take away and do, in one sentence), length and setting (five minutes at a board, twenty at a conference, a video call) and the objections the audience will raise, the last two only when they change the deck. Ask the user only for what you cannot infer, and never infer delivery from the industry: finance does not mean pre-read.",
     local
       ? "2. Brand: add the logo and brand files with add_asset and read candidate colors with extract_brand_colors. Pick the primary color and a mood, call suggest_brand_system, then create_brand_kit with its brand_kit plus the name and logos. Read the findings it returns. Skip when the user has no brand."
       : "2. Brand: add the logo with add_asset from its url (or small data_base64) and read colors with extract_brand_colors for SVG or from the image yourself. Pick the primary color and a mood, call suggest_brand_system, then create_brand_kit with its brand_kit plus the name and logos. Read the findings it returns. Skip when the user has no brand.",
-    "3. Story: read the example closest to the brief with get_example. Pick a narrative frame and the beats for this audience (section pitch: frames, beats). For every beat that needs evidence the user has not given, ask the user before building: at most five questions in one message, each with a suggested default. Never invent numbers, names or quotes. Write each slide intent as one sentence before choosing layouts, and give every slide its beat.",
-    "4. Design: write the concept first (section schools): the visual idea in one sentence, a school or your own named references, what the deck must not look like and one signature device. Derive the design from it: use the design and motion from suggest_brand_system, or choose colors, fonts, type scale and density yourself (sections design, fonts). Design the motion language for the audience: intensity, rationale, entrance, transition and, when the presets do not fit, your own vocabulary (section motion). Explain the choice to the user in two or three sentences.",
-    "5. Build: call create_deck once with the brief, brand kit, design, motion and all slides. Keep the structure, rhythm and text lengths of the example, replace all of its content.",
+    "3. Story: read the example closest to the brief with get_example. Pick a narrative frame and the beats for this audience (section pitch: frames, beats). For every beat that needs evidence the user has not given, ask the user before building. Questions about the brief and about evidence share one message of at most five, the most important first (delivery and the big idea before the rest), each with a suggested default, so a plain yes is a full reply. Never invent numbers, names or quotes. Write each slide intent as one sentence before choosing layouts, and give every slide its beat.",
+    "4. Storyline: before designing or building, show the user only the slide headlines with their beats (a ghost deck) and two or three design concepts in one sentence each, for example a calm IBCS report, editorial with large numbers, a keynote that moves. Wait for the user to confirm or change them, then set brief.delivery and brief.bigIdea. Accepting your suggested defaults for the questions does not approve the storyline: show it and wait. Skip the wait only when the user asked to build without seeing it.",
+    "5. Design: write the concept first (section schools): the visual idea in one sentence, a school or your own named references, what the deck must not look like and one signature device. Derive the design from it: use the design and motion from suggest_brand_system, or choose colors, fonts, type scale and density yourself (sections design, fonts). Design the motion language for the audience: intensity, rationale, entrance, transition and, when the presets do not fit, your own vocabulary (section motion). Explain the choice to the user in two or three sentences.",
+    "6. Build: call create_deck once with the brief, brand kit, design, motion and all slides. Keep the structure, rhythm and text lengths of the example, replace all of its content.",
     local
-      ? "6. Review: read findings and look at the previews. Fix every error and the warnings that matter with apply_ops, passing expected_revision."
-      : "6. Review: read findings. The deck view in the chat measures the slides and the motion and reports text that does not fit and motion that breaks the deck's intensity, fix those and every error with apply_ops, passing expected_revision.",
+      ? "7. Review: read findings and look at the previews. Fix every error and the warnings that matter with apply_ops, passing expected_revision."
+      : "7. Review: read findings. The deck view in the chat measures the slides and the motion and reports text that does not fit and motion that breaks the deck's intensity, fix those and every error with apply_ops, passing expected_revision.",
     local
-      ? "7. Hand over: give the user the presentation file to open (arrow keys or click to advance, G all slides, P presenter view, F fullscreen, N speaker notes) and offer export_deck as PDF or PowerPoint."
-      : "7. Hand over: the deck plays in the chat. Give the user presentation.url: it presents full screen with a presenter view and downloads the deck as PDF, PowerPoint (editable, native charts, speaker notes) or a single HTML file. It can be shared as is.",
+      ? "8. Hand over: give the user the presentation file to open (arrow keys or click to advance, G all slides, P presenter view, F fullscreen, N speaker notes) and offer export_deck as PDF or PowerPoint."
+      : "8. Hand over: the deck plays in the chat. Give the user presentation.url: it presents full screen with a presenter view and downloads the deck as PDF, PowerPoint (editable, native charts, speaker notes) or a single HTML file. It can be shared as is.",
   ];
 }
 
@@ -75,7 +76,7 @@ const blocks = () => ({
 const motion = () => ({
   approach:
     "Design a motion language for this deck the way you design its type scale. Declare how much it moves (intensity) and why (rationale), pick one entrance and one transition that carry the deck, and mark a few key moments with exceptions. Use the presets or write your own entrances and transitions as Web Animations keyframes in vocabulary. Every motion ends in the slide's resting state, which is also what prints. InstaDeck measures what the motion really does and reports it.",
-  intensity: Object.fromEntries(Object.entries(INTENSITY).map(([k, v]) => [k, { use: v.purpose, entranceTravelPx: v.travelPx, scale: v.scale, blurPx: v.blurPx, rotateDeg: v.rotateDeg, transitionTravelPx: v.transitionTravelPx, overshoot: v.overshoot, heroes: v.heroes }])),
+  intensity: Object.fromEntries(Object.entries(INTENSITY).map(([k, v]) => [k, { use: v.purpose, entranceTravelPx: v.travelPx, scale: v.scale, blurPx: v.blurPx, rotateDeg: v.rotateDeg, transitionTravelPx: v.transitionTravelPx, overshoot: v.overshoot }])),
   presets: { entrances: ENTRANCES, transitions: TRANSITIONS },
   vocabulary: {
     entrance: "{ purpose, keyframes: states from hidden towards rest (the resting keyframe is implicit), duration ms, easing, stagger? ms between blocks }",
@@ -102,11 +103,13 @@ const motion = () => ({
   tempos: Object.fromEntries(Object.entries(TEMPOS).map(([k, v]) => [k, `durations x${v.duration}, ${v.stagger} ms between blocks`])),
   limits: MOTION_LIMITS,
   measured: [
-    "Without a browser: names exist, durations between a jump and a wait, the time until a slide is readable, exceptions stay rare, still decks do not animate numbers, shared transitions have something to share.",
+    "Without a browser: names exist, durations between a jump and a wait, the time until a slide is readable, exceptions stay rare, shared transitions have something to share.",
     "In a browser (the deck view in the chat, or the local server): how far, how big, how blurred and how rotated each motion really is against the declared intensity, overshoot outside kinetic decks, entrances that speed up into place instead of easing out.",
   ],
   rules: [
-    "Motion must earn its place. A deck that does not move (intensity still, entrance none or fade, transition cut or fade, heroes false) is a strong choice for boards, reports and minimalist professional decks.",
+    "Motion must earn its place. A deck that does not move (intensity still, entrance none or fade, transition cut or fade, and heroes false when numbers and charts should not move either) is a strong choice for boards, reports and minimalist professional decks. Heroes is true by default at every intensity, so a still deck that should not move anything declares it.",
+    "Intensity governs decoration (entrances and transitions). Data motion is information and is declared apart with heroes, at any intensity: a still deck may grow a chart once or count a number. Motion in data matches what changes: columns grow from the baseline, a line draws left to right, a bridge builds step by step.",
+    "Click builds are for arguments that build: a comparison column by column, risks one by one. A recommendation, not a requirement.",
     "One entrance and one transition carry the deck. Exceptions mark the hook, the reveal or the ask, about one per five slides.",
     "Each slide gets at most one hero motion. Priority: chart, timeline, stats, stat. Other numbers show their final value.",
     "Use click steps for arguments that build, not for decoration. Most slides need none.",
@@ -125,6 +128,8 @@ const design = () => ({
   cards: "filled (surface background), outline (thin border) or flat (top rule only).",
   background:
     "A slide may have background { type: brand, visual }: numeral (the chapter number set very large), field (a color field across part of the slide) or geometry (a circle and a square from the accent). It is drawn from the palette of the slide, so a deck without photos looks deliberately typographic. Use it on the title and on chapter openers, not on every slide: a background either marks a moment or stays quiet. Text on it must keep its contrast, which is checked. Full bleed layouts hide it.",
+  composition:
+    "A slide may set composition { axis, split, dominant } to change the geometry of its layout as intent, the engine derives the numbers. axis: left (default), center or asymmetric (the content is pushed right and the left side stays empty on purpose, the Swiss way). In one column only title, statement, section and closing take center or asymmetric, because a full bleed image, a quote, a logo grid or dense content (cards, stats, tables) is built for its width and a left edge. Two column layouts take asymmetric as an uneven split. split: 1:3, 1:2, 1:1, 2:1 or 3:1 for the two columns of title-image, text-image, image-text and chart-insight, the larger share goes to the dominant zone, else to the image or chart. dominant: the zone that gets the larger column. Without composition a slide follows the composition of its school (concept.school): swiss and ma push content right, keynote centers, the others keep the layout as it is. Use the school's default for most slides and set composition on the few slides that mark a moment, for example one centered statement in a left aligned deck. A composition that the layout cannot take is an error that names why. Changing the layout of a slide resets its composition unless you give one.",
 });
 
 export function designGuide(sections: readonly GuideSection[] = ["workflow", "layouts", "blocks", "motion", "design", "schools", "pitch"], mode: Mode = "local") {
