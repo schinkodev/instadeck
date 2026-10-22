@@ -6,6 +6,7 @@ One core, two paths: the **hosted connector** `https://instadeck.app/mcp` (defau
 
 ## Specs
 
+- [docs/vision/V009-composition-from-parameters.md](docs/vision/V009-composition-from-parameters.md): composition parameters on a grid instead of more fixed layouts, school default compositions, signature as render primitives (proposal)
 - [docs/vision/V008-design-from-principles-down.md](docs/vision/V008-design-from-principles-down.md): audit of the principles by enforcement layer, concept and schools, story frames and asking the user, image layer (assets, backgrounds), analytic decks with facts and checked numbers, eval
 - [docs/vision/V006-motion-language.md](docs/vision/V006-motion-language.md): the model designs the motion language of a deck (intensity, its own keyframes, shared transitions), measured principles guard it instead of lists
 - [docs/vision/V005-examples-brand-and-free-tier.md](docs/vision/V005-examples-brand-and-free-tier.md): golden examples, brand system, free and premium boundary (extends V004)
