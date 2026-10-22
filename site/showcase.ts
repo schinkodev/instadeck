@@ -53,6 +53,8 @@ export type ShowcaseDeck = {
   motion: string;
   type: string;
   idea: string;
+  /** Accent of the deck's own brand, the page marks the deck with it. */
+  color: string;
 };
 
 function describe(e: DeckExample): ShowcaseDeck {
@@ -71,6 +73,7 @@ function describe(e: DeckExample): ShowcaseDeck {
     motion: e.motion.rationale ?? "",
     type: [...new Set(fonts)].join(" and "),
     idea: e.concept.idea,
+    color: e.design.colors?.accent ?? "#111111",
   };
 }
 
