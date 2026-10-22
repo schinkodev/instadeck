@@ -357,12 +357,14 @@ const EVIDENCE = new Set(["stat", "stats", "chart", "table", "quote", "logos", "
  * Story (narrative.ts, storytelling principles): a head and a tail, order by the frame, and beats that claim without
  * evidence. Only what the deck declares itself is checked (beat on a slide, frame in the brief).
  */
-function checkStory(deck: Deck, push: Push) {
+function checkStory(deck: Deck): Finding[] {
+  const out: Finding[] = [];
+  const push = (severity: Severity, rule: string, message: string, slideId?: string) => out.push({ severity, rule, message, ...(slideId && { slideId }) });
   const beats = deck.slides.flatMap((s, i) => (s.beat ? [{ slide: s, beat: s.beat, i }] : []));
-  if (!beats.length) return;
-  if (beats[0]!.beat !== "hook") push("warning", "story-open", `The story opens with the ${beats[0]!.beat} beat. Open with the hook: why should the audience listen for the next ten minutes`);
+  if (!beats.length) return out;
+  if (beats[0]!.beat !== "hook") push("warning", "story-open", `The story opens with the ${beats[0]!.beat} beat. Open with the hook: why should the audience listen for the next ten minutes`, beats[0]!.slide.id);
   const last = beats.at(-1)!.beat;
-  if (last !== "ask" && last !== "decision") push("warning", "story-close", `The story ends with the ${last} beat. End with the ask or the decision, so the audience knows what to do`);
+  if (last !== "ask" && last !== "decision") push("warning", "story-close", `The story ends with the ${last} beat. End with the ask or the decision, so the audience knows what to do`, beats.at(-1)!.slide.id);
 
   const frame = deck.brief.frame ? getFrame(deck.brief.frame) : undefined;
   if (frame) {
@@ -373,7 +375,7 @@ function checkStory(deck: Deck, push: Push) {
       if (!stages.length) continue;
       const stage = stages.find((x) => x >= reached) ?? stages[0]!;
       if (stage < reached) {
-        push("warning", "story-order", `Slide ${i + 1} (${slide.id}) carries ${beat}, which belongs to the ${frame.stages[stage]!.name} stage of the ${frame.name} frame, after ${reachedBy} already reached ${frame.stages[reached]!.name}. Move it, or pick a frame that fits this order`);
+        push("warning", "story-order", `Slide ${i + 1} (${slide.id}) carries ${beat}, which belongs to the ${frame.stages[stage]!.name} stage of the ${frame.name} frame, after ${reachedBy} already reached ${frame.stages[reached]!.name}. Move it, or pick a frame that fits this order`, slide.id);
       } else if (stage > reached) {
         reached = stage;
         reachedBy = beat;
@@ -384,9 +386,10 @@ function checkStory(deck: Deck, push: Push) {
   for (const { slide, beat, i } of beats) {
     if (!getBeat(beat)?.needsEvidence) continue;
     if (!Object.values(slide.blocks).some((b) => EVIDENCE.has(b.type))) {
-      push("warning", "story-evidence", `Slide ${i + 1} (${slide.id}) carries ${beat} with text only. It asserts but does not prove: show the number, chart, table or quote, or ask the user for it`);
+      push("warning", "story-evidence", `Slide ${i + 1} (${slide.id}) carries ${beat} with text only. It asserts but does not prove: show the number, chart, table or quote, or ask the user for it`, slide.id);
     }
   }
+  return out;
 }
 
 export function validateDeck(deck: Deck, assets: AssetIndex): Finding[] {
@@ -395,8 +398,7 @@ export function validateDeck(deck: Deck, assets: AssetIndex): Finding[] {
   checkFonts(deck, assets, push);
   checkContrast(deck, push);
   checkRhythm(deck, push);
-  checkStory(deck, push);
-  return [...deckFindings, ...checkMotion(deck), ...deck.slides.flatMap((s) => validateSlide(s, deck, assets))];
+  return [...deckFindings, ...checkStory(deck), ...checkMotion(deck), ...deck.slides.flatMap((s) => validateSlide(s, deck, assets))];
 }
 
 export const hasErrors = (findings: Finding[]) => findings.some((f) => f.severity === "error");
