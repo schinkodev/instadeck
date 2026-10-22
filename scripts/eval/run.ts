@@ -1,10 +1,13 @@
 /**
  * Deck quality eval (V008). Calls the model through `claude -p`, so it is outside `npm test` and costs money.
  *
- *   npm run eval -- generate <label> [--brief id] [--model name] [--repo path]
+ *   npm run eval -- generate <label> [--brief id] [--model name] [--repo path] [--school id] [--runs n]
  *       For every brief the model creates a deck through InstaDeck from THIS checkout, and the slide PNGs,
  *       findings and cost are saved to out/eval/<label>/<brief>/. Compare versions by generating from different branches
  *       (worktrees) under different labels: --repo points at the checkout whose server is used.
+ *       --school fixes the design school of every deck, so two decks of one brief do not follow different schools.
+ *       --runs n generates n decks per brief (ids <brief>, <brief>-r2, ...), one deck cannot tell a change from variance.
+ *       Pass the same --brief, --school and --runs to compare.
  *   npm run eval -- compare <labelA> <labelB> [--brief id] [--model name]
  *       A vision model judges pairs of decks by a rubric, each twice with the order swapped.
  *       The report is in out/eval/report-<A>-vs-<B>.md. A person decides the ambiguous pairs.
@@ -13,8 +16,9 @@ import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { DESIGN_SCHOOLS } from "@/lib/domain/schools";
 import { BRIEFS } from "./briefs";
-import { generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, type DeckRef, type DeckStats, type PairResult, type Verdict } from "./core";
+import { expandRuns, generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, type DeckRef, type DeckStats, type PairResult, type Verdict } from "./core";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const OUT = join(ROOT, "out/eval");
@@ -77,11 +81,19 @@ const selected = () => {
   const only = flag("brief");
   const list = only ? BRIEFS.filter((b) => b.id === only) : BRIEFS;
   if (!list.length) throw new Error(`Unknown brief ${only}`);
-  return list;
+  return expandRuns(list, Number(flag("runs") ?? 1));
 };
+
+/** The design school every deck must follow (--school), validated against the domain. */
+function fixedSchool(): string | undefined {
+  const id = flag("school");
+  if (id && !DESIGN_SCHOOLS.some((x) => x.id === id)) throw new Error(`Unknown school ${id}. Schools: ${DESIGN_SCHOOLS.map((x) => x.id).join(", ")}`);
+  return id;
+}
 
 async function generate(label: string) {
   const model = flag("model");
+  const school = fixedSchool();
   for (const brief of selected()) {
     const dir = join(OUT, label, brief.id);
     const home = join(dir, "home");
@@ -101,7 +113,7 @@ async function generate(label: string) {
     } else {
       const work = mkdtempSync(join(tmpdir(), "instadeck-eval-"));
       console.error(`[${label}] ${brief.id}: generating`);
-      run = await claude(["--mcp-config", config, "--strict-mcp-config", "--allowedTools", "mcp__instadeck", "--max-turns", "60", ...(model ? ["--model", model] : []), generationPrompt(brief)], work, GEN_TIMEOUT_MS);
+      run = await claude(["--mcp-config", config, "--strict-mcp-config", "--allowedTools", "mcp__instadeck", "--max-turns", "60", ...(model ? ["--model", model] : []), generationPrompt(brief, school)], work, GEN_TIMEOUT_MS);
       writeFileSync(metaPath, JSON.stringify(run));
     }
 

@@ -16,11 +16,22 @@ export const RUBRIC: Record<Criterion, string> = {
   polish: "Alignment, spacing, consistent treatment, no awkward breaks. Would a designer ship it?",
 };
 
-export function generationPrompt(b: EvalBrief): string {
+export function generationPrompt(b: EvalBrief, school?: string): string {
   const lang = b.language === "cs" ? "Czech" : "English";
-  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available, so do not ask for them. Decide everything yourself and do not ask questions. Finish when the deck exists and every error finding is fixed.
+  // A fixed school takes the choice of the school out of the comparison: otherwise two decks of one brief may follow different schools.
+  const fixed = school ? ` Use the design school "${school}": set it as the school of the concept and follow it.` : "";
+  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available, so do not ask for them. Decide everything yourself and do not ask questions.${fixed} Finish when the deck exists and every error finding is fixed.
 
 Brief: ${b.text}`;
+}
+
+/**
+ * Several generations per brief, because one deck per brief cannot tell a change from run to run variance. Run 1 keeps the id
+ * of the brief, so earlier results stay valid, run n gets `<id>-r<n>`.
+ */
+export function expandRuns(briefs: readonly EvalBrief[], runs: number): EvalBrief[] {
+  if (!Number.isInteger(runs) || runs < 1) throw new Error(`--runs must be a whole number of at least 1, got ${runs}`);
+  return briefs.flatMap((b) => Array.from({ length: runs }, (_, i) => (i === 0 ? b : { ...b, id: `${b.id}-r${i + 1}` })));
 }
 
 export interface DeckRef {
