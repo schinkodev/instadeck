@@ -164,10 +164,11 @@ describe("motion language", () => {
     const d = vocab(sampleDeck());
     d.motion.tempo = "calm";
     const c = playerConfig(d);
-    expect(c.entrances["soft-rise"]).toEqual({ keyframes: [{ opacity: 0, transform: "translateY(36px)", easing: "cubic-bezier(0.16, 1, 0.3, 1)" }], duration: 1000, easing: "cubic-bezier(0.16, 1, 0.3, 1)", stagger: 250 });
+    expect(c.entrances["soft-rise"]).toEqual({ frames: [{ opacity: 0, transform: "translateY(36px)", easing: "cubic-bezier(0.16, 1, 0.3, 1)" }, {}], duration: 1000, easing: "cubic-bezier(0.16, 1, 0.3, 1)", stagger: 250 });
     expect(c.entrances.rise!.duration).toBe(800);
     expect(c.transitions.push).toMatchObject({ duration: 875, over: "enter", shared: true, exit: [], easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
-    expect(c.transitions.fade).toMatchObject({ exit: [{ opacity: 0, offset: 0.5 }, { opacity: 0 }], enter: [{ opacity: 0 }, { opacity: 0, offset: 0.5 }] });
+    // The outgoing slide starts at rest, the incoming one ends at rest.
+    expect(c.transitions.fade).toMatchObject({ exit: [{}, { opacity: 0, offset: 0.5 }, { opacity: 0 }], enter: [{ opacity: 0 }, { opacity: 0, offset: 0.5 }, {}] });
   });
 
   it("uses vocabulary names on slides and zones", () => {
@@ -254,7 +255,17 @@ describe("motion language", () => {
     const c = playerConfig(sampleDeck());
     // The easing sits on every keyframe, the effect runs linear (player.js, measure.js).
     expect(c.transitions.fade!.exit.every((k) => k.easing === "cubic-bezier(0.65, 0, 0.35, 1)")).toBe(true);
-    expect(c.entrances.rise!.keyframes[0]!.easing).toBe("cubic-bezier(0.16, 1, 0.3, 1)");
+    expect(c.entrances.rise!.frames[0]!.easing).toBe("cubic-bezier(0.16, 1, 0.3, 1)");
+    // A clip rests at the same shape opened up: the moving side of an inset at 0, the others outward; a circle at 150%.
+    expect(c.entrances.wipe!.frames.at(-1)).toEqual({ clipPath: "inset(-25% 0% -25% -25%)" });
+    expect(c.entrances.reveal!.frames.at(-1)).toEqual({ clipPath: "inset(-25% -25% 0% -25%)" });
+    expect(c.entrances.rise!.frames.at(-1)).toEqual({});
+    const iris = vocab(sampleDeck());
+    iris.motion.vocabulary = { entrances: { iris: { purpose: "x", keyframes: [{ clipPath: "CIRCLE(0% at 30% 40%)" }], duration: 600, easing: "out-expo" } } };
+    expect(playerConfig(iris).entrances.iris!.frames.at(-1)).toEqual({ clipPath: "circle(150% at 30% 40%)" });
+    // A transition clipping only its incoming slide leaves the outgoing one unclipped.
+    iris.motion.vocabulary = { transitions: { open: { purpose: "x", duration: 600, easing: "out-expo", enter: [{ clipPath: "inset(0 100% 0 0)" }], exit: [{ opacity: 0 }] } } };
+    expect(playerConfig(iris).transitions.open!.exit[0]).toEqual({ easing: "cubic-bezier(0.16, 1, 0.3, 1)" });
     // A fade through shows the new slide from half time, its content enters from there.
     expect(c.transitions.fade!.contentDelay).toBe(0.5);
     expect(c.transitions.slide!.contentDelay).toBe(0.45);

@@ -76,6 +76,40 @@ const scaled = (deck: Deck) => {
 const compileKeyframes = (k: readonly Keyframe[], easing: string) => k.map((f) => ({ ...f, easing: cssEasing(f.easing ?? easing) }));
 
 /**
+ * Clip at rest for the clip shape a motion uses: the same function opened up, because a shape to none does not
+ * interpolate and the element would jump into place at half time instead of being uncovered. Sides of an inset that
+ * do not move open outward, so descenders and shadows past the box are not cut while it plays. Shapes without an
+ * open form (polygon) get none: they jump, and the measurement reports it.
+ */
+function clipRest(clip: string): string | undefined {
+  const m = /^\s*(inset|circle|ellipse)\((.*)\)\s*$/i.exec(clip);
+  if (!m) return undefined;
+  const fn = m[1]!.toLowerCase();
+  if (fn === "inset") {
+    const [box, round] = m[2]!.split(/\s+round\s+/i);
+    const v = box!.trim().split(/\s+/);
+    const sides = [v[0]!, v[1] ?? v[0]!, v[2] ?? v[0]!, v[3] ?? v[1] ?? v[0]!].map((x) => (parseFloat(x) === 0 ? "-25%" : "0%"));
+    return `inset(${sides.join(" ")}${round ? ` round ${round}` : ""})`;
+  }
+  const at = /\sat\s+(.+)$/i.exec(m[2]!)?.[1] ?? "50% 50%";
+  return fn === "circle" ? `circle(150% at ${at})` : `ellipse(150% 150% at ${at})`;
+}
+
+/** The resting keyframe of a motion: the element's own style, plus an open clip when the last clipping keyframe has a shape. */
+function restOf(k: readonly Keyframe[]): Keyframe {
+  const clip = [...k].reverse().find((f) => f.clipPath)?.clipPath;
+  const rest = clip ? clipRest(clip) : undefined;
+  return rest ? { clipPath: rest } : {};
+}
+
+/**
+ * The frames the player plays and the measurement samples, built once here so the two never differ: an entrance and
+ * an incoming slide end at rest, an outgoing slide starts at rest with the motion's easing.
+ */
+const arriving = (k: Keyframe[]) => (k.length ? [...k, restOf(k)] : []);
+const leaving = (k: Keyframe[], easing: string) => (k.length ? [{ ...restOf(k), easing }, ...k] : []);
+
+/**
  * Explicit offsets of keyframes followed by the implicit resting keyframe at 1, spaced like Web Animations does:
  * missing offsets are spread evenly between the known ones, the first defaults to 0.
  */
@@ -111,7 +145,7 @@ export function compiledEntrances(deck: Deck) {
   return Object.fromEntries(
     Object.entries(all).map(([k, e]) => [
       k,
-      { keyframes: compileKeyframes(e.keyframes, e.easing), duration: ms(e.duration), easing: cssEasing(e.easing), stagger: e.stagger === undefined ? t.stagger : ms(e.stagger) },
+      { frames: arriving(compileKeyframes(e.keyframes, e.easing)), duration: ms(e.duration), easing: cssEasing(e.easing), stagger: e.stagger === undefined ? t.stagger : ms(e.stagger) },
     ]),
   );
 }
@@ -125,8 +159,8 @@ export function compiledTransitions(deck: Deck) {
       {
         duration: ms(s.duration),
         easing: cssEasing(s.easing),
-        exit: compileKeyframes(s.exit ?? [], s.easing),
-        enter: compileKeyframes(s.enter ?? [], s.easing),
+        exit: leaving(compileKeyframes(s.exit ?? [], s.easing), cssEasing(s.easing)),
+        enter: arriving(compileKeyframes(s.enter ?? [], s.easing)),
         over: s.over ?? "exit",
         shared: s.shared ?? false,
         contentDelay: contentDelay(s.enter ?? []),

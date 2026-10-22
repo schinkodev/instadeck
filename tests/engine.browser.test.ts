@@ -95,6 +95,31 @@ describe("motion measurement", () => {
     expect(await motionRules(withEntrance({}, { keyframes: [{ opacity: 0, transform: "translateY(20px)" }], easing: "in-cubic" }))).toEqual(["motion-easing"]);
   });
 
+  it("uncovers a clip-path entrance smoothly instead of jumping at half time", async () => {
+    for (const entrance of ["wipe", "reveal"]) {
+      const d = sampleDeck();
+      d.motion = { ...d.motion, intensity: "expressive", entrance };
+      expect(await motionRules(d), entrance).toEqual([]);
+    }
+    // In the player itself: halfway through the wipe the heading of the next slide is partly uncovered, not unclipped.
+    const d = sampleDeck();
+    d.motion = { ...d.motion, intensity: "expressive", entrance: "wipe", transition: "cut" };
+    const clip = await withPage(renderDeckHtml(d, SAMPLE_ASSETS, "present"), async (page) => {
+      await page.keyboard.press("ArrowRight");
+      return page.evaluate(() => {
+        const heading = document.querySelector(".slide.is-active .heading")!;
+        heading.getAnimations().forEach((a) => {
+          a.pause();
+          const t = a.effect!.getTiming();
+          a.currentTime = Number(t.delay ?? 0) + Number(t.duration) / 2;
+        });
+        return getComputedStyle(heading).clipPath;
+      });
+    });
+    expect(clip).toMatch(/^inset\(/);
+    expect(clip).not.toContain(" 0% -25% -25%)");
+  });
+
   it("measures transitions against the intensity", async () => {
     const d = sampleDeck();
     d.motion.transition = "slide";
