@@ -22,7 +22,7 @@ try {
     name: "create_deck",
     arguments: {
       title: "Smoke Test",
-      brief: { company: "Smoke", topic: "Package check", language: "en" },
+      brief: { company: "Smoke", topic: "Package check", language: "en", concept: { idea: "A plain smoke test deck with one statement", avoid: "Anything decorative", signature: "One statement" } },
       slides: [{ layout: "statement", intent: "x", blocks: { statement: { type: "heading", level: "display", text: "It ==works==." } } }],
       previews: true,
     },

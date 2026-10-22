@@ -31,7 +31,7 @@ try {
   const { tools } = await rpc(2, "tools/list", {});
   const created = await rpc(3, "tools/call", {
     name: "create_deck",
-    arguments: { title: "Smoke", brief: { company: "S", topic: "t", language: "en" }, slides: [{ layout: "statement", intent: "x", blocks: { statement: { type: "heading", level: "display", text: "Hi" } } }] },
+    arguments: { title: "Smoke", brief: { company: "S", topic: "t", language: "en", concept: { idea: "A plain smoke test deck with one statement", avoid: "Anything decorative", signature: "One statement" } }, slides: [{ layout: "statement", intent: "x", blocks: { statement: { type: "heading", level: "display", text: "Hi" } } }] },
   });
   if (created.isError) throw new Error(JSON.stringify(created.content));
   const page = await handle(event("GET", `/d/${created.structuredContent.deckId}`));
