@@ -95,6 +95,24 @@ describe("motion measurement", () => {
     expect(await motionRules(withEntrance({}, { keyframes: [{ opacity: 0, transform: "translateY(20px)" }], easing: "in-cubic" }))).toEqual(["motion-easing"]);
   });
 
+  it("uncovers a clip-path entrance smoothly instead of jumping at half time", async () => {
+    for (const entrance of ["wipe", "reveal"]) {
+      const d = sampleDeck();
+      d.motion = { ...d.motion, intensity: "expressive", entrance };
+      expect(await motionRules(d), entrance).toEqual([]);
+    }
+    // The rest the player adds keeps the inset interpolable: halfway the element is half uncovered, not clipped away.
+    const clip = await withPage("<div id=p style='width:800px;height:400px'></div>", (page) =>
+      page.evaluate(() => {
+        const a = document.getElementById("p")!.animate([{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0% 0% 0% 0%)" }], { duration: 100, fill: "both" });
+        a.pause();
+        a.currentTime = 50;
+        return getComputedStyle(document.getElementById("p")!).clipPath;
+      }),
+    );
+    expect(clip).toBe("inset(0% 50% 0% 0%)");
+  });
+
   it("measures transitions against the intensity", async () => {
     const d = sampleDeck();
     d.motion.transition = "slide";

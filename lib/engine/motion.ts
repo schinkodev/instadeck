@@ -76,6 +76,15 @@ const scaled = (deck: Deck) => {
 const compileKeyframes = (k: readonly Keyframe[], easing: string) => k.map((f) => ({ ...f, easing: cssEasing(f.easing ?? easing) }));
 
 /**
+ * The resting keyframe the player adds to the keyframes the model wrote. Mostly empty: the element's own style. A
+ * clip-path inset needs an inset at rest, since inset() to none does not interpolate and the element would jump
+ * into place at half time instead of being uncovered.
+ */
+function restOf(...lists: (readonly Keyframe[])[]): Keyframe {
+  return lists.some((k) => k.some((f) => f.clipPath?.trim().startsWith("inset("))) ? { clipPath: "inset(0% 0% 0% 0%)" } : {};
+}
+
+/**
  * Explicit offsets of keyframes followed by the implicit resting keyframe at 1, spaced like Web Animations does:
  * missing offsets are spread evenly between the known ones, the first defaults to 0.
  */
@@ -111,7 +120,7 @@ export function compiledEntrances(deck: Deck) {
   return Object.fromEntries(
     Object.entries(all).map(([k, e]) => [
       k,
-      { keyframes: compileKeyframes(e.keyframes, e.easing), duration: ms(e.duration), easing: cssEasing(e.easing), stagger: e.stagger === undefined ? t.stagger : ms(e.stagger) },
+      { keyframes: compileKeyframes(e.keyframes, e.easing), rest: restOf(e.keyframes), duration: ms(e.duration), easing: cssEasing(e.easing), stagger: e.stagger === undefined ? t.stagger : ms(e.stagger) },
     ]),
   );
 }
@@ -127,6 +136,7 @@ export function compiledTransitions(deck: Deck) {
         easing: cssEasing(s.easing),
         exit: compileKeyframes(s.exit ?? [], s.easing),
         enter: compileKeyframes(s.enter ?? [], s.easing),
+        rest: restOf(s.exit ?? [], s.enter ?? []),
         over: s.over ?? "exit",
         shared: s.shared ?? false,
         contentDelay: contentDelay(s.enter ?? []),
