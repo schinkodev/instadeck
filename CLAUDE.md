@@ -67,6 +67,7 @@ npm test             # vitest
 npm run typecheck
 npm run lint
 npm run mcp          # MCP server přes stdio (pro claude mcp add)
+npm run eval         # eval kvality decků přes `claude -p` (stojí peníze, mimo CI), viz scripts/eval/run.ts
 ```
 
 Připojení v Claude Code (vývoj): `claude mcp add instadeck -- npx tsx /cesta/k/instadeck/server/stdio.ts`. Po publikaci `npx -y instadeck`.
