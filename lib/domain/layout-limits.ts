@@ -17,6 +17,8 @@ export const LAYOUT_LIMITS = {
    * heading wins by this ratio. Two elements of similar size compete and neither leads the eye.
    */
   minDominance: 1.5,
+  /** The zone the slide declares dominant must hold the largest content of its slide (Williams: one element leads). */
+  minZoneDominance: 1,
 } as const;
 
 
@@ -35,4 +37,6 @@ export interface LayoutMeasure {
   figurePx: number;
   /** Zones whose content shares no edge or center line with any other zone. */
   unaligned: string[];
+  /** The zone the composition declares dominant: its content area against the largest of the other zones. Absent without one. */
+  dominant?: { zone: string; ratio: number };
 }

@@ -188,6 +188,33 @@ describe("exports", () => {
     expect(all).toContain(author);
   });
 
+  it("gives two schools measurably different geometry for the same content", async () => {
+    const rects = async (school: "swiss" | "keynote" | "ibcs") => {
+      const d = sampleDeck();
+      d.brief.concept = { ...d.brief.concept!, school };
+      return (await snapshotDeck(d, SAMPLE_ASSETS)).map((s) => s.items.filter((i) => i.kind === "text").map((i) => (i.kind === "text" ? [Math.round(i.x), Math.round(i.y), Math.round(i.w)] : [])));
+    };
+    const [swiss, keynote, ibcs] = [await rects("swiss"), await rects("keynote"), await rects("ibcs")];
+    const differing = (a: number[][][], b: number[][][]) => a.filter((slide, i) => JSON.stringify(slide) !== JSON.stringify(b[i])).length;
+    const total = swiss.length;
+    // Most slides move, not a few: tokens alone would give 0 here.
+    expect(differing(swiss, keynote)).toBeGreaterThanOrEqual(total / 2);
+    expect(differing(swiss, ibcs)).toBeGreaterThanOrEqual(total / 3);
+    expect(differing(keynote, ibcs)).toBeGreaterThanOrEqual(total / 3);
+  });
+
+  it("measures that a dominant zone holds the largest content", async () => {
+    const mk = (dominant: string) => {
+      const d = sampleDeck();
+      const at = d.slides.findIndex((x) => x.layout === "text-image");
+      d.slides[at]!.composition = { dominant };
+      return { d, id: d.slides[at]!.id };
+    };
+    const rulesOf = async (x: { d: Deck; id: string }) => (await measureDeck(x.d, SAMPLE_ASSETS)).filter((f) => f.slideId === x.id && f.rule === "composition-dominance").length;
+    expect(await rulesOf(mk("image"))).toBe(0);
+    expect(await rulesOf(mk("title"))).toBe(1);
+  });
+
   it("renders PNG previews at the requested scale", async () => {
     const [png] = await renderPng(sampleDeck(), SAMPLE_ASSETS, [0], 0.5);
     const b = Buffer.from(png!);

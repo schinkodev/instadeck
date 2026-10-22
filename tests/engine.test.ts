@@ -211,6 +211,23 @@ describe("motion language", () => {
     expect(validateDeck(d, SAMPLE_ASSET_INDEX).find((f) => f.rule === "motion-duration")!.message).toContain("jump");
   });
 
+  it("renders a composition as a grid and rejects one the layout cannot take", () => {
+    const d = sampleDeck();
+    const at = d.slides.findIndex((x) => x.layout === "text-image");
+    d.slides[at]!.composition = { split: "1:3", dominant: "image" };
+    const html = renderDeckHtml(d, SAMPLE_ASSETS, "static");
+    expect(html).toContain("grid-template-columns:1fr 3fr");
+    expect(html).toContain('data-zone="image" data-dominant');
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "error")).toEqual([]);
+    d.slides[at]!.composition = { axis: "center", dominant: "nope" };
+    const errors = validateDeck(d, SAMPLE_ASSET_INDEX).filter((f) => f.rule === "composition");
+    expect(errors).toHaveLength(2);
+    expect(errors.every((f) => f.severity === "error" && f.slideId === d.slides[at]!.id)).toBe(true);
+    const centered = sampleDeck();
+    centered.slides[0]!.composition = { axis: "center" };
+    expect(renderDeckHtml(centered, SAMPLE_ASSETS, "static")).toContain("axis-center");
+  });
+
   it("keeps still decks still and shared transitions meaningful", () => {
     const d = sampleDeck();
     d.motion.intensity = "still";

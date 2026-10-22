@@ -144,6 +144,42 @@ describe("narrative frames", () => {
   });
 });
 
+describe("composition", () => {
+  it("derives the grid from intent and says why a layout cannot take it", async () => {
+    const { compositionProblems, getLayout, resolveGrid } = await import("@/lib/domain");
+    const textImage = getLayout("text-image")!;
+    const points = getLayout("points")!;
+    const statement = getLayout("statement")!;
+    // Two columns: the split is applied and the larger share goes to the dominant zone.
+    expect(resolveGrid(textImage, { split: "1:2" }, undefined).columns).toBe("1fr 2fr");
+    expect(resolveGrid(textImage, { split: "1:2", dominant: "body" }, undefined).columns).toBe("2fr 1fr");
+    expect(resolveGrid(textImage, { split: "1:1", dominant: "image" }, undefined).columns).toBe("1fr 1fr");
+    expect(resolveGrid(textImage, undefined, undefined).columns).toBe(textImage.grid.columns);
+    // One column: asymmetric adds an empty lead track, center keeps the grid.
+    const asym = resolveGrid(points, { axis: "asymmetric" }, undefined);
+    expect(asym.columns).toBe("0.4fr 1fr");
+    expect(asym.areas).toEqual(["title".replace(/^/, ". "), "body".replace(/^/, ". ")]);
+    expect(resolveGrid(statement, { axis: "center" }, undefined)).toMatchObject({ axis: "center", columns: statement.grid.columns });
+    // Problems are explicit.
+    expect(compositionProblems(points, { split: "1:2" })[0]).toContain("two column");
+    expect(compositionProblems(points, { axis: "center" })[0]).toContain("left edge");
+    expect(compositionProblems(textImage, { dominant: "nope" })[0]).toContain("Zones:");
+    expect(compositionProblems(getLayout("chart-insight")!, { dominant: "title" })[0]).toContain("spans both");
+    expect(compositionProblems(getLayout("headline-stat")!, { split: "1:2" })).toHaveLength(1);
+    expect(compositionProblems(textImage, { axis: "asymmetric", split: "1:3", dominant: "image" })).toEqual([]);
+  });
+
+  it("applies a school default only where the layout can take it", async () => {
+    const { getLayout, resolveGrid, schoolComposition } = await import("@/lib/domain");
+    const keynote = schoolComposition("keynote");
+    expect(keynote).toEqual({ axis: "center" });
+    expect(resolveGrid(getLayout("statement")!, undefined, keynote).axis).toBe("center");
+    expect(resolveGrid(getLayout("comparison")!, undefined, keynote).axis).toBe("left");
+    expect(resolveGrid(getLayout("text-image")!, undefined, schoolComposition("swiss")).columns).toBe("1fr 2fr");
+    expect(schoolComposition(undefined)).toBeUndefined();
+  });
+});
+
 describe("design schools", () => {
   it("use only curated fonts and known type scales, with unique ids", async () => {
     const { DESIGN_SCHOOLS, GOOGLE_FONTS, TYPE_SCALES, findGoogleFont } = await import("@/lib/domain");

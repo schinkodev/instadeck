@@ -123,6 +123,8 @@ const design = () => ({
   limits: { minFontPx: MIN_FONT_PX, maxPx: MAX_PX },
   density: Object.keys(DENSITY),
   cards: "filled (surface background), outline (thin border) or flat (top rule only).",
+  composition:
+    "A slide may set composition { axis, split, dominant } to change the geometry of its layout as intent, the engine derives the numbers and measures the result. axis: left (default), center (layouts with little content and one column: title, statement, section, closing) or asymmetric (the content is pushed right and the left side stays empty on purpose, the Swiss way). split: 1:3, 1:2, 1:1, 2:1 or 3:1 for the two columns of title-image, text-image, image-text and chart-insight. dominant: the zone that gets the larger column and must hold the largest content of the slide. Without composition a slide follows the composition of its school (concept.school): swiss and ma push content right, keynote centers, editorial gives the content column two thirds, ibcs keeps two equal columns. Use the school's default for most slides and set composition on the few slides that mark a moment, for example one centered statement in a left aligned deck. A composition that the layout cannot take is an error that names the layouts that can.",
 });
 
 export function designGuide(sections: readonly GuideSection[] = ["workflow", "layouts", "blocks", "motion", "design", "schools", "pitch"], mode: Mode = "local") {
