@@ -101,6 +101,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .chart-bar .bar.is-negative .bar-value{left:auto;right:100%;padding:0 12px 0 0}
 .chart-line{display:flex;flex-direction:column;padding:var(--fs-lead) calc(var(--fs-lead) * 4) 0 calc(var(--fs-small) * 2)}
 .line-plot{position:relative;flex:1;min-height:0;border-bottom:2px solid var(--line)}
+.chart-line.has-negative .line-plot{border-bottom:0}
+.line-zero{position:absolute;left:0;right:0;height:2px;margin-top:-1px;background:var(--line)}
 .line-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .line-dot{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%}
 .line-dot.is-highlight{width:24px;height:24px;margin:-12px 0 0 -12px;box-shadow:0 0 0 6px var(--bg)}

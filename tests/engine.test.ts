@@ -560,6 +560,18 @@ describe("analytic charts", () => {
     expect(chartRules({ kind: "donut", categories: ["a", "b"], series: [{ name: "A", values: [-1, 2] }] })).toContain("chart-negative");
   });
 
+  it("draws a line chart with negative values on a zero line and names every series at its end", () => {
+    const margins = { kind: "line", categories: ["Q1", "Q2", "Q3"], series: [{ name: "Gross", values: [68, 71, 74] }, { name: "EBITDA", values: [-12, -6, 2] }], unit: "%" };
+    const html = renderDeckHtml(chartSlide(margins), SAMPLE_ASSETS, "static");
+    expect(html).toContain("chart-line has-negative");
+    expect(html).toContain('class="line-zero"');
+    expect(html).toContain("74%");
+    expect(html).toContain("2%");
+    const positive = renderDeckHtml(chartSlide({ ...margins, series: [margins.series[0]] }), SAMPLE_ASSETS, "static");
+    expect(positive).not.toContain("chart-line has-negative");
+    expect(positive).not.toContain('class="line-zero"');
+  });
+
   it("warns when a donut has more segments than the eye compares by angle", () => {
     expect(chartRules({ kind: "donut", categories: ["a", "b", "c", "d", "e"], series: [{ name: "A", values: [1, 2, 3, 4, 5] }] })).toContain("chart-donut");
   });
