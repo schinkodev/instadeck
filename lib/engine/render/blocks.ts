@@ -115,9 +115,10 @@ function lineChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): st
     .join("");
   const decimals = chartDecimals(b);
   const unit = b.unit ? esc(b.unit) : "";
-  // Every series is named by its last value in its own color, so a second line is not an unlabeled shape.
+  // Every series is named by its last value, so a second line is not an unlabeled shape. The first in the accent, the others
+  // in the muted text color: a line color like the second accent is drawn for shape, not checked for text contrast.
   const ends = b.series
-    .map((s, si) => `<div class="line-end" style="top:${pct(y(s.values.at(-1)!), H)};color:${color(si)}">${formatNumber(s.values.at(-1)!, decimals, ctx.locale)}${unit}</div>`)
+    .map((s, si) => `<div class="line-end" style="top:${pct(y(s.values.at(-1)!), H)};color:${si === 0 ? ctx.palette.accent : ctx.palette.muted}">${formatNumber(s.values.at(-1)!, decimals, ctx.locale)}${unit}</div>`)
     .join("\n");
   // With negative values the baseline is zero, not the bottom of the plot (same as the bar chart).
   const zero = lo < 0 ? `<i class="line-zero" style="top:${pct(y(0), H)}"></i>` : "";
