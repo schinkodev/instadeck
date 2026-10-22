@@ -6,7 +6,7 @@
  * Slide 1920x1080 px = 13.333 x 7.5 inches: 144 px per inch, 1 px = 0.5 pt.
  */
 import PptxGenJS from "pptxgenjs";
-import { deriveTokens, type Block, type Deck, type Palette } from "@/lib/domain";
+import { deriveTokens, type Block, type Deck, type Palette, bridgeSteps } from "@/lib/domain";
 import type { AssetData } from "./render/blocks";
 import type { SlideSnapshot, SnapshotItem } from "./snapshot";
 
@@ -29,16 +29,72 @@ function chartColors(b: Extract<Block, { type: "chart" }>, p: Palette): string[]
   return [p.accent, p.accent2, p.muted].map(hex);
 }
 
+/**
+ * Waterfall in PowerPoint: a stacked column chart where every step is an invisible base and a visible part. PowerPoint
+ * stacks positive and negative values from zero separately, so each step is split at zero into a positive and a
+ * negative part, each with its own transparent base. The visible parts are grouped by color as in HTML (render/plot.ts):
+ * totals muted, increases accent, decreases the text color, or the highlight and the line color.
+ */
+function waterfallChart(b: Extract<Block, { type: "chart" }>, p: Palette) {
+  const v = b.series[0]!.values;
+  const steps = bridgeSteps(v);
+  const colorOf = (i: number) => (b.highlight !== undefined ? (i === b.highlight ? p.accent : p.line) : steps[i]!.total ? p.muted : v[i]! >= 0 ? p.accent : p.fg);
+  const colors = [...new Set(steps.map((_, i) => colorOf(i)))];
+  const zeros = () => steps.map(() => 0);
+  const basePos = zeros();
+  const baseNeg = zeros();
+  const visible = colors.map(() => ({ pos: zeros(), neg: zeros() }));
+  steps.forEach((st, i) => {
+    const lo = Math.min(st.from, st.to);
+    const hi = Math.max(st.from, st.to);
+    const k = colors.indexOf(colorOf(i));
+    basePos[i] = Math.max(0, lo);
+    visible[k]!.pos[i] = Math.max(0, hi) - Math.max(0, lo);
+    baseNeg[i] = Math.min(0, hi);
+    visible[k]!.neg[i] = Math.min(0, lo) - Math.min(0, hi);
+  });
+  const series = [
+    { name: "base", labels: b.categories, values: basePos },
+    { name: "base below zero", labels: b.categories, values: baseNeg },
+    ...visible.flatMap((x, k) => [
+      { name: `${b.series[0]!.name} ${k + 1}`, labels: b.categories, values: x.pos },
+      { name: `${b.series[0]!.name} ${k + 1} below zero`, labels: b.categories, values: x.neg },
+    ]),
+  ];
+  return { series, colors: ["transparent", "transparent", ...colors.flatMap((c) => [hex(c), hex(c)])] };
+}
+
 function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>, r: Rect, p: Palette, fonts: { body: string; size: number }) {
+  if (b.kind === "waterfall") {
+    const w = waterfallChart(b, p);
+    s.addChart(pptx.ChartType.bar, w.series, {
+      ...pos(r),
+      barDir: "col",
+      barGrouping: "stacked",
+      chartColors: w.colors,
+      showLegend: false,
+      showValue: false,
+      catAxisLabelColor: hex(p.muted),
+      catAxisLabelFontFace: fonts.body,
+      catAxisLabelFontSize: fonts.size,
+      catAxisLineShow: true,
+      catAxisLineColor: hex(p.line),
+      valAxisHidden: !b.axis,
+      valGridLine: b.axis ? { color: hex(p.line), size: 0.5 } : { style: "none" },
+      barGapWidthPct: 60,
+    });
+    return;
+  }
   const data = b.series.map((x) => ({ name: x.name, labels: b.categories, values: x.values }));
   const type = b.kind === "line" ? pptx.ChartType.line : b.kind === "donut" ? pptx.ChartType.doughnut : pptx.ChartType.bar;
   const single = b.series.length === 1;
   s.addChart(type, data, {
     ...pos(r),
     barDir: b.kind === "bar" ? "bar" : "col",
+    ...(b.kind === "stacked" && { barGrouping: "stacked" }),
     chartColors: chartColors(b, p),
-    // One series with a highlight: colors per column, not per series.
-    ...(single && b.highlight !== undefined && b.kind !== "line" && { varyColors: true }),
+    // One series with a highlight: colors per column, not per series. A stacked chart colors by series (highlight has no effect).
+    ...(single && b.highlight !== undefined && b.kind !== "line" && b.kind !== "stacked" && { varyColors: true }),
     showLegend: b.kind === "donut" || !single,
     legendPos: b.kind === "donut" ? "r" : "t",
     legendFontFace: fonts.body,
@@ -48,15 +104,16 @@ function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>
     dataLabelFontFace: fonts.body,
     dataLabelFontSize: fonts.size,
     dataLabelColor: hex(b.kind === "donut" ? p.bg : p.fg),
-    dataLabelPosition: b.kind === "donut" ? "ctr" : "outEnd",
+    // PowerPoint has no outside end position for stacked bars, the values sit inside the segments as in HTML.
+    dataLabelPosition: b.kind === "donut" || b.kind === "stacked" ? "ctr" : "outEnd",
     ...(b.unit && { dataLabelFormatCode: `#,##0.##"${b.unit.replace(/"/g, "")}"` }),
     catAxisLabelColor: hex(p.muted),
     catAxisLabelFontFace: fonts.body,
     catAxisLabelFontSize: fonts.size,
     catAxisLineShow: true,
     catAxisLineColor: hex(p.line),
-    valAxisHidden: true,
-    valGridLine: { style: "none" },
+    valAxisHidden: !b.axis,
+    valGridLine: b.axis ? { color: hex(p.line), size: 0.5 } : { style: "none" },
     barGapWidthPct: 60,
     lineSize: 3,
     lineDataSymbolSize: 8,

@@ -64,21 +64,41 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .chart{flex:1;min-height:0}
 .series-legend{display:flex;gap:var(--sp-md);margin:0 0 var(--sp-md);padding:0;list-style:none;font-size:var(--fs-small);color:var(--muted)}
 .series-legend i,.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:10px;vertical-align:-1px}
-.chart-column{display:flex;align-items:stretch;gap:var(--sp-md);padding-top:calc(var(--fs-small) * 2.4)}
-.chart-column .bar-group{flex:1;display:flex;flex-direction:column;min-width:0}
-.chart-column .bars{flex:1;display:flex;align-items:flex-end;gap:8px;border-bottom:2px solid var(--line)}
-.chart-column .bar-wrap{flex:1;height:100%;display:flex;align-items:flex-end}
-.chart-column .bar{width:100%;position:relative;border-radius:min(var(--radius),10px) min(var(--radius),10px) 0 0;transform-origin:bottom}
-.chart-column .bar-value{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding-bottom:10px;font-size:var(--fs-small);font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
 .bar-label{font-size:var(--fs-small);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chart-column .bar-label{padding-top:var(--sp-sm);text-align:center}
 .is-highlight .bar-label{color:var(--fg);font-weight:600}
+.chart-plot{display:flex;flex-direction:column;padding-top:calc(var(--fs-small) * 2.4)}
+.chart-plot.has-axis{padding-left:calc(var(--fs-small) * 4)}
+.plot{position:relative;flex:1;min-height:0}
+.plot-zero{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--line);transform:translateY(1px)}
+.plot-bar.is-broken::after{content:"";position:absolute;left:-4px;right:-4px;bottom:14%;height:10px;background:var(--bg);transform:skewY(-8deg)}
+.plot-grid{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.6}
+.plot-tick{position:absolute;right:100%;padding-right:var(--sp-sm);transform:translateY(50%);font-size:var(--fs-caption);color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.plot-bar{position:absolute;border-radius:min(var(--radius),8px) min(var(--radius),8px) 0 0}
+.plot-bar.is-down{border-radius:0 0 min(var(--radius),8px) min(var(--radius),8px)}
+.chart-stacked .plot-bar{border-radius:0}
+.plot-bar .bar-value{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding-bottom:8px;font-size:var(--fs-small);font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.plot-bar .bar-value.is-below{bottom:auto;top:100%;padding:8px 0 0}
+.plot-bar.is-highlight .bar-value{color:var(--accent)}
+.bar-inside{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:var(--fs-caption);font-weight:600;font-variant-numeric:tabular-nums}
+.plot-total{position:absolute;text-align:center;padding-bottom:8px;font-size:var(--fs-small);font-weight:600;font-variant-numeric:tabular-nums}
+.plot-link{position:absolute;height:0;border-top:2px dotted var(--muted);opacity:.7}
+.plot-ref{position:absolute;left:0;right:0;height:0;border-top:2px dashed var(--fg);opacity:.55}
+.chart-plot.has-ref{padding-right:calc(var(--fs-caption) * 8)}
+.plot-ref-label{position:absolute;left:100%;padding-left:var(--sp-sm);transform:translateY(50%);font-size:var(--fs-caption);font-weight:600;color:var(--muted);white-space:nowrap}
+.plot-cats{position:relative;height:calc(var(--fs-small) * 2.2)}
+.plot-cats span{position:absolute;top:0;padding-top:var(--sp-sm);text-align:center;font-size:var(--fs-small);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plot-cats .is-highlight{color:var(--fg);font-weight:600}
+.plot-cats .is-estimate{font-style:italic}
 .chart-bar{display:flex;flex-direction:column;justify-content:center;gap:var(--sp-sm);padding-right:calc(var(--fs-small) * 5)}
+.chart-bar.has-negative{padding-left:calc(var(--fs-small) * 5)}
 .chart-bar .bar-group{display:flex;flex-direction:row-reverse;align-items:center;gap:var(--sp-md)}
 .chart-bar .bar-label{width:26%;text-align:right}
-.chart-bar .bars{flex:1;display:flex;flex-direction:column;gap:6px;border-left:2px solid var(--line)}
+.chart-bar .bars{flex:1;position:relative;display:flex;flex-direction:column;gap:6px}
+.chart-bar .bar-zero{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--line)}
 .chart-bar .bar{height:calc(var(--fs-small) * 1.6);position:relative;border-radius:0 min(var(--radius),10px) min(var(--radius),10px) 0;transform-origin:left}
 .chart-bar .bar-value{position:absolute;left:100%;top:50%;transform:translateY(-50%);padding-left:12px;font-size:var(--fs-small);font-weight:600;white-space:nowrap}
+.chart-bar .bar.is-negative{border-radius:min(var(--radius),10px) 0 0 min(var(--radius),10px);transform-origin:right}
+.chart-bar .bar.is-negative .bar-value{left:auto;right:100%;padding:0 12px 0 0}
 .chart-line{display:flex;flex-direction:column;padding:var(--fs-lead) calc(var(--fs-lead) * 4) 0 calc(var(--fs-small) * 2)}
 .line-plot{position:relative;flex:1;min-height:0;border-bottom:2px solid var(--line)}
 .line-plot svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}

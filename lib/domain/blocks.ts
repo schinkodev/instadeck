@@ -51,14 +51,22 @@ export const blockSchema = z.discriminatedUnion("type", [
   }),
   z.strictObject({
     type: z.literal("chart"),
-    kind: z.enum(["column", "bar", "line", "donut"]),
-    categories: z.array(z.string().min(1).max(24)).min(2).max(8).describe("X axis labels (column, line), rows (bar) or segments (donut)"),
+    kind: z
+      .enum(["column", "bar", "line", "donut", "stacked", "waterfall"])
+      .describe("column, bar (horizontal), line, donut (share of a whole, at most 4 segments read well), stacked (columns split into series), waterfall (bridge: first and last categories are totals, the ones between are changes that add up)"),
+    categories: z.array(z.string().min(1).max(24)).min(2).max(10).describe("X axis labels (column, stacked, waterfall, line), rows (bar) or segments (donut)"),
     series: z
       .array(z.strictObject({ name: z.string().min(1).max(30), values: z.array(z.number()) }))
       .min(1)
       .max(3)
       .describe("One value per category. Donut takes exactly one series"),
     unit: z.string().max(6).optional().describe("Shown after values, e.g. %, $M"),
+    estimate: z.number().int().min(0).optional().describe("Index of the first category that is an estimate or plan (IBCS): from there bars are hatched. Name those categories e.g. 2025E"),
+    axis: z.boolean().optional().describe("Show a value axis with gridlines. Only when the audience must read values off the chart, labels on the bars usually suffice (Tufte)"),
+    reference: z
+      .strictObject({ value: z.number(), label: text(24, "What the line marks, e.g. Target, Plan, Average") })
+      .optional()
+      .describe("A horizontal line at a reference value: target, plan or average"),
     highlight: z.number().int().min(0).optional().describe("Index of the category to draw in the accent color, the rest stays muted"),
     caption: text(90, "Source or footnote").optional(),
     step,
@@ -153,7 +161,7 @@ export const BLOCK_INFO: Record<BlockType, BlockInfo> = {
   bullets: { purpose: "Two to five parallel points. Prefer cards or stats when points have a title or a number." },
   stat: { purpose: "One hero number with its meaning. The strongest proof point of the slide.", hero: "count-up" },
   stats: { purpose: "Two to four numbers side by side. Traction, market size, unit economics.", hero: "count-up" },
-  chart: { purpose: "Data that shows a trend or a share. Highlight the one category the slide is about.", hero: "chart-grow" },
+  chart: { purpose: "Data that shows a trend, a share, a composition or a bridge. Highlight the one category the slide is about, state the finding in the heading, name the source in the caption.", hero: "chart-grow" },
   image: { purpose: "Product screenshot, photo or illustration added as an asset." },
   logo: { purpose: "The company logo from the brand kit." },
   logos: { purpose: "Row of customer, partner or press logos. Social proof." },
@@ -191,3 +199,18 @@ export const TEXT_LIMITS = {
   cardText: 110,
 } as const;
 
+
+/**
+ * Levels of a waterfall bridge: the first and the last value are totals standing on zero, every value between is a
+ * change from the running level. One definition for the renderer, the PowerPoint export and validation.
+ */
+export function bridgeSteps(values: readonly number[]): { from: number; to: number; total: boolean }[] {
+  let running = 0;
+  return values.map((x, i) => {
+    const total = i === 0 || i === values.length - 1;
+    const from = total ? 0 : running;
+    const to = total ? x : running + x;
+    running = to;
+    return { from, to, total };
+  });
+}

@@ -365,3 +365,62 @@ describe("story evidence", () => {
     expect(rules(validateDeck(proof, SAMPLE_ASSET_INDEX))).not.toContain("story-evidence");
   });
 });
+
+describe("analytic charts", () => {
+  const chartSlide = (chart: Record<string, unknown>) =>
+    withSlide({ layout: "chart", blocks: { title: { type: "heading", level: "h1", text: "Revenue grew 72 M EUR in 2024" }, chart: { type: "chart", ...chart } as Slide["blocks"][string] } });
+  const chartRules = (chart: Record<string, unknown>) => rules(validateDeck(chartSlide(chart), SAMPLE_ASSET_INDEX)).filter((r) => r.startsWith("chart"));
+  const bridge = { kind: "waterfall", categories: ["2023", "Robotics", "Sensors", "FX", "2024"], series: [{ name: "Revenue", values: [540, 48, 17, -2, 603] }] };
+
+  it("checks that a bridge adds up", () => {
+    expect(chartRules(bridge)).toEqual([]);
+    expect(chartRules({ ...bridge, series: [{ name: "Revenue", values: [540, 48, 17, -2, 612] }] })).toContain("chart-bridge");
+    expect(chartRules({ ...bridge, series: [{ name: "A", values: [1, 2, 3, 4, 10] }, { name: "B", values: [1, 2, 3, 4, 10] }] })).toContain("chart-bridge");
+  });
+
+  it("allows negative values where they make sense, not in parts of a whole", () => {
+    expect(chartRules({ kind: "column", categories: ["2023", "2024"], series: [{ name: "EBIT", values: [-12, 8] }] })).toEqual([]);
+    expect(chartRules({ kind: "stacked", categories: ["Q1", "Q2"], series: [{ name: "A", values: [-1, 2] }] })).toContain("chart-negative");
+    expect(chartRules({ kind: "donut", categories: ["a", "b"], series: [{ name: "A", values: [-1, 2] }] })).toContain("chart-negative");
+  });
+
+  it("warns when a donut has more segments than the eye compares by angle", () => {
+    expect(chartRules({ kind: "donut", categories: ["a", "b", "c", "d", "e"], series: [{ name: "A", values: [1, 2, 3, 4, 5] }] })).toContain("chart-donut");
+  });
+
+  it("keeps estimate, axis and reference to the charts that draw them", () => {
+    expect(chartRules({ kind: "line", categories: ["a", "b"], series: [{ name: "A", values: [1, 2] }], axis: true })).toContain("chart-option");
+    expect(chartRules({ kind: "column", categories: ["a", "b"], series: [{ name: "A", values: [1, 2] }], estimate: 5 })).toContain("chart-option");
+  });
+
+  it("draws horizontal bars left of zero for negative values", () => {
+    const html = renderDeckHtml(chartSlide({ kind: "bar", categories: ["EBIT", "Cash"], series: [{ name: "M EUR", values: [-12, 8] }] }), SAMPLE_ASSETS, "static");
+    // Zero sits at 60% of the scale from -12 to 8: the negative bar ends there, the positive one starts there.
+    expect(html).toContain('class="bar-zero" style="left:60.00%"');
+    expect(html).toContain('class="bar is-negative" data-part="bar" style="margin-left:0.00%;width:60.00%');
+    expect(html).toContain('style="margin-left:60.00%;width:40.00%');
+    expect(html).toContain("chart-bar has-negative");
+  });
+
+  it("keeps the reference line inside a bridge whose axis starts above zero", () => {
+    const html = renderDeckHtml(chartSlide({ ...bridge, reference: { value: 650, label: "Target" } }), SAMPLE_ASSETS, "static");
+    const at = Number(html.match(/class="plot-ref" style="bottom:([\d.-]+)%/)![1]);
+    expect(at).toBeGreaterThanOrEqual(0);
+    expect(at).toBeLessThanOrEqual(100);
+  });
+
+  it("draws negative bars down from zero, the bridge with links and estimates hatched", () => {
+    const html = renderDeckHtml(chartSlide({ ...bridge, estimate: 4, axis: true, reference: { value: 600, label: "Plan" } }), SAMPLE_ASSETS, "static");
+    expect(html).toContain("chart-waterfall");
+    expect(html.match(/class="plot-link"/g)).toHaveLength(4);
+    expect(html).toContain("is-down");
+    expect(html).toContain("transform-origin:top");
+    expect(html).toContain("repeating-linear-gradient");
+    expect(html).toContain("plot-ref-label");
+    expect(html).toContain("+48");
+    // A bridge with small changes against the totals: the axis does not start at zero and the totals carry a break mark (IBCS).
+    expect(html.match(/class="plot-bar[^"]*is-broken/g)).toHaveLength(2);
+    const neg = renderDeckHtml(chartSlide({ kind: "column", categories: ["2023", "2024"], series: [{ name: "EBIT", values: [-12, 8] }] }), SAMPLE_ASSETS, "static");
+    expect(neg).toContain("is-down");
+  });
+});
