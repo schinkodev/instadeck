@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BRIEFS } from "@/scripts/eval/briefs";
-import { CRITERIA, generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, tally, type Criterion, type PairResult, type Verdict } from "@/scripts/eval/core";
+import { BRIEFS, SPARSE_BRIEFS } from "@/scripts/eval/briefs";
+import { CRITERIA, askPrompt, generationPrompt, scoreAsk, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, tally, type Criterion, type PairResult, type Verdict } from "@/scripts/eval/core";
 
 const scores = (n: number) => Object.fromEntries(CRITERIA.map((c) => [c, n])) as Record<Criterion, number>;
 const verdict = (winner: Verdict["winner"], first = 3, second = 3): Verdict => ({ scores: { first: scores(first), second: scores(second) }, winner, reason: "r" });
@@ -17,6 +17,26 @@ describe("eval briefs", () => {
     const cs = BRIEFS.find((b) => b.language === "cs")!;
     expect(generationPrompt(cs)).toContain("Czech");
     expect(generationPrompt(cs)).toContain("do not ask questions");
+  });
+});
+
+describe("asking eval", () => {
+  const asks = "Before I build:\n1. Will you present this live or send it as a pre-read?\n2. What is the big idea: what should the audience take away?\n3. How long is the slot?";
+  const storyline = ["1. Hook: Margins are thinning", "2. Problem: Cost drift", "3. Evidence: Q3 bridge", "4. Risk: Fuel prices", "5. Ask: Approve budget"].join("\n");
+
+  it("keeps sparse briefs out of the quality eval and lets the model ask", () => {
+    expect(BRIEFS.some((b) => SPARSE_BRIEFS.some((s) => s.id === b.id))).toBe(false);
+    expect(askPrompt(SPARSE_BRIEFS[0]!)).not.toContain("do not ask questions");
+  });
+
+  it("passes when the model asks first and shows the storyline before building", () => {
+    expect(scoreAsk(asks, storyline, false)).toMatchObject({ askedDelivery: true, askedBigIdea: true, questions: 3, showedStoryline: true, pass: true });
+  });
+
+  it("fails when the model builds early, skips delivery or skips the storyline", () => {
+    expect(scoreAsk(asks, storyline, true).pass).toBe(false);
+    expect(scoreAsk("What is the topic?", storyline, false).pass).toBe(false);
+    expect(scoreAsk(asks, "I will build it now.", false).pass).toBe(false);
   });
 });
 

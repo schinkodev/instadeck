@@ -5,6 +5,9 @@
  *       For every brief the model creates a deck through InstaDeck from THIS checkout, and the slide PNGs,
  *       findings and cost are saved to out/eval/<label>/<brief>/. Compare versions by generating from different branches
  *       (worktrees) under different labels: --repo points at the checkout whose server is used.
+ *   npm run eval -- ask <label> [--runs n] [--model name] [--repo path]
+ *       Sparse briefs: does the model ask about delivery and the big idea instead of building, and after "use your
+ *       defaults" show the storyline before building? Two replies per run, scored by content, results in out/eval/<label>/ask.json.
  *   npm run eval -- compare <labelA> <labelB> [--brief id] [--model name]
  *       A vision model judges pairs of decks by a rubric, each twice with the order swapped.
  *       The report is in out/eval/report-<A>-vs-<B>.md. A person decides the ambiguous pairs.
@@ -13,8 +16,8 @@ import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { BRIEFS } from "./briefs";
-import { generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, type DeckRef, type DeckStats, type PairResult, type Verdict } from "./core";
+import { BRIEFS, SPARSE_BRIEFS } from "./briefs";
+import { ASK_REPLY, askPrompt, generationPrompt, scoreAsk, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, type DeckRef, type DeckStats, type PairResult, type Verdict } from "./core";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const OUT = join(ROOT, "out/eval");
@@ -29,6 +32,7 @@ interface ClaudeResult {
   is_error: boolean;
   total_cost_usd?: number;
   num_turns?: number;
+  session_id?: string;
 }
 
 function claude(args: string[], cwd: string, timeoutMs: number): Promise<ClaudeResult> {
@@ -168,10 +172,43 @@ async function compare(a: string, b: string) {
   console.log(report);
 }
 
+/** Asking eval: round one must ask and not build, round two (after accepting the defaults) must show the storyline and not build yet. */
+async function ask(label: string) {
+  const runs = Number(flag("runs") ?? 3);
+  const model = flag("model");
+  const results: unknown[] = [];
+  for (const brief of SPARSE_BRIEFS) {
+    for (let i = 1; i <= runs; i++) {
+      const dir = join(OUT, label, "ask", `${brief.id}-${i}`);
+      const home = join(dir, "home");
+      mkdirSync(home, { recursive: true });
+      const config = join(dir, "mcp.json");
+      writeFileSync(config, JSON.stringify({ mcpServers: { instadeck: { command: join(REPO, "node_modules/.bin/tsx"), args: ["--tsconfig", join(REPO, "tsconfig.json"), join(REPO, "server/stdio.ts")], env: { INSTADECK_HOME: home } } } }));
+      const base = ["--mcp-config", config, "--strict-mcp-config", "--allowedTools", "mcp__instadeck", "--max-turns", "30", ...(model ? ["--model", model] : [])];
+      const work = mkdtempSync(join(tmpdir(), "instadeck-eval-"));
+      console.error(`[${label}] ${brief.id} #${i}: round one`);
+      const one = await claude([...base, askPrompt(brief)], work, GEN_TIMEOUT_MS);
+      if (!one.session_id) throw new Error("claude gave no session_id, cannot continue the conversation");
+      console.error(`[${label}] ${brief.id} #${i}: round two`);
+      const two = await claude([...base, "--resume", one.session_id, ASK_REPLY], work, GEN_TIMEOUT_MS);
+      const deckCreated = existsSync(join(home, "decks")) ? readdirSync(join(home, "decks")).length > 0 : readdirSync(home).length > 0;
+      const score = scoreAsk(one.result ?? "", two.result ?? "", deckCreated);
+      writeFileSync(join(dir, "replies.json"), JSON.stringify({ first: one.result, second: two.result, score }, null, 2));
+      results.push({ briefId: brief.id, run: i, ...score, costUsd: (one.total_cost_usd ?? 0) + (two.total_cost_usd ?? 0) });
+      console.error(`[${label}] ${brief.id} #${i}: ${score.pass ? "pass" : "fail"} ${JSON.stringify(score)}`);
+    }
+  }
+  mkdirSync(join(OUT, label), { recursive: true });
+  writeFileSync(join(OUT, label, "ask.json"), JSON.stringify(results, null, 2));
+  const passed = (results as { pass: boolean }[]).filter((r) => r.pass).length;
+  console.log(`${label}: ${passed} of ${results.length} runs asked first and showed the storyline before building`);
+}
+
 const [cmd, x, y] = process.argv.slice(2);
-if (cmd === "generate" && x) await generate(x);
+if (cmd === "ask" && x) await ask(x);
+else if (cmd === "generate" && x) await generate(x);
 else if (cmd === "compare" && x && y) await compare(x, y);
 else {
-  console.error("Usage: npm run eval -- generate <label> | compare <labelA> <labelB>  [--brief id] [--model name]");
+  console.error("Usage: npm run eval -- generate <label> | ask <label> | compare <labelA> <labelB>  [--brief id] [--model name]");
   process.exit(1);
 }

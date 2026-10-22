@@ -23,6 +23,42 @@ export function generationPrompt(b: EvalBrief): string {
 Brief: ${b.text}`;
 }
 
+/** Prompt of the asking eval: unlike generationPrompt the model may and should ask before building. */
+export function askPrompt(b: EvalBrief): string {
+  const lang = b.language === "cs" ? "Czech" : "English";
+  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available. Follow the InstaDeck workflow. If it tells you to ask the user or to show something before building, do that in your reply and stop there: do not build until the user answers.
+
+Brief: ${b.text}`;
+}
+
+/** Answer to the first round of questions: accept every suggested default. */
+export const ASK_REPLY = "Yes, use your suggested defaults for everything.";
+
+export interface AskResult {
+  /** The model created a deck before the user could confirm anything. */
+  builtEarly: boolean;
+  /** Round one: the reply asks about live versus pre-read delivery. */
+  askedDelivery: boolean;
+  /** Round one: the reply asks about the big idea, the takeaway or the audience action. */
+  askedBigIdea: boolean;
+  /** Round one: at most five questions. */
+  questions: number;
+  /** Round two: the reply lists at least five slides (headlines with beats) before building. */
+  showedStoryline: boolean;
+  pass: boolean;
+}
+
+const LISTED = /^\s*(?:\d+[.)]|[-*\u2022])\s+\S/;
+
+/** Judges the two replies of the asking eval by what they contain. Deterministic, so it can be tested. */
+export function scoreAsk(first: string, second: string, deckCreated: boolean): AskResult {
+  const askedDelivery = /\b(?:live|pre-?read|read (?:alone|beforehand|in advance)|in person)\b/i.test(first);
+  const askedBigIdea = /\b(?:big idea|take ?away|one sentence|should (?:do|believe|decide))\b/i.test(first);
+  const questions = first.split("\n").filter((l) => LISTED.test(l) && l.includes("?")).length || (first.match(/\?/g) ?? []).length;
+  const showedStoryline = second.split("\n").filter((l) => LISTED.test(l)).length >= 5;
+  return { builtEarly: deckCreated, askedDelivery, askedBigIdea, questions, showedStoryline, pass: !deckCreated && askedDelivery && askedBigIdea && questions <= 5 && showedStoryline };
+}
+
 export interface DeckRef {
   label: string;
   briefId: string;
