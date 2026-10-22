@@ -255,3 +255,31 @@ describe("brand colors", () => {
     expect(isNeutral("#808080")).toBe(true);
   });
 });
+
+describe("principle rules", () => {
+  it("flags a topic label as heading on a content slide, not a sentence or a title", () => {
+    const label = withSlide({ layout: "points", blocks: { title: { type: "heading", level: "h1", text: "Náš tým" }, body: { type: "bullets", items: ["a", "b"] } } });
+    expect(rules(validateDeck(label, SAMPLE_ASSET_INDEX), "warning")).toContain("heading-label");
+    const sentence = withSlide({ layout: "points", blocks: { title: { type: "heading", level: "h1", text: "Tým doručil první verzi za šest týdnů" }, body: { type: "bullets", items: ["a", "b"] } } });
+    expect(rules(validateDeck(sentence, SAMPLE_ASSET_INDEX))).not.toContain("heading-label");
+    const number = withSlide({ layout: "points", blocks: { title: { type: "heading", level: "h1", text: "Růst 3x" }, body: { type: "bullets", items: ["a", "b"] } } });
+    expect(rules(validateDeck(number, SAMPLE_ASSET_INDEX))).not.toContain("heading-label");
+    const title = withSlide({ layout: "statement", blocks: { statement: { type: "heading", level: "display", text: "Vize" } } });
+    expect(rules(validateDeck(title, SAMPLE_ASSET_INDEX))).not.toContain("heading-label");
+  });
+
+  it("counts highlights per slide", () => {
+    const many = withSlide({ layout: "points", blocks: { title: { type: "heading", level: "h1", text: "==One== sentence with ==two== and ==three== highlights" }, body: { type: "bullets", items: ["a", "b"] } } });
+    expect(rules(validateDeck(many, SAMPLE_ASSET_INDEX), "warning")).toContain("highlight-count");
+    const two = withSlide({ layout: "points", blocks: { title: { type: "heading", level: "h1", text: "==One== sentence with ==two== highlights" }, body: { type: "bullets", items: ["a", "b"] } } });
+    expect(rules(validateDeck(two, SAMPLE_ASSET_INDEX))).not.toContain("highlight-count");
+  });
+
+  it("checks secondary text on filled cards", () => {
+    const d = sampleDeck();
+    d.design.shape.cards = "filled";
+    d.design.colors = { ...d.design.colors, muted: "#C8CCD8", surface: "#EEF0F5" };
+    const f = validateDeck(d, SAMPLE_ASSET_INDEX).filter((x) => x.rule === "contrast" && x.message.includes("on cards"));
+    expect(f.length).toBeGreaterThan(0);
+  });
+});

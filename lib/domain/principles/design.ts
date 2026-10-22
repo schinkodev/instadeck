@@ -3,7 +3,9 @@
  * Znalostní báze pro rozhodování o vizuálním systému, ne katalog presetů.
  */
 
-export interface DesignPrinciple {
+import type { Enforced } from './enforcement';
+
+export interface DesignPrinciple extends Enforced {
   id: string;
   name: string;
   author: string;
@@ -24,6 +26,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Use at most two typefaces; create hierarchy through size and weight.',
     why: 'More fonts fragment visual identity and force the eye to re-calibrate on every slide.',
     slideApplication: 'One heading font, one body font. Hierarchy via size/weight, never via adding a third font.',
+    enforced: [{ layer: 1, by: 'DeckDesign.fonts has one heading face and one body face' }],
     contraindications: 'Decks that deliberately showcase typography (type specimen presentations).',
   },
   {
@@ -34,6 +37,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Derive all type sizes from a single ratio applied to a base size.',
     why: 'Consistent mathematical relationship between sizes creates visual rhythm the eye recognizes subconsciously.',
     slideApplication: 'Pick a base (e.g. 24px) and ratio (e.g. 1.333). Every size is base * ratio^n. No ad-hoc values.',
+    enforced: [{ layer: 2, by: 'design.type.scale and base derive every size (deriveTokens)' }],
   },
   {
     id: 'meaningful-contrast',
@@ -43,6 +47,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'If two elements serve different functions, make the visual difference obvious.',
     why: 'Subtle differences look like mistakes. Readers need instant signals about information hierarchy.',
     slideApplication: 'Heading must be visibly larger than body. Stat numbers must dwarf their labels. No 2px differences.',
+    enforced: [{ layer: 2, by: 'the type scale ratio separates heading, lead and body' }],
+    gap: "Measure the heading to body size ratio per slide in the browser",
   },
   {
     id: 'data-ink-ratio',
@@ -52,6 +58,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Maximize the share of ink used to present data; erase non-data ink.',
     why: 'Every non-informational mark competes with the actual message for the viewer\'s attention.',
     slideApplication: 'No decorative bullets, no ornamental rules, no background textures unless they carry meaning.',
+    enforced: [],
+    gap: "Charts have no axes or grid yet. New chart types must justify every axis, grid line and label",
   },
   {
     id: 'flush-left-ragged-right',
@@ -61,6 +69,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Set text flush-left, ragged-right. The eye has a consistent return point.',
     why: 'Centered text forces the eye to hunt for each new line start. Left-aligned text is faster to scan.',
     slideApplication: 'Body text, bullets, and descriptions are always left-aligned. Center only single-line display text.',
+    enforced: [{ layer: 2, by: 'the renderer left-aligns text and centers only display text' }],
     contraindications: 'Title slides or single-line callouts where centering creates symmetry.',
   },
   {
@@ -71,6 +80,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: '45-75 characters per line for comfortable reading.',
     why: 'Beyond 75 characters, readers lose their place on the return sweep.',
     slideApplication: 'Body text blocks should not span the full 1920px canvas. Use columns or max-width to constrain.',
+    enforced: [{ layer: 2, by: '.text has max-width 36em' }],
+    gap: "Bullets and cards are not measured",
   },
 
   // Color
@@ -82,6 +93,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: '60% dominant, 30% secondary, 10% accent. Unequal distribution creates hierarchy.',
     why: 'Equal distribution of colors produces visual noise. Dominance creates calm; accent creates focus.',
     slideApplication: 'Background is 60%, text/surface is 30%, accent appears only on key numbers or CTAs.',
+    enforced: [{ layer: 3, by: 'tone-accent: at most two accent slides' }],
+    gap: "The share of accent area per slide is not measured",
   },
   {
     id: 'seven-contrasts',
@@ -91,6 +104,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Cold-warm, light-dark, complementary: each contrast type produces a different emotional signal.',
     why: 'Color relationships are not arbitrary. A warm accent on a cool background signals energy differently than analogous harmony.',
     slideApplication: 'Choose a contrast strategy that matches the deck\'s emotional intent, then apply it consistently.',
+    enforced: [{ layer: 4, by: 'judged by the model' }],
   },
   {
     id: 'simultaneous-contrast',
@@ -100,6 +114,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Test colors on their actual background, not in isolation.',
     why: 'The same color looks different depending on what surrounds it. Swatches lie.',
     slideApplication: 'Verify accent legibility on bg, muted legibility on surface. Never assume from hex alone.',
+    enforced: [{ layer: 3, by: 'contrast: text, secondary text and accent on bg, text and secondary text on cards' }],
   },
   {
     id: 'limited-active-palette',
@@ -109,6 +124,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: '3-5 functional colors. Fewer colors produce stronger recognition.',
     why: 'Each additional color dilutes the system. Restraint forces intentional use.',
     slideApplication: '6 functional slots: bg, fg, accent, muted, accent2, surface. No additional colors.',
+    enforced: [{ layer: 1, by: 'six color slots in the palette schema' }],
   },
   {
     id: 'honest-expression',
@@ -118,6 +134,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Styling must not exaggerate importance.',
     why: 'When everything is highlighted, nothing is. Visual inflation erodes trust.',
     slideApplication: 'Accent color on featured numbers only. No gratuitous color on labels, backgrounds, or borders.',
+    enforced: [{ layer: 2, by: 'the renderer uses accent on stat values, highlights and chart focus' }, { layer: 3, by: 'highlight-count: at most two highlights per slide' }],
   },
 
   // Layout & Space
@@ -129,6 +146,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Place all elements on a modular grid for ~20% faster visual processing.',
     why: 'Grid alignment reduces cognitive load. The eye can predict where the next element will be.',
     slideApplication: 'Use CSS grid or flex with consistent column counts. All elements share alignment edges.',
+    enforced: [{ layer: 2, by: 'layouts place zones on one grid' }],
+    gap: "Distinct left edges per slide are not measured",
   },
   {
     id: 'proximity-relationship',
@@ -138,6 +157,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Close things belong together. Gap between groups must exceed gap within groups.',
     why: 'Spatial grouping is the strongest pre-attentive signal. It works before reading begins.',
     slideApplication: 'Item gap (within a stat group) < section gap (between groups) < heading-to-content gap.',
+    enforced: [{ layer: 2, by: 'spacing tokens sp-xs to sp-lg' }],
   },
   {
     id: 'active-white-space',
@@ -147,6 +167,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: '40-50% empty space signals authority, not waste.',
     why: 'Crowded slides signal desperation. Generous space signals confidence and editorial control.',
     slideApplication: 'Content area uses 50-60% of the canvas. Padding is generous. Never fill all available space.',
+    enforced: [],
+    gap: "The share of the canvas that content covers is not measured",
   },
   {
     id: 'figure-ground',
@@ -156,6 +178,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Foreground and background must be instantly distinguishable.',
     why: 'Ambiguous figure-ground relationships cause cognitive stalling. Clarity is speed.',
     slideApplication: 'High contrast between bg and fg. Surface cards must be subtly but clearly distinct from bg.',
+    enforced: [{ layer: 3, by: 'contrast: text on bg and on cards' }],
+    gap: "The distinction of surface from bg is not checked",
   },
   {
     id: 'alignment',
@@ -165,6 +189,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Every element shares a common edge or axis. One misalignment reads as carelessness.',
     why: 'Alignment creates invisible lines that connect elements across the slide, producing unity.',
     slideApplication: 'All text left edges align. All stat numbers align. Grid items share baseline and top edges.',
+    enforced: [{ layer: 2, by: 'layouts share edges and baselines' }],
   },
   {
     id: 'common-region',
@@ -174,6 +199,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'A shared enclosed area groups elements without labels.',
     why: 'Cards and containers create grouping that is faster to parse than headers or dividers.',
     slideApplication: 'Use surface-colored cards to group related content. No need for "Section:" labels.',
+    enforced: [{ layer: 2, by: 'cards group content on a surface' }],
   },
 
   // Hierarchy
@@ -185,6 +211,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'One dominant element per slide, everything else subordinate.',
     why: 'Multiple competing focal points split attention. A single hero element anchors the message.',
     slideApplication: 'Title slide: one big number or statement. Stats slide: the key metric is largest. Never equal sizing.',
+    enforced: [],
+    gap: "Nothing checks that one element dominates the slide",
   },
   {
     id: 'repetition-unity',
@@ -194,6 +222,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Same treatment for same function across all slides.',
     why: 'Inconsistency forces re-learning on each slide. Repetition lets the audience predict structure.',
     slideApplication: 'Every heading is the same size/weight/position. Every stat renders identically. No one-off styling.',
+    enforced: [{ layer: 2, by: 'the renderer styles each block type once' }],
   },
   {
     id: 'less-but-better',
@@ -203,6 +232,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'One idea per slide. Remove everything non-communicative.',
     why: 'Slides are not documents. Each slide is a single beat in a narrative.',
     slideApplication: 'Max 3-4 items per slide. If it needs more, split into two slides.',
+    enforced: [{ layer: 1, by: 'item limits in the block schemas' }, { layer: 3, by: 'text-length' }],
+    gap: "The number of blocks per slide is not capped",
   },
   {
     id: 'gutenberg-diagram',
@@ -212,6 +243,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Eye enters top-left, exits bottom-right. Place key info in the terminal area.',
     why: 'Natural reading gravity moves diagonally. Top-left gets first attention, bottom-right gets lasting impression.',
     slideApplication: 'Heading at top-left. CTA or key takeaway near bottom-right. Avoid critical content in weak corners.',
+    enforced: [{ layer: 4, by: 'judged by the model' }],
     contraindications: 'RTL languages where the flow is reversed.',
   },
 
@@ -224,6 +256,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Same element means the same thing everywhere in the system.',
     why: 'When accent color means "key metric" on slide 3 but "background" on slide 7, the system breaks.',
     slideApplication: 'Each CSS custom property has one semantic role. --deck-accent is always the emphasis color.',
+    enforced: [{ layer: 2, by: 'each token has one role' }],
   },
   {
     id: 'smallest-effective-difference',
@@ -233,6 +266,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Make distinctions as subtle as possible while still clear.',
     why: 'Loud distinctions compete with the content. Quiet distinctions serve it.',
     slideApplication: 'Surface is only slightly different from bg. Muted is clearly readable but not competing with fg.',
+    enforced: [{ layer: 2, by: 'inverse and accent tones derive surface by mixing fg and bg' }],
   },
   {
     id: 'form-follows-function',
@@ -242,6 +276,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Every visual decision serves communication, not decoration.',
     why: 'Decoration without function is noise. It distracts and slows comprehension.',
     slideApplication: 'No gradient backgrounds, no decorative borders, no drop shadows unless they create depth hierarchy.',
+    enforced: [],
+    gap: "Backgrounds arrive with V008. Define when a background is functional before adding them",
   },
   {
     id: 'signal-color-discipline',
@@ -251,6 +287,7 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Accent color appears only where attention is needed, nowhere else.',
     why: 'When accent appears everywhere, it loses its power to direct attention.',
     slideApplication: 'Accent on stat numbers, CTA buttons, key chart segments. Never on borders, backgrounds, or labels.',
+    enforced: [{ layer: 2, by: 'the renderer uses accent on stat values, highlights and chart focus' }, { layer: 3, by: 'highlight-count: at most two highlights per slide' }],
   },
   {
     id: 'cognitive-load',
@@ -260,6 +297,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Working memory holds ~4 items. Cap content per slide accordingly.',
     why: 'Exceeding working memory capacity causes information to be dropped, not absorbed.',
     slideApplication: 'Max 4 stats, 4 bullet points, 4 columns per slide. If more exists, use multiple slides.',
+    enforced: [{ layer: 1, by: 'stats takes 2 to 4 items, bullets at most 5' }],
+    gap: "Cards and blocks per slide are not capped",
   },
   {
     id: 'signal-to-noise',
@@ -269,5 +308,6 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Every non-informational element competes with signal for attention.',
     why: 'Noise is cumulative. Each decorative element marginally degrades the message.',
     slideApplication: 'No decorative rules, no ornamental corners, no background patterns, no bullet characters.',
+    enforced: [{ layer: 2, by: 'the renderer has no decorative elements' }],
   },
 ];

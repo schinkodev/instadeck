@@ -27,6 +27,8 @@ import { motionUsage, sharedKeys, slideEntrance, slideTransition, zoneEntrances 
 import { slideSteps } from "../steps";
 import { plain } from "../text";
 
+const MAX_HIGHLIGHTS = 2;
+
 export type Severity = "error" | "warning" | "info";
 
 export interface Finding {
@@ -100,6 +102,47 @@ function checkLength(block: Block, push: Push, zone: string) {
   }
 }
 
+function blockTexts(block: Block): string[] {
+  switch (block.type) {
+    case "heading":
+    case "text":
+    case "quote":
+    case "cta":
+      return [block.text];
+    case "bullets":
+      return block.items;
+    case "cards":
+      return block.items.flatMap((c) => [c.title, c.text]);
+    default:
+      return [];
+  }
+}
+
+/** Layouty, jejichž nadpis nese závěr. Titulní, kapitolové, výrokové a závěrečné slidy nadpis jako závěr nemají. */
+const NO_TAKEAWAY_LAYOUTS = new Set(["title", "title-image", "section", "statement", "image-full", "quote", "closing"]);
+const CJK = /[\u3040-\u30ff\u3400-\u9fff]/;
+
+/**
+ * Assertion-evidence (Alley): nadpis je tvrzení, ne štítek. Jedno nebo dvě slova bez čísla ("Tým", "Náš trh")
+ * jsou téma, ne závěr. Čínština a japonština se slovy nedělí, tam se pravidlo nepoužije.
+ */
+function checkHeadingLabel(slide: Slide, push: Push) {
+  if (NO_TAKEAWAY_LAYOUTS.has(slide.layout)) return;
+  for (const [zone, block] of Object.entries(slide.blocks)) {
+    if (block.type !== "heading") continue;
+    const text = plain(block.text).trim();
+    if (CJK.test(text) || /\d/.test(text)) continue;
+    const words = text.split(/\s+/).filter(Boolean).length;
+    if (words <= 2) push("warning", "heading-label", `Heading "${text}" is a topic label. State the takeaway as a sentence, the body proves it`, zone);
+  }
+}
+
+/** Signální barva (Swiss, Rams): zvýraznění je na slidu vzácné, jinak přestane vést oko. */
+function checkHighlightCount(slide: Slide, push: Push) {
+  const count = Object.values(slide.blocks).flatMap(blockTexts).reduce((n, t) => n + (t.match(/==[^=]+==/g)?.length ?? 0), 0);
+  if (count > MAX_HIGHLIGHTS) push("warning", "highlight-count", `${count} highlights on one slide, at most ${MAX_HIGHLIGHTS} keep the accent a signal`);
+}
+
 /**
  * Čas do čitelnosti: bloky vstupu slidu (bez kroku) nastupují v pořadí zón s rozestupem,
  * slide jde číst, až poslední z nich stojí.
@@ -161,6 +204,8 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
     if (!slide.blocks[zone]) push("error", "motion-zone", `motion.zones names "${zone}", which has no block on this slide`, zone);
   }
   checkReadable(slide, deck, push);
+  checkHeadingLabel(slide, push);
+  checkHighlightCount(slide, push);
   return out;
 }
 
@@ -197,7 +242,13 @@ function checkContrast(deck: Deck, push: Push) {
     if (muted < CONTRAST.largeText) pair(p.muted, p.bg, CONTRAST.largeText, "error", "secondary text on background");
     else pair(p.muted, p.bg, CONTRAST.text, "warning", "secondary text on background");
     pair(p.accent, p.bg, CONTRAST.largeText, "error", "accent on background");
-    if (tokens.cards === "filled") pair(p.fg, p.surface, CONTRAST.text, "error", "text on cards");
+    if (tokens.cards === "filled") {
+      pair(p.fg, p.surface, CONTRAST.text, "error", "text on cards");
+      // Text karet je sekundární (card-text), takže platí stejné prahy jako pro muted na pozadí.
+      const onCard = contrastRatio(p.muted, p.surface);
+      if (onCard < CONTRAST.largeText) pair(p.muted, p.surface, CONTRAST.largeText, "error", "secondary text on cards");
+      else pair(p.muted, p.surface, CONTRAST.text, "warning", "secondary text on cards");
+    }
   }
 }
 

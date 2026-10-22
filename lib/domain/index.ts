@@ -10,6 +10,7 @@ export * from "./deck";
 export * from "./brand";
 export * from "./examples";
 export * from "./pitch";
+export * from "./principles/enforcement";
 export * from "./principles/design";
 export * from "./principles/storytelling";
 export * from "./principles/motion";
