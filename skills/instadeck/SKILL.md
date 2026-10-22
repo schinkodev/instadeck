@@ -27,7 +27,7 @@ You decide the story, content, structure and design. InstaDeck renders, validate
 - Close with a callback to the opening hook.
 - 10 to 13 slides for a first meeting.
 - Pick one frame for the audience and goal and set brief.frame. Give every slide its beat. The frame decides the order, the beats decide the content.
-- Before building, check every beat you plan against the brief. When a beat needs evidence the user has not given (askUser), ask the user in one message: at most five questions, the most important first, each with a suggested default they can accept. Never invent numbers, names or quotes and never put a placeholder on a slide. A beat without its evidence is left out.
+- Before building, check every beat you plan against the brief. When a beat needs evidence the user has not given (askUser), ask the user in one message: at most five questions, the most important first, each with a suggested default they can accept. Never invent numbers, names or quotes and never put a placeholder on a slide. A beat without its evidence is left out. Ask for visual material in the same message, as one question: a logo, screenshots, photos. The default answer is no images, a typographic deck whose title and chapters use a brand background.
 - Open with the hook and end with the ask or the decision. The last slide calls back to the hook.
 
 Narrative frames (`brief.frame`):

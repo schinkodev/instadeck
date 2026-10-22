@@ -123,6 +123,8 @@ const design = () => ({
   limits: { minFontPx: MIN_FONT_PX, maxPx: MAX_PX },
   density: Object.keys(DENSITY),
   cards: "filled (surface background), outline (thin border) or flat (top rule only).",
+  background:
+    "A slide may have background { type: brand, visual }: numeral (the chapter number set very large), field (a color field across part of the slide) or geometry (a circle and a square from the accent). It is drawn from the palette of the slide, so a deck without photos looks deliberately typographic. Use it on the title and on chapter openers, not on every slide: a background either marks a moment or stays quiet. Text on it must keep its contrast, which is checked. Full bleed layouts hide it.",
 });
 
 export function designGuide(sections: readonly GuideSection[] = ["workflow", "layouts", "blocks", "motion", "design", "schools", "pitch"], mode: Mode = "local") {

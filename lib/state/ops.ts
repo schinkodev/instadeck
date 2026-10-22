@@ -65,8 +65,11 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
           if (block === null) delete blocks[zone];
           else blocks[zone] = structuredClone(block);
         }
+        const { background: _drop, ...rest } = s;
+        const background = op.background === undefined ? s.background : (op.background ?? undefined);
         deck.slides[at] = {
-          ...s,
+          ...rest,
+          ...(background && { background }),
           ...(op.layout !== undefined && { layout: op.layout }),
           ...(op.intent !== undefined && { intent: op.intent }),
           ...(op.beat !== undefined && { beat: op.beat }),

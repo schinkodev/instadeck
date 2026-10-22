@@ -211,6 +211,37 @@ describe("motion language", () => {
     expect(validateDeck(d, SAMPLE_ASSET_INDEX).find((f) => f.rule === "motion-duration")!.message).toContain("jump");
   });
 
+  it("draws a brand background from the palette and numbers the chapters", () => {
+    const d = sampleDeck();
+    d.slides[0]!.background = { type: "brand", visual: "numeral" };
+    d.slides[2]!.background = { type: "brand", visual: "numeral" };
+    d.slides[3]!.background = { type: "brand", visual: "geometry" };
+    d.slides[4]!.background = { type: "brand", visual: "field" };
+    const html = renderDeckHtml(d, SAMPLE_ASSETS, "static");
+    expect(html.match(/class="brand-visual brand-numeral"/g)).toHaveLength(2);
+    expect(html).toContain(">01<");
+    expect(html).toContain(">02<");
+    expect(html).toContain("brand-geometry");
+    expect(html).toContain("brand-field");
+    expect(html).toContain("has-brand-visual");
+    // The same deck without backgrounds draws none.
+    expect(renderDeckHtml(sampleDeck(), SAMPLE_ASSETS, "static")).not.toContain('class="brand-visual');
+  });
+
+  it("keeps text legible on a brand background and warns where the image hides it", () => {
+    const d = sampleDeck();
+    d.slides[0]!.background = { type: "brand", visual: "field" };
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX))).not.toContain("background-contrast");
+    // A foreground close to the accent cannot stay legible on a tint of the accent.
+    d.design.colors.fg = d.design.colors.accent;
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX))).toContain("background-contrast");
+
+    const bleed = sampleDeck();
+    const at = bleed.slides.findIndex((s) => s.layout === "image-full");
+    bleed.slides[at]!.background = { type: "brand", visual: "geometry" };
+    expect(validateDeck(bleed, SAMPLE_ASSET_INDEX).find((f) => f.rule === "background-layout")?.slideId).toBe(bleed.slides[at]!.id);
+  });
+
   it("keeps still decks still and shared transitions meaningful", () => {
     const d = sampleDeck();
     d.motion.intensity = "still";

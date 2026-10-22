@@ -34,11 +34,25 @@ export type Brief = z.infer<typeof briefSchema>;
 /** Brief for create_deck: the concept is required, the model decides it before choosing colors and fonts. */
 export const createBriefSchema = briefSchema.extend({ concept: conceptSchema });
 
+/**
+ * Background of a slide (V008, the image layer). Without assets a deck has no visual at all, so the brand can draw one
+ * from its own tokens: deterministic, no stock and no generated images.
+ */
+export const BRAND_VISUALS = ["numeral", "field", "geometry"] as const;
+export const backgroundSchema = z
+  .strictObject({
+    type: z.literal("brand"),
+    visual: z.enum(BRAND_VISUALS).describe("numeral = the chapter number set very large, field = a color field across part of the slide, geometry = circle and square from the accent"),
+  })
+  .describe("A visual drawn from the brand colors behind the content. Use it for the title and the chapter openers, not on every slide");
+export type Background = z.infer<typeof backgroundSchema>;
+
 export const slideInputSchema = z.strictObject({
   layout: z.enum(LAYOUT_IDS).describe("Layout id from instadeck://layouts"),
   intent: z.string().min(1).max(160).describe("The one thing this slide must communicate, as a sentence. Not shown on the slide"),
   beat: z.enum(BEAT_IDS).optional().describe("The story beat this slide carries (section pitch, beats): hook, problem, traction, ask..."),
   tone: z.enum(TONES).optional().describe("default, inverse (dark on light swapped) or accent (accent colored background, for one or two key moments)"),
+  background: backgroundSchema.optional(),
   blocks: z.record(z.string(), blockSchema).describe("Block per zone of the layout, keyed by zone name"),
   motion: slideMotionSchema.optional(),
   notes: z.string().max(1200).optional().describe("Speaker notes"),
@@ -84,6 +98,7 @@ export const opSchema = z.discriminatedUnion("op", [
     intent: slideInputSchema.shape.intent.optional(),
     beat: slideInputSchema.shape.beat,
     tone: slideInputSchema.shape.tone,
+    background: backgroundSchema.nullable().optional().describe("null removes the background"),
     blocks: z.record(z.string(), blockSchema.nullable()).optional().describe("Zones to set. null removes the block from the zone. Unlisted zones stay"),
     motion: slideMotionSchema.optional(),
     notes: z.string().max(1200).optional(),

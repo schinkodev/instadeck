@@ -5,6 +5,7 @@
 import { HERO_PRIORITY, getLayout, type Deck, type Slide, type Tokens } from "@/lib/domain";
 import { esc } from "../text";
 import { sharedKeys, slideEntrance, slideTransition } from "../motion";
+import { renderBrandVisual } from "./brand-visual";
 import { renderBlock, type AssetData, type RenderContext } from "./blocks";
 
 export interface SlideRenderInput {
@@ -57,8 +58,9 @@ export function renderSlide(slide: Slide, index: number, input: SlideRenderInput
     })
     .join("");
 
+  const visual = slide.background ? renderBrandVisual(slide.background, input.deck, slide, index, ctx.palette) : "";
   const grid = `grid-template-areas:${layout.grid.areas.map((a) => `'${a}'`).join(" ")};grid-template-columns:${layout.grid.columns};grid-template-rows:${layout.grid.rows}`;
-  return `<section class="slide tone-${tone} layout-${layout.id}${bleed ? " has-bleed" : ""}" id="slide-${index + 1}" data-slide-id="${esc(slide.id)}" data-index="${index}" data-entrance="${esc(entrance)}" data-transition="${esc(transition)}">
-${bleed}<div class="grid" style="${grid}">${zones}</div>
+  return `<section class="slide tone-${tone} layout-${layout.id}${bleed ? " has-bleed" : ""}${visual ? " has-brand-visual" : ""}" id="slide-${index + 1}" data-slide-id="${esc(slide.id)}" data-index="${index}" data-entrance="${esc(entrance)}" data-transition="${esc(transition)}">
+${bleed}${visual}<div class="grid" style="${grid}">${zones}</div>
 </section>`;
 }

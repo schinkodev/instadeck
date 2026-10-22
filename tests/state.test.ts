@@ -34,6 +34,17 @@ describe("decks", () => {
     expect((await store.getDeck(deck.id)).slides).toHaveLength(3);
   });
 
+  it("sets and removes a slide background with update_slide", async () => {
+    const { deck } = await created();
+    const id = deck.slides[0]!.id;
+    const set = await store.applyOps(deck.id, 1, [{ op: "update_slide", slide_id: id, background: { type: "brand", visual: "numeral" } }], "mcp", "bg");
+    expect(set.deck.slides[0]!.background).toEqual({ type: "brand", visual: "numeral" });
+    const kept = await store.applyOps(deck.id, 2, [{ op: "update_slide", slide_id: id, intent: "Same slide, new intent" }], "mcp", "intent");
+    expect(kept.deck.slides[0]!.background).toEqual({ type: "brand", visual: "numeral" });
+    const gone = await store.applyOps(deck.id, 3, [{ op: "update_slide", slide_id: id, background: null }], "mcp", "no bg");
+    expect(gone.deck.slides[0]!.background).toBeUndefined();
+  });
+
   it("applies ops atomically and bumps the revision", async () => {
     const { deck } = await created();
     const [a, b, c] = deck.slides.map((s) => s.id);
