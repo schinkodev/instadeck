@@ -39,14 +39,6 @@ export function layoutFindings(measures: LayoutMeasure[]): Finding[] {
         });
       }
     }
-    if (m.dominant && m.dominant.ratio < LAYOUT_LIMITS.minZoneDominance) {
-      out.push({
-        severity: "warning",
-        rule: "composition-dominance",
-        slideId: m.slideId,
-        message: `The zone "${m.dominant.zone}" is declared dominant but its content is only ${m.dominant.ratio.toFixed(2)}x the largest other zone, so it does not lead. Make its content larger, or declare the zone that does lead`,
-      });
-    }
     if (m.unaligned.length) {
       out.push({
         severity: "warning",

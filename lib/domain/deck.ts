@@ -95,7 +95,7 @@ export const opSchema = z.discriminatedUnion("op", [
     intent: slideInputSchema.shape.intent.optional(),
     beat: slideInputSchema.shape.beat,
     tone: slideInputSchema.shape.tone,
-    composition: compositionSchema.nullable().optional().describe("null returns the slide to the composition of its school"),
+    composition: compositionSchema.nullable().optional().describe("null returns the slide to the composition of its school. A new layout resets it too, unless you give one"),
     blocks: z.record(z.string(), blockSchema.nullable()).optional().describe("Zones to set. null removes the block from the zone. Unlisted zones stay"),
     motion: slideMotionSchema.optional(),
     notes: z.string().max(1200).optional(),

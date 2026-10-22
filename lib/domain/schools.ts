@@ -41,7 +41,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     space: { density: "balanced", radius: 0, cards: "flat" },
     imagery: "Objective photography, tightly cropped, often grayscale. Images align to the grid like text.",
     motion: { intensity: "subtle", tempo: "confident", note: "Cuts and wipes, nothing decorative. Motion reveals structure." },
-    composition: { axis: "asymmetric", split: "1:2" },
+    composition: { axis: "asymmetric" },
     avoid: "Centered body text, rounded corners, more than one accent color, decoration.",
   },
   {
@@ -56,7 +56,6 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     space: { density: "airy", radius: 0, cards: "flat" },
     imagery: "Full bleed photography with short captions. Pull quotes set large.",
     motion: { intensity: "subtle", tempo: "calm", note: "Reveal and fade, like turning a page." },
-    composition: { split: "1:2" },
     avoid: "Uniform sizes, bullet lists, many small elements competing.",
   },
   {
@@ -171,7 +170,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     space: { density: "compact", radius: 0, cards: "flat" },
     imagery: "None. Charts and tables carry the deck.",
     motion: { intensity: "still", tempo: "calm", note: "No motion. Numbers appear at their final value." },
-    composition: { axis: "left", split: "1:1" },
+    composition: { axis: "left" },
     avoid: "Pies, decorative color, inconsistent scales, charts without units.",
   },
   {

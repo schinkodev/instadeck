@@ -66,7 +66,9 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
           else blocks[zone] = structuredClone(block);
         }
         const { composition: _drop, ...rest } = s;
-        const composition = op.composition === undefined ? s.composition : (op.composition ?? undefined);
+        // A composition fits the layout it was set for: a new layout starts without one unless the op gives it.
+        const relayout = op.layout !== undefined && op.layout !== s.layout;
+        const composition = op.composition === undefined ? (relayout ? undefined : s.composition) : (op.composition ?? undefined);
         deck.slides[at] = {
           ...rest,
           ...(composition && { composition }),

@@ -171,7 +171,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .cta-detail{margin-top:var(--sp-md);font-size:var(--fs-lead);color:var(--muted)}
 .axis-center .grid{justify-content:center}
 .axis-center .zone{text-align:center}
-.axis-center .heading,.axis-center .text{margin-inline:auto}
+.axis-center .heading,.axis-center .text,.axis-center .cta-text{margin-inline:auto}
+.axis-center .block-logo img{margin-inline:auto;object-position:center}
 .bleed{position:absolute;inset:0}
 .bleed .block-image{position:absolute;inset:0;border-radius:0}
 .scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.74) 0%,rgba(0,0,0,.4) 50%,rgba(0,0,0,0) 82%)}

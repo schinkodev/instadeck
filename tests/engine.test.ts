@@ -228,6 +228,23 @@ describe("motion language", () => {
     expect(renderDeckHtml(centered, SAMPLE_ASSETS, "static")).toContain("axis-center");
   });
 
+  it("resets the composition of a slide when its layout changes, unless the op gives one", async () => {
+    const { applyOpsToDeck } = await import("@/lib/state");
+    const ctx = { newSlideId: () => "new", brandKit: () => undefined };
+    const d = sampleDeck();
+    const at = d.slides.findIndex((x) => x.layout === "text-image");
+    const id = d.slides[at]!.id;
+    d.slides[at]!.composition = { split: "1:3", dominant: "image" };
+    const kept = applyOpsToDeck(d, [{ op: "update_slide", slide_id: id, intent: "Same layout, new intent" }], ctx).deck.slides[at]!;
+    expect(kept.composition).toEqual({ split: "1:3", dominant: "image" });
+    const reset = applyOpsToDeck(d, [{ op: "update_slide", slide_id: id, layout: "image-text" }], ctx).deck.slides[at]!;
+    expect(reset.composition).toBeUndefined();
+    const given = applyOpsToDeck(d, [{ op: "update_slide", slide_id: id, layout: "image-text", composition: { split: "1:2" } }], ctx).deck.slides[at]!;
+    expect(given.composition).toEqual({ split: "1:2" });
+    const same = applyOpsToDeck(d, [{ op: "update_slide", slide_id: id, layout: "text-image" }], ctx).deck.slides[at]!;
+    expect(same.composition).toEqual({ split: "1:3", dominant: "image" });
+  });
+
   it("keeps still decks still and shared transitions meaningful", () => {
     const d = sampleDeck();
     d.motion.intensity = "still";

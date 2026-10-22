@@ -4,7 +4,8 @@
  * A layout keeps its zones and its purpose. A `composition` changes the geometry of its grid in a closed set of ways:
  *   axis      where the content sits: `left` (the default), `center`, or `asymmetric` (the content is pushed to the right
  *             and the left side stays empty on purpose)
- *   split     the ratio of the two columns of a two column layout
+ *   split     the ratio of the two columns of a two column layout. The larger share goes to the dominant zone, else to the
+ *             visual (the image or the chart)
  *   dominant  the zone that leads: it gets the larger column
  *
  * No zod: the module is also bundled into the MCP App.
@@ -63,17 +64,19 @@ export function isSplittable(layout: LayoutDef): boolean {
 }
 
 /**
- * Dense content keeps the full width and a left edge to read along (Müller-Brockmann): centering it breaks the edge, and
- * pushing it right narrows cards, stats and tables built for the full width until their text wraps badly. So an axis other
- * than `left` applies to one column layouts of low density (title, statement, section, quote, closing).
+ * Layouts that take an axis other than `left` in one column. An explicit list, not a rule inferred from density: a
+ * full bleed layout has white text on a scrim that fades to the right, a quote or a logo grid is built for its width, and
+ * dense content (cards, stats, tables) keeps the full width and a left edge to read along (Müller-Brockmann).
  */
+const AXIS_LAYOUTS: readonly string[] = ["title", "statement", "section", "closing"];
+
 export function allowsCenter(layout: LayoutDef): boolean {
-  return layout.density === "low" && tracks(layout.grid.columns).length === 1;
+  return AXIS_LAYOUTS.includes(layout.id);
 }
 
-/** A two column layout takes `asymmetric` as an uneven split. A one column layout takes it when it has little content. */
+/** A two column layout takes `asymmetric` as an uneven split. A one column layout takes it when it is on the list. */
 export function allowsAsymmetric(layout: LayoutDef): boolean {
-  return isSplittable(layout) || allowsCenter(layout);
+  return isSplittable(layout) || AXIS_LAYOUTS.includes(layout.id);
 }
 
 /** Column (0 or 1) that a zone occupies in a two column layout, or null when it spans both or is not there. */
@@ -81,6 +84,15 @@ function columnOf(layout: LayoutDef, zone: string): number | null {
   const found = new Set<number>();
   for (const row of layout.grid.areas) row.split(" ").forEach((name, i) => name === zone && found.add(i));
   return found.size === 1 ? [...found][0]! : null;
+}
+
+/** The column of the visual (an image or a chart) in a two column layout: the one a split favors by default. */
+function visualColumn(layout: LayoutDef): number {
+  for (const zone of ["image", "chart"]) {
+    const at = columnOf(layout, zone);
+    if (at !== null) return at;
+  }
+  return 1;
 }
 
 /** Why a composition cannot be applied to a layout, one sentence each. Empty when it can. */
@@ -93,12 +105,12 @@ export function compositionProblems(layout: LayoutDef, c: Composition): string[]
     else if (!two) out.push(`dominant needs a two column layout, ${layout.id} has no columns to share`);
     else if (columnOf(layout, c.dominant) === null) out.push(`dominant "${c.dominant}" spans both columns of ${layout.id}. Pick a zone that sits in one column`);
   }
-  if (c.axis === "center" && !allowsCenter(layout)) out.push(`axis center needs a one column layout with little content, ${layout.id} is ${tracks(layout.grid.columns).length === 1 ? layout.density : "two columns"}. Dense content keeps a left edge`);
-  if (c.axis === "asymmetric" && !allowsAsymmetric(layout)) out.push(`axis asymmetric needs a two column layout or a one column layout with little content, ${layout.id} is ${layout.density}. Content built for the full width would be squeezed`);
+  if (c.axis === "center" && !allowsCenter(layout)) out.push(`axis center is for ${AXIS_LAYOUTS.join(", ")}. ${layout.id} is built for its width or keeps a left edge`);
+  if (c.axis === "asymmetric" && !allowsAsymmetric(layout)) out.push(`axis asymmetric is for two column layouts and for ${AXIS_LAYOUTS.join(", ")}. Content of ${layout.id} is built for the full width and would be squeezed`);
   return out;
 }
 
-/** The ratio of a split as the two fr values, the larger one on the dominant side. */
+/** The ratio of a split as the two fr values, the larger one on the favored column (the dominant zone, else the visual). */
 function frOf(split: Split, dominantColumn: number | null): [number, number] {
   const [a, b] = split.split(":").map(Number) as [number, number];
   if (dominantColumn === null || a === b) return [a, b];
@@ -121,8 +133,8 @@ export function resolveGrid(layout: LayoutDef, c: Composition | undefined, defau
   let areas = [...layout.grid.areas];
   let columns = layout.grid.columns;
   if (two) {
-    const lead = dominant ? columnOf(layout, dominant) : null;
-    const given = split ?? (axis === "asymmetric" ? ASYMMETRIC_SPLIT : dominant ? ASYMMETRIC_SPLIT : undefined);
+    const lead = dominant ? columnOf(layout, dominant) : visualColumn(layout);
+    const given = split ?? (axis === "asymmetric" || dominant ? ASYMMETRIC_SPLIT : undefined);
     if (given) columns = frOf(given, lead).map((n) => `${n}fr`).join(" ");
   } else if (axis === "asymmetric") {
     columns = `${ASYMMETRIC_LEAD}fr ${tracks(columns)[0]}`;

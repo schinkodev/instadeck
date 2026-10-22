@@ -197,22 +197,12 @@ describe("exports", () => {
     const [swiss, keynote, ibcs] = [await rects("swiss"), await rects("keynote"), await rects("ibcs")];
     const differing = (a: number[][][], b: number[][][]) => a.filter((slide, i) => JSON.stringify(slide) !== JSON.stringify(b[i])).length;
     const total = swiss.length;
-    // Most slides move, not a few: tokens alone would give 0 here.
-    expect(differing(swiss, keynote)).toBeGreaterThanOrEqual(total / 2);
-    expect(differing(swiss, ibcs)).toBeGreaterThanOrEqual(total / 3);
-    expect(differing(keynote, ibcs)).toBeGreaterThanOrEqual(total / 3);
-  });
-
-  it("measures that a dominant zone holds the largest content", async () => {
-    const mk = (dominant: string) => {
-      const d = sampleDeck();
-      const at = d.slides.findIndex((x) => x.layout === "text-image");
-      d.slides[at]!.composition = { dominant };
-      return { d, id: d.slides[at]!.id };
-    };
-    const rulesOf = async (x: { d: Deck; id: string }) => (await measureDeck(x.d, SAMPLE_ASSETS)).filter((f) => f.slideId === x.id && f.rule === "composition-dominance").length;
-    expect(await rulesOf(mk("image"))).toBe(0);
-    expect(await rulesOf(mk("title"))).toBe(1);
+    // Tokens alone would move none of them. The axis moves the title, statement and closing slides and the uneven split moves
+    // the two column slides, so a few slides differ, not all: the dense ones keep their layout in every school.
+    expect(differing(swiss, keynote)).toBeGreaterThanOrEqual(3);
+    expect(differing(swiss, ibcs)).toBeGreaterThanOrEqual(3);
+    expect(differing(keynote, ibcs)).toBeGreaterThanOrEqual(2);
+    expect(differing(swiss, keynote)).toBeLessThan(total);
   });
 
   it("renders PNG previews at the requested scale", async () => {

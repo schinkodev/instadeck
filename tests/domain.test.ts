@@ -161,6 +161,7 @@ describe("composition", () => {
     expect(asym.areas).toEqual([". statement", ". support"]);
     // Dense one column layouts keep the full width: an explicit asymmetric is an error, a school default is skipped.
     expect(compositionProblems(points, { axis: "asymmetric" })[0]).toContain("squeezed");
+    expect(compositionProblems(getLayout("image-full")!, { axis: "center" })).toHaveLength(1);
     expect(resolveGrid(getLayout("cards")!, undefined, { axis: "asymmetric" }).columns).toBe("1fr");
     expect(compositionProblems(textImage, { axis: "asymmetric" })).toEqual([]);
     expect(resolveGrid(statement, { axis: "center" }, undefined)).toMatchObject({ axis: "center", columns: statement.grid.columns });
@@ -179,7 +180,13 @@ describe("composition", () => {
     expect(keynote).toEqual({ axis: "center" });
     expect(resolveGrid(getLayout("statement")!, undefined, keynote).axis).toBe("center");
     expect(resolveGrid(getLayout("comparison")!, undefined, keynote).axis).toBe("left");
+    // The uneven split favors the visual: the image sits in the second column of text-image and the first of image-text.
     expect(resolveGrid(getLayout("text-image")!, undefined, schoolComposition("swiss")).columns).toBe("1fr 2fr");
+    expect(resolveGrid(getLayout("image-text")!, undefined, schoolComposition("swiss")).columns).toBe("2fr 1fr");
+    expect(resolveGrid(getLayout("chart-insight")!, undefined, schoolComposition("swiss")).columns).toBe("1fr 2fr");
+    // A full bleed layout, a quote and a logo grid are built for their width: no school axis moves them.
+    for (const id of ["image-full", "quote", "logos", "cards"]) expect(resolveGrid(getLayout(id)!, undefined, schoolComposition("swiss")).columns, id).toBe(getLayout(id)!.grid.columns);
+    for (const id of ["image-full", "quote", "logos"]) expect(resolveGrid(getLayout(id)!, undefined, schoolComposition("keynote")).axis, id).toBe("left");
     expect(schoolComposition(undefined)).toBeUndefined();
   });
 });

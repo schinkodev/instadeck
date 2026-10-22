@@ -43,11 +43,13 @@ The values are a closed set, not free numbers. The model picks intent, the engin
 
 | School | Default composition |
 |---|---|
-| Swiss | `axis: asymmetric`, `split: 1:2`, a heavy rule |
+| Swiss | `axis: asymmetric` (two column layouts get the uneven split toward the visual), a heavy rule |
 | Keynote | `axis: center`, one element on a `field: tone` |
 | Editorial | large serif numbers, a narrow text column, `field: none` |
 | Ma | `axis: asymmetric`, `scale: 1`, the smallest content on the largest empty field |
 | IBCS | `axis: left`, no field, the grid shows |
+
+Step 2 implements the axis defaults for Swiss, Ma, Keynote (center) and IBCS (left). Editorial carries none yet: its large serif numbers and narrow column need `scale` and `field` (step 3), and a plain split default turned out to shrink the text column instead of the image. An axis other than `left` applies only to title, statement, section and closing in one column: a full bleed layout has white text on a scrim that fades to the right, a quote and a logo grid are built for their width, and dense content keeps a left edge.
 
 The model may override on any slide. The deck stays coherent because a deck uses the defaults of one school and exceptions mark moments, the same rule as for motion exceptions in V006.
 
@@ -62,7 +64,8 @@ Principles, each with the perception it follows from:
 - **The grid holds** (Müller-Brockmann): the left edges of the zones sit on column lines of the slide grid. A parameter never creates an edge that is off the grid.
 - **One dominant element** (Gestalt, figure and ground): the existing `layout-dominance`, now also for a slide with a parameterized hero.
 - **Enough empty space** (Arnheim, active white space): the share of empty area stays above a floor, so `scale: 2` cannot fill the slide.
-- **The difference is real**: a test renders the same content under two schools and requires the zone rectangles to differ on most slides. Tokens alone do not pass it.
+- **The difference is real**: a test renders the same content under two schools and requires the zone rectangles to differ on several slides. Tokens alone do not pass it. The axis moves the open layouts (title, statement, section, closing) and the uneven split moves the two column ones, so the dense slides keep their layout in every school.
+- **Dominance by construction**: a `dominant` zone gets the larger column, so step 2 does not measure it again. A first version compared content areas and warned wrongly on a text zone next to an image, which fills its column by nature.
 
 ## PowerPoint
 
