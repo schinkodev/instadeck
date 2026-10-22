@@ -17,7 +17,7 @@ export const conceptSchema = z.strictObject({
   school: z.enum(SCHOOL_IDS).optional().describe("Design school the deck follows (section schools), when one fits"),
   references: z.array(z.string().min(2).max(80)).max(4).optional().describe("Named references, e.g. Bloomberg Businessweek covers, Braun product manuals"),
   avoid: z.string().min(3).max(160).describe("What the deck must not look like"),
-  signature: z.string().min(3).max(160).describe("One device that recurs on every slide: a rule, a crop, a number style, a color field"),
+  signature: z.string().min(3).max(160).describe("One device that recurs on every slide: a rule, a crop, a number style, a color field. When a primitive of design.signature can draw it (rule, frame, folio, band), set it there too, so the engine draws it"),
 });
 export type Concept = z.infer<typeof conceptSchema>;
 
@@ -119,6 +119,7 @@ export const designPatchSchema = z.strictObject({
   type: designSchema.shape.type.partial().optional(),
   space: designSchema.shape.space.partial().optional(),
   shape: designSchema.shape.shape.partial().optional(),
+  signature: designSchema.shape.signature,
 });
 export type DesignPatch = z.infer<typeof designPatchSchema>;
 

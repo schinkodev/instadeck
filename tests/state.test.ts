@@ -45,6 +45,16 @@ describe("decks", () => {
     expect(gone.deck.slides[0]!.background).toBeUndefined();
   });
 
+  it("sets the signature as a whole with set_design and keeps it on other design changes", async () => {
+    const { deck } = await created();
+    const set = await store.applyOps(deck.id, 1, [{ op: "set_design", design: { signature: { kind: "rule", edge: "left", weight: "heavy" } } }], "mcp", "sig");
+    expect(set.deck.design.signature).toEqual({ kind: "rule", edge: "left", weight: "heavy" });
+    const kept = await store.applyOps(deck.id, 2, [{ op: "set_design", design: { colors: { accent: "#C8102E" } } }], "mcp", "accent");
+    expect(kept.deck.design.signature).toEqual({ kind: "rule", edge: "left", weight: "heavy" });
+    const off = await store.applyOps(deck.id, 3, [{ op: "set_design", design: { signature: { kind: "none" } } }], "mcp", "off");
+    expect(off.deck.design.signature).toEqual({ kind: "none" });
+  });
+
   it("marks the numeral slides renumbered by an edit as touched", async () => {
     const { deck } = await created();
     const [a, b, c] = deck.slides.map((s) => s.id) as [string, string, string];

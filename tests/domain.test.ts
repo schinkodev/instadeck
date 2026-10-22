@@ -198,6 +198,19 @@ describe("composition", () => {
     for (const id of ["image-full", "quote", "logos"]) expect(resolveGrid(getLayout(id)!, undefined, schoolComposition("keynote")).axis, id).toBe("left");
     expect(schoolComposition(undefined)).toBeUndefined();
   });
+
+  it("gives swiss a heavy rule and editorial a folio as default signature, and validates the closed set", async () => {
+    const { designSchema, resolveSignature, schoolSignature } = await import("@/lib/domain");
+    expect(schoolSignature("swiss")).toEqual({ kind: "rule", edge: "top", weight: "heavy" });
+    expect(schoolSignature("editorial")).toEqual({ kind: "folio", corner: "bottom-right" });
+    expect(resolveSignature(undefined, undefined)).toEqual({ kind: "none" });
+    expect(resolveSignature({ kind: "none" }, schoolSignature("swiss"))).toEqual({ kind: "none" });
+    const sig = designSchema.shape.signature;
+    expect(sig.safeParse({ kind: "rule", edge: "top" }).success).toBe(true);
+    expect(sig.safeParse({ kind: "rule" }).success).toBe(false);
+    expect(sig.safeParse({ kind: "rule", edge: "top", color: "accent" }).success).toBe(false);
+    expect(sig.safeParse({ kind: "crop" }).success).toBe(false);
+  });
 });
 
 describe("workflow", () => {

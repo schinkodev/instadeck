@@ -5,6 +5,7 @@
 import { z } from "zod";
 import { bestContrast, isHex, mix } from "./color";
 import { fontRefSchema, type FontRef } from "./fonts";
+import { FOLIO_CORNERS, SIGNATURE_EDGES, SIGNATURE_WEIGHTS } from "./signature";
 
 export const SLIDE = { width: 1920, height: 1080 } as const;
 
@@ -49,6 +50,18 @@ export const designSchema = z.strictObject({
     radius: z.number().min(0).max(32).describe("Corner radius of cards, images and charts in px"),
     cards: z.enum(["flat", "outline", "filled"]).describe("How cards and panels are drawn"),
   }),
+  signature: z
+    .discriminatedUnion("kind", [
+      z.strictObject({ kind: z.literal("none") }),
+      z.strictObject({ kind: z.literal("rule"), edge: z.enum(SIGNATURE_EDGES), weight: z.enum(SIGNATURE_WEIGHTS).optional().describe("hairline (default) or heavy") }),
+      z.strictObject({ kind: z.literal("frame"), weight: z.enum(SIGNATURE_WEIGHTS).optional().describe("hairline (default) or heavy") }),
+      z.strictObject({ kind: z.literal("folio"), corner: z.enum(FOLIO_CORNERS).optional().describe("Default bottom-right") }),
+      z.strictObject({ kind: z.literal("band"), edge: z.enum(SIGNATURE_EDGES) }),
+    ])
+    .optional()
+    .describe(
+      "The signature device drawn on every slide, in the margin outside the content: rule (a line along the top, bottom or left edge), frame (a line around the slide), folio (the slide number in a corner, not on the first slide), band (a strip of brand tint along an edge) or none. Without it the deck uses the default of its school (swiss a heavy top rule, editorial a folio), none switches that off",
+    ),
 });
 export type Design = z.infer<typeof designSchema>;
 
