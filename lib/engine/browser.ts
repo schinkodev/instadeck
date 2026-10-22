@@ -71,6 +71,8 @@ export async function withPage<T>(html: string, fn: (page: Page) => Promise<T>, 
     await page.setViewport({ width: SLIDE.width, height: SLIDE.height, deviceScaleFactor: opts.scale ?? 1 });
     await page.setContent(html, { waitUntil: "load" });
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    // Measuring text over an image reads its pixels, so the image must be decoded first.
+    await page.evaluate(() => Promise.all(Array.from(document.images, (img) => img.decode().catch(() => undefined))).then(() => undefined));
     return await fn(page);
   } finally {
     await page.close();

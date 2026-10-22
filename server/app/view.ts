@@ -121,6 +121,8 @@ async function show(deckId: string, revision: number, url: string) {
   else fonts.removeAttribute("href");
   root.innerHTML = `<main class="stage">${parts.slides}</main><aside class="hud"><div class="hud-count"></div><div class="hud-notes"></div><div class="hud-keys">Arrows or click: next | G: all slides | F: full screen | N: notes</div></aside>`;
   await document.fonts.ready;
+  // Measuring text over an image reads its pixels, so the image must be decoded first.
+  await Promise.all(Array.from(root.querySelectorAll("img"), (img) => img.decode().catch(() => undefined)));
 
   // The final state is measured before the player mounts, animation would move the rectangles.
   const raw = window.measureInstaDeck(root);

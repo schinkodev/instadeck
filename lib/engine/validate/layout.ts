@@ -39,6 +39,24 @@ export function layoutFindings(measures: LayoutMeasure[]): Finding[] {
         });
       }
     }
+    if (m.backdrop && "unreadable" in m.backdrop) {
+      out.push({
+        severity: "info",
+        rule: "background-unchecked",
+        slideId: m.slideId,
+        message: "The background image could not be read for the measurement (it is not decoded, or it comes from another origin), so the legibility of the text over it is not checked. Look at the slide yourself",
+      });
+    } else if (m.backdrop && m.backdrop.contrast < m.backdrop.required) {
+      const b = m.backdrop;
+      out.push({
+        severity: b.contrast < LAYOUT_LIMITS.minBackdropContrast ? "error" : "warning",
+        rule: "background-legibility",
+        slideId: m.slideId,
+        message: `Text over the background image has a contrast of ${b.contrast}:1 at overlay ${b.overlay}, it needs ${b.required}:1. ${
+          b.needed === null ? "No overlay makes it legible: move the focus of the image away from the text or choose another image" : `Raise the overlay to ${b.needed}`
+        }`,
+      });
+    }
     if (m.unaligned.length) {
       out.push({
         severity: "warning",

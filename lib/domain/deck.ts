@@ -45,12 +45,26 @@ export const createBriefSchema = briefSchema.extend({ concept: conceptSchema });
  * from its own tokens: deterministic, no stock and no generated images.
  */
 export const BRAND_VISUALS = ["numeral", "field", "geometry"] as const;
+/** Share of the slide color over a background image when the model sets none (a darkening or lightening the text can stand on). */
+export const DEFAULT_IMAGE_OVERLAY = 0.55;
+const brandBackground = z.strictObject({
+  type: z.literal("brand"),
+  visual: z.enum(BRAND_VISUALS).describe("numeral = the chapter number set very large, field = a color field across part of the slide, geometry = circle and square from the accent"),
+});
+const imageBackground = z.strictObject({
+  type: z.literal("image"),
+  assetId: z.string().min(1).describe("An image asset the user supplied (add_asset). Never a stock or generated image"),
+  focus: z.strictObject({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }).optional().describe("Focal point for the crop. Put it where the text is not"),
+  overlay: z
+    .number()
+    .min(0)
+    .max(0.95)
+    .optional()
+    .describe(`How much of the slide background color covers the image so text stays legible, 0 to 0.95. Default ${DEFAULT_IMAGE_OVERLAY}. The browser measures the text over the image and reports the smallest value that works`),
+});
 export const backgroundSchema = z
-  .strictObject({
-    type: z.literal("brand"),
-    visual: z.enum(BRAND_VISUALS).describe("numeral = the chapter number set very large, field = a color field across part of the slide, geometry = circle and square from the accent"),
-  })
-  .describe("A visual drawn from the brand colors behind the content. Use it for the title and the chapter openers, not on every slide");
+  .discriminatedUnion("type", [brandBackground, imageBackground])
+  .describe("Background of the slide. brand = a visual drawn from the brand colors (no assets needed), image = the user's image under an overlay that keeps text legible. Use it for the title and chapter openers, not on every slide");
 export type Background = z.infer<typeof backgroundSchema>;
 
 export const compositionSchema = z

@@ -187,6 +187,18 @@ describe("assets and brand kits", () => {
     expect(data[logo.id]!.src.startsWith("data:image/svg+xml;base64,")).toBe(true);
   });
 
+  it("knows the asset of a background image, so it validates and renders", async () => {
+    const photo = await store.addAsset("photo.svg", new TextEncoder().encode(LOGO_SVG));
+    const { deck } = await created();
+    const r = await store.applyOps(deck.id, 1, [{ op: "update_slide", slide_id: deck.slides[0]!.id, background: { type: "image", assetId: photo.id, overlay: 0.6 } }], "mcp", "bg image");
+    // Without the asset in the index the validation would report it as missing, and the renderer would have no data for it.
+    expect(r.findings.filter((f) => f.rule === "asset")).toEqual([]);
+    expect(Object.keys(await store.assetIndex(r.deck))).toEqual([photo.id]);
+    expect(Object.keys(await store.assetsFor(r.deck))).toEqual([photo.id]);
+    // An unknown asset is an error and the change is not saved.
+    await expect(store.applyOps(deck.id, 2, [{ op: "update_slide", slide_id: deck.slides[0]!.id, background: { type: "image", assetId: "nope" } }], "mcp", "missing")).rejects.toThrow(/not saved/);
+  });
+
   it("applies a brand to an existing deck", async () => {
     const { deck } = await created({ design: { fonts: { heading: { source: "google", family: "Fraunces" } } } });
     const kit = await store.createBrandKit({ name: "Red", colors: { primary: "#C8102E" }, logos: [] });

@@ -5,7 +5,8 @@
  * Only plain boxes, circles and one line of text, in solid colors: the PowerPoint snapshot reads the same DOM, so the
  * background exports as shapes and text with no special case.
  */
-import { chapterNumbers, mix, type Background, type Deck, type Palette, type Slide } from "@/lib/domain";
+import { DEFAULT_IMAGE_OVERLAY, chapterNumbers, mix, withAlpha, type Background, type Deck, type Palette, type Slide } from "@/lib/domain";
+import type { AssetData } from "./blocks";
 import { esc } from "../text";
 
 /**
@@ -20,8 +21,17 @@ export function brandColors(palette: Palette, accentSlide: boolean): { tint: str
   return { tint: mix(palette.bg, ink, BRAND_VISUAL_STRENGTH), solid: mix(palette.bg, ink, BRAND_VISUAL_STRENGTH * 1.6) };
 }
 
+/** An image under the content with an overlay in the slide color. The overlay is what keeps text legible, the browser measures it. */
+export function renderImageBackground(background: Extract<Background, { type: "image" }>, assets: Record<string, AssetData>, palette: Palette): string {
+  const a = assets[background.assetId];
+  if (!a) throw new Error(`Asset ${background.assetId} is not available to the renderer`);
+  const pos = background.focus ? ` style="object-position:${(background.focus.x * 100).toFixed(1)}% ${(background.focus.y * 100).toFixed(1)}%"` : "";
+  const overlay = background.overlay ?? DEFAULT_IMAGE_OVERLAY;
+  return `<div class="bg-image" aria-hidden="true"><img src="${a.src}" data-asset="${esc(background.assetId)}" alt=""${pos}/><div class="bg-overlay" style="background:${withAlpha(palette.bg, overlay)}"></div></div>`;
+}
+
 /** The visual layer, placed behind the grid. Positions alternate with the slide index so neighboring slides do not repeat. */
-export function renderBrandVisual(background: Background, deck: Deck, slide: Slide, index: number, palette: Palette): string {
+export function renderBrandVisual(background: Extract<Background, { type: "brand" }>, deck: Deck, slide: Slide, index: number, palette: Palette): string {
   const { tint, solid } = brandColors(palette, slide.tone === "accent");
   const right = index % 2 === 0;
   switch (background.visual) {

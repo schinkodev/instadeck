@@ -259,7 +259,13 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
     if (new Set(icons.filter(Boolean)).size < withIcon) push("info", "icon-repeat", "Two cards share the same icon, so it does not tell them apart. Fine when they mean the same thing, otherwise pick an icon for what each card means", zone);
   }
 
-  if (slide.background) {
+  if (slide.background?.type === "image") {
+    const a = assets[slide.background.assetId];
+    if (!a) push("error", "asset", `Asset ${slide.background.assetId} does not exist. Add it with add_asset first`);
+    else if (a.kind !== "image") push("error", "asset", `Asset ${slide.background.assetId} is a ${a.kind}, not an image`);
+    if (layout.bleed) push("warning", "background-layout", `${layout.id} is full bleed and has its own image, so the background image is hidden. Use it on another layout`);
+  }
+  if (slide.background?.type === "brand") {
     if (layout.bleed) push("warning", "background-layout", `${layout.id} is full bleed, so the brand background is hidden behind the image. Use it on another layout`);
     // Figure and ground: text on the visual must stay legible, so the visual may not move too far from the background.
     const p = deriveTokens(deck.design).palette[slide.tone ?? "default"];
