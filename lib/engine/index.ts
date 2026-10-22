@@ -1,4 +1,4 @@
-// Layer: lib/engine. Deterministické renderování, validace a exporty, bez modelu. See docs/vision/V002-mcp-first.md
+// Layer: lib/engine. Deterministic rendering, validation and exports, without a model. See docs/vision/V002-mcp-first.md
 export { renderDeckHtml, renderDeckParts, HUD_HTML, type DeckParts, type RenderMode } from "./render/document";
 export { MODE_CSS } from "./render/css";
 export { PLAYER_JS } from "./render/player-source";

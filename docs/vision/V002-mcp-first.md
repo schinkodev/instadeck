@@ -1,87 +1,87 @@
-# V002: MCP first, prezentace jako samostatné HTML
+# V002: MCP first, the presentation as a standalone HTML file
 
-> Status: superseded (V003-open-source-lokalne.md: vrstvy, tools a principy platí, mění se distribuce a ukládání)
+> Status: superseded (V003-open-source-local.md: the layers, tools and principles still hold, distribution and storage change)
 > Type: vision
 > Date: 2026-10-18
-> Supersedes: V001-architektura.md
+> Supersedes: V001-architecture.md
 
-## Problém
+## Problem
 
-V001 počítala s vlastním UI (dashboard, chat, viewer), vlastním harnessem, kredity a MP4 přes Remotion. To je hodně práce, která neprodává hlavní hodnotu. Ta hodnota je doménová znalost tvorby špičkových brandovaných pitch decků. Uživatel ji chce použít v harnessu, který už má (Claude Code, Claude Desktop, claude.ai).
+V001 planned a UI of our own (dashboard, chat, viewer), our own harness, credits and MP4 through Remotion. That is a lot of work that does not sell the core value. The value is domain knowledge of how great branded pitch decks are made. Users want to use it in the harness they already have (Claude Code, Claude Desktop, claude.ai).
 
 ## Design
 
 ```
-lib/domain   znalost: bloky, layouty, tokeny, brand kit, motion presety, principy, pitch příběh
-lib/engine   deterministické: kompilace decku do samostatného HTML, validace, PDF, PNG, brand barvy
-lib/state    lokální úložiště decků s revizemi, applyOps (jediná cesta zápisu), assety
-lib/tools    tools v MCP tvaru (definice nezávislá na transportu) a service
-server/      MCP server: stdio (lokálně), později Streamable HTTP (hostovaně)
-skills/      skill pro Claude Code: formát, postup, vkus
+lib/domain   knowledge: blocks, layouts, tokens, brand kit, motion presets, principles, pitch story
+lib/engine   deterministic: compiling a deck into standalone HTML, validation, PDF, PNG, brand colors
+lib/state    local deck storage with revisions, applyOps (the only write path), assets
+lib/tools    tools in MCP shape (a transport independent definition) and the service
+server/      MCP server: stdio (local), later Streamable HTTP (hosted)
+skills/      skill for Claude Code: format, workflow, taste
 ```
 
-Závislosti jen dolů, hlídá ESLint.
+Dependencies only point down, ESLint enforces it.
 
-### Principy
+### Principles
 
-1. **Model rozhoduje o obsahu, struktuře a designu. Engine renderuje, validuje a exportuje.** Model skládá slidy z bloků a layoutů a volí tokeny a motion presety podle názvu. HTML generuje engine. Proto je každý deck brandově konzistentní, validovatelný a animovaný bez práce modelu.
-2. **Výstup je jeden samostatný HTML soubor.** Prezentace s animacemi (vstupy slidů, postupné odkrývání na kliknutí, animovaná čísla a grafy, přechody), ovládání klávesami, celá obrazovka, poznámky řečníka. Funguje offline, kromě webových fontů. Statická varianta téhož souboru (všechny kroky odkryté, bez animací) je podklad pro PDF a PNG.
-3. **Prezentace, ne video.** Čas se neposouvá sám, kroky posouvá řečník. Animace běží v prohlížeči přes CSS a Web Animations. Bez Remotionu a bez renderu videa.
-4. **MCP je hlavní rozhraní.** Server je obecný MCP podle standardu, nepředpokládá našeho klienta. Výstupy mají textovou podobu, PNG náhledy a cestu k HTML souboru (lokálně), později odkaz (hostovaně).
-5. **Žádné vlastní UI ani harness.** Hostovaná část později bude jen statické sdílení HTML a HTTP MCP.
+1. **The model decides content, structure and design. The engine renders, validates and exports.** The model composes slides from blocks and layouts and picks tokens and motion presets by name. The engine generates the HTML. That is why every deck is on brand, can be validated and animates without any work from the model.
+2. **The output is one standalone HTML file.** A presentation with animation (slide entrances, step reveals on click, animated numbers and charts, transitions), keyboard controls, full screen and speaker notes. It works offline except for web fonts. A static variant of the same file (all steps revealed, no animation) is the source for PDF and PNG.
+3. **A presentation, not a video.** Time does not move on its own, the presenter advances the steps. Animation runs in the browser through CSS and Web Animations. No Remotion and no video rendering.
+4. **MCP is the main interface.** The server is a standard, generic MCP server and does not assume our client. Outputs come as text, PNG previews and the path to the HTML file (local), later a link (hosted).
+5. **No UI or harness of our own.** The hosted part will later only be static HTML sharing and HTTP MCP.
 
-### Inspirace HyperFrames
+### Inspired by HyperFrames
 
-HyperFrames (HeyGen, Apache 2.0) dělá z HTML video pro agenty. Přebíráme: HTML jako výstupní formát, timing v `data-` atributech, deterministický výstup, skill pro agenty a neinteraktivní ovládání. Nepřebíráme: agent píše HTML sám. U nás HTML píše engine, protože hodnota je v doméně.
+HyperFrames (HeyGen, Apache 2.0) turns HTML into video for agents. We take: HTML as the output format, timing in `data-` attributes, deterministic output, a skill for agents and non-interactive control. We do not take: the agent writing HTML itself. Here the engine writes the HTML, because the value is in the domain.
 
-### Datový model (zkráceně)
+### Data model (short)
 
-- `Deck`: id, title, brief (company, topic, audience, goal, language), design (parametry tokenů), brandKitId, slides, revision
-- `Slide`: id (stabilní), layout, intent (co slide sděluje), blocks podle zón layoutu, motion (entrance, transition, stagger, kroky), notes
-- `Block`: diskriminovaná unie (heading, text, bullets, stat, stats, chart, image, logo, quote, timeline, team, comparison, cards, table, cta), každý s limity obsahu
+- `Deck`: id, title, brief (company, topic, audience, goal, language), design (token parameters), brandKitId, slides, revision
+- `Slide`: id (stable), layout, intent (what the slide communicates), blocks by layout zone, motion (entrance, transition, stagger, steps), notes
+- `Block`: a discriminated union (heading, text, bullets, stat, stats, chart, image, logo, quote, timeline, team, comparison, cards, table, cta), each with content limits
 - `Op`: add_slide, update_slide, remove_slide, move_slide, set_design, apply_brand, set_title
-- `BrandKit`: logo assety, barvy, fonty (Google Fonts nebo nahraný soubor), tón
+- `BrandKit`: logo assets, colors, fonts (Google Fonts or an uploaded file), tone
 
 ### MCP tools
 
-| Tool | Co dělá |
+| Tool | What it does |
 |---|---|
-| `get_design_guide` | Katalog bloků, layoutů, motion presetů a principy pro daný brief |
-| `create_brand_kit`, `get_brand_kit`, `list_brand_kits` | Brand kit z assetů a hodnot od modelu |
-| `add_asset` | Přidá logo, font nebo obrázek ze souboru (lokální cesta) nebo base64 |
-| `extract_brand_colors` | Deterministická paleta z loga (SVG i rastr) |
-| `create_deck` | Založí deck z briefu, volitelně rovnou se slidy |
-| `get_deck`, `list_decks` | Čtení |
-| `apply_ops` | Jediný zápis, `expected_revision`, vrací nálezy validace a cestu k HTML |
-| `validate_deck` | Validace: schéma, kontrast, limity obsahu, rozpočet pohybu, overflow (měřený v prohlížeči) |
-| `render_preview` | PNG vybraných slidů |
-| `export_deck` | `html` nebo `pdf`, vrací cestu |
-| `get_history`, `revert_deck` | Revize |
-| `delete_deck` | Smaže deck, `destructiveHint`, vyžaduje `confirm: true` |
+| `get_design_guide` | Catalog of blocks, layouts, motion presets and the principles for a brief |
+| `create_brand_kit`, `get_brand_kit`, `list_brand_kits` | A brand kit from assets and values chosen by the model |
+| `add_asset` | Adds a logo, font or image from a file (local path) or base64 |
+| `extract_brand_colors` | A deterministic palette from a logo (SVG and raster) |
+| `create_deck` | Creates a deck from a brief, optionally with slides right away |
+| `get_deck`, `list_decks` | Reading |
+| `apply_ops` | The only write, `expected_revision`, returns validation findings and the path to the HTML |
+| `validate_deck` | Validation: schema, contrast, content limits, motion budget, overflow (measured in a browser) |
+| `render_preview` | PNG of selected slides |
+| `export_deck` | `html` or `pdf`, returns the path |
+| `get_history`, `revert_deck` | Revisions |
+| `delete_deck` | Deletes a deck, `destructiveHint`, requires `confirm: true` |
 
-Resources: `instadeck://guide`, `instadeck://blocks`, `instadeck://layouts`, `instadeck://motion`, `instadeck://principles/design`, `instadeck://principles/storytelling`, `instadeck://pitch`, `instadeck://capabilities`, `instadeck://deck/{id}`. Prompt: `create_pitch_deck`. Instructions a capabilities podle vzoru stavebak.cz (registr `done | partial | planned`, test hlídá shodu).
+Resources: `instadeck://guide`, `instadeck://blocks`, `instadeck://layouts`, `instadeck://motion`, `instadeck://principles/design`, `instadeck://principles/storytelling`, `instadeck://pitch`, `instadeck://capabilities`, `instadeck://deck/{id}`. Prompt: `create_pitch_deck`. Instructions and capabilities follow a capability registry (`done | partial | planned`, a test keeps them in sync).
 
-### Úložiště
+### Storage
 
-Lokálně `INSTADECK_HOME` (výchozí `~/.instadeck`): `decks/<id>.json` s historií revizí, `brand-kits/`, `assets/`, `out/<id>/deck.html`. Hostované úložiště až ve fázi 6.
+Locally `INSTADECK_HOME` (default `~/.instadeck`): `decks/<id>.json` with revision history, `brand-kits/`, `assets/`, `out/<id>/deck.html`. Hosted storage only in phase 6.
 
 ## Implementation
 
-Fáze, po každé typecheck, lint, testy, commit a push:
+Phases, after each one typecheck, lint, tests, commit and push:
 
-1. ~~Kostra~~ hotovo, Next.js odstraněn (čistý TypeScript balíček, `tsx`, vitest, ESLint, CI).
-2. ~~**domain**~~ hotovo: schémata, katalog bloků, 20 a více layoutů, tokeny s odvozením, motion presety, brand kit pravidla, principy designu a storytellingu (převzaté ze slyde-saas), pitch příběh.
-3. ~~**engine**~~ hotovo: kompilace do HTML s runtime prezentace, statický režim, validace (čisté pravidla i měření v prohlížeči), PDF a PNG přes Chromium, extrakce barev.
-4. ~~**state**~~ hotovo: `JsonFileStore`, `applyOps` s revizemi a atomicitou, historie a revert, assety.
-5. ~~**MCP (stdio)**~~ hotovo, čeká na ruční ověření v Claude Code a Desktop: tools, resources, prompt, instructions, capabilities, skill. Ověření v Claude Code a Claude Desktop.
-6. Později, jen se souhlasem: hostovaný HTTP MCP s API klíči, sdílené odkazy (statický hosting HTML), placení za hosting.
+1. ~~Skeleton~~ done, Next.js removed (a plain TypeScript package, `tsx`, vitest, ESLint, CI).
+2. ~~**domain**~~ done: schemas, block catalog, 20 or more layouts, tokens with derivation, motion presets, brand kit rules, design and storytelling principles (taken over from slyde-saas), the pitch story.
+3. ~~**engine**~~ done: compiling to HTML with a presentation runtime, static mode, validation (pure rules and measurement in a browser), PDF and PNG through Chromium, color extraction.
+4. ~~**state**~~ done: `JsonFileStore`, `applyOps` with revisions and atomicity, history and revert, assets.
+5. ~~**MCP (stdio)**~~ done, waiting for a manual check in Claude Code and Desktop: tools, resources, prompt, instructions, capabilities, skill.
+6. Later, only with consent: a hosted HTTP MCP with API keys, shared links (static HTML hosting), paid hosting.
 
 ## Acceptance Criteria
 
-- [x] Z jednoho volání `create_deck` se slidy vznikne samostatné `deck.html`, které se otevře v prohlížeči a přehraje s animacemi
-- [x] PDF má vybratelný text a odpovídá statickému HTML
-- [x] Validace najde přetečení textu, nízký kontrast a překročený rozpočet pohybu (testy)
-- [x] `apply_ops` s nesouhlasnou revizí selže a nic nezapíše
-- [x] Testy kontraktu MCP: každý tool v registru schopností, `isError` při selhání, `destructiveHint` u mazání
-- [ ] Ruční ověření v Claude Code: z popisu firmy a loga vznikne deck
-- [x] Žádný test nevolá model, v textech pro uživatele není „AI“ ani em dash
+- [x] One `create_deck` call with slides produces a standalone `deck.html` that opens in a browser and plays with animation
+- [x] The PDF has selectable text and matches the static HTML
+- [x] Validation finds overflowing text, low contrast and an exceeded motion budget (tests)
+- [x] `apply_ops` with a mismatching revision fails and writes nothing
+- [x] MCP contract tests: every tool in the capability registry, `isError` on failure, `destructiveHint` on delete
+- [ ] Manual check in Claude Code: a deck comes out of a company description and a logo
+- [x] No test calls a model, user facing copy contains neither the word AI nor an em dash
