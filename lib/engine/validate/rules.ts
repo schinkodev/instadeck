@@ -26,6 +26,7 @@ import {
   type Slide,
   type Tone, MAX_DECIMALS, bridgeSteps, chartLabelsCollide } from "@/lib/domain";
 import { motionUsage, sharedKeys, slideEntrance, slideTransition, zoneEntrances } from "../motion";
+import { brandColors } from "../render/brand-visual";
 import { slideSteps } from "../steps";
 import { plain } from "../text";
 
@@ -256,6 +257,18 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
     const withIcon = icons.filter(Boolean).length;
     if (withIcon > 0 && withIcon < icons.length) push("warning", "icon-consistency", `${withIcon} of ${icons.length} cards have an icon. Give every card one or none, otherwise the icons read as decoration`, zone);
     if (new Set(icons.filter(Boolean)).size < withIcon) push("info", "icon-repeat", "Two cards share the same icon, so it does not tell them apart. Fine when they mean the same thing, otherwise pick an icon for what each card means", zone);
+  }
+
+  if (slide.background) {
+    if (layout.bleed) push("warning", "background-layout", `${layout.id} is full bleed, so the brand background is hidden behind the image. Use it on another layout`);
+    // Figure and ground: text on the visual must stay legible, so the visual may not move too far from the background.
+    const p = deriveTokens(deck.design).palette[slide.tone ?? "default"];
+    const { tint, solid } = brandColors(p, slide.tone === "accent");
+    for (const [name, ink] of [["text", p.fg], ["secondary text", p.muted]] as const) {
+      const worst = Math.min(contrastRatio(ink, tint), contrastRatio(ink, solid));
+      if (worst < CONTRAST.largeText) push("error", "background-contrast", `${name} on the brand background has a contrast of ${worst.toFixed(1)}:1, below ${CONTRAST.largeText}:1`);
+      else if (worst < CONTRAST.text) push("warning", "background-contrast", `${name} on the brand background has a contrast of ${worst.toFixed(1)}:1, aim for ${CONTRAST.text}:1`);
+    }
   }
 
   if (slide.composition) for (const problem of compositionProblems(layout, slide.composition)) push("error", "composition", problem);

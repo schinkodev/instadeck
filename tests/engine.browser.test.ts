@@ -215,6 +215,19 @@ describe("exports", () => {
     expect(withIcons.png).toBe(without.png + icons.length);
   });
 
+  it("exports a brand background as shapes and text", async () => {
+    const deck = sampleDeck();
+    deck.slides[0]!.background = { type: "brand", visual: "geometry" };
+    deck.slides[1]!.background = { type: "brand", visual: "numeral" };
+    const snap = await snapshotDeck(deck, SAMPLE_ASSETS);
+    const geometry = snap.find((s) => s.slideId === deck.slides[0]!.id)!;
+    // A circle and a square, both with a solid fill, and no new kind of item.
+    expect(geometry.items.filter((i) => i.kind === "box" && i.ellipse && i.fill && i.w >= 800)).toHaveLength(1);
+    expect(geometry.items.some((i) => i.kind === "box" && !i.ellipse && i.fill && i.w === 120)).toBe(true);
+    const numeral = snap.find((s) => s.slideId === deck.slides[1]!.id)!;
+    expect(numeral.items.some((i) => i.kind === "text" && i.runs.some((r) => r.text === "01" && r.size >= 800))).toBe(true);
+  });
+
   it("gives two schools measurably different geometry for the same content", async () => {
     const rects = async (school: "swiss" | "keynote" | "ibcs") => {
       const d = sampleDeck();

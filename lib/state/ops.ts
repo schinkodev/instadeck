@@ -2,7 +2,7 @@
  * Applying operations to a deck, a pure function. An invalid operation (unknown slide, position outside the deck)
  * throws OpError and changes nothing: either all operations pass, or none.
  */
-import { designFromBrand, patchMotion, type BrandKit, type Deck, type DesignPatch, type Op, type Slide } from "@/lib/domain";
+import { chapterNumbers, designFromBrand, patchMotion, type BrandKit, type Deck, type DesignPatch, type Op, type Slide } from "@/lib/domain";
 
 export class OpError extends Error {
   constructor(
@@ -65,12 +65,14 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
           if (block === null) delete blocks[zone];
           else blocks[zone] = structuredClone(block);
         }
-        const { composition: _drop, ...rest } = s;
+        const { background: _bg, composition: _comp, ...rest } = s;
+        const background = op.background === undefined ? s.background : (op.background ?? undefined);
         // A composition fits the layout it was set for: a new layout starts without one unless the op gives it.
         const relayout = op.layout !== undefined && op.layout !== s.layout;
         const composition = op.composition === undefined ? (relayout ? undefined : s.composition) : (op.composition ?? undefined);
         deck.slides[at] = {
           ...rest,
+          ...(background && { background }),
           ...(composition && { composition }),
           ...(op.layout !== undefined && { layout: op.layout }),
           ...(op.intent !== undefined && { intent: op.intent }),
@@ -120,5 +122,8 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
       }
     }
   });
+  // A chapter number depends on the other numeral slides: inserting, removing or moving one renumbers the rest.
+  const before = chapterNumbers(input.slides);
+  for (const [id, n] of chapterNumbers(deck.slides)) if (before.get(id) !== n) touched.add(id);
   return { deck, touched: [...touched], global };
 }

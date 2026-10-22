@@ -42,6 +42,12 @@ export const CAPABILITIES: Capability[] = [
     tools: ["create_deck", "apply_ops"],
   },
   {
+    id: "brand-visuals",
+    claim: "Gives a deck without photos a deliberate look: the title and chapter slides can carry a large chapter number, a color field or a circle and a square, drawn from the brand colors, with the contrast of the text on them checked, and exported to PowerPoint.",
+    status: "done",
+    tools: ["create_deck", "apply_ops"],
+  },
+  {
     id: "examples",
     claim: "Shows proven example decks (seed pitch, enterprise sales deck, product launch, board update, consumer launch) with the reasons they work, from a deck that does not move to a kinetic one, so a new deck starts from a good structure and a fitting motion language.",
     status: "done",
