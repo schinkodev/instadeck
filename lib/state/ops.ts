@@ -25,6 +25,7 @@ function mergeDesign(design: Deck["design"], patch: DesignPatch): Deck["design"]
     type: { ...design.type, ...patch.type },
     space: { ...design.space, ...patch.space },
     shape: { ...design.shape, ...patch.shape },
+    ...((patch.signature ?? design.signature) && { signature: patch.signature ?? design.signature }),
   };
 }
 

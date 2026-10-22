@@ -2,11 +2,12 @@
  * Slide to HTML: the domain layout as a CSS grid, blocks in zones, tone and motion as data attributes
  * (slide entrance, optionally a zone entrance, the transition into the slide).
  */
-import { HERO_PRIORITY, getLayout, resolveGrid, schoolComposition, type Deck, type Slide, type Tokens } from "@/lib/domain";
+import { HERO_PRIORITY, getLayout, resolveGrid, resolveSignature, schoolComposition, schoolSignature, type Deck, type Slide, type Tokens } from "@/lib/domain";
 import { esc } from "../text";
 import { sharedKeys, slideEntrance, slideTransition } from "../motion";
 import { renderBrandVisual, renderImageBackground } from "./brand-visual";
 import { renderBlock, type AssetData, type RenderContext } from "./blocks";
+import { renderSignature } from "./signature";
 
 export interface SlideRenderInput {
   deck: Deck;
@@ -61,8 +62,11 @@ export function renderSlide(slide: Slide, index: number, input: SlideRenderInput
 
   const bg = slide.background;
   const visual = !bg ? "" : bg.type === "image" ? renderImageBackground(bg, input.assets, ctx.palette) : renderBrandVisual(bg, input.deck, slide, index, ctx.palette);
+  // A full bleed image fills the margins, the signature would sit on the photo.
+  const school = input.deck.brief.concept?.school;
+  const signature = layout.bleed ? "" : renderSignature(resolveSignature(input.deck.design.signature, schoolSignature(school)), index, ctx.palette, tone === "accent");
   const grid = `grid-template-areas:${geometry.areas.map((a) => `'${a}'`).join(" ")};grid-template-columns:${geometry.columns};grid-template-rows:${geometry.rows}`;
   return `<section class="slide tone-${tone} layout-${layout.id} axis-${geometry.axis}${bleed ? " has-bleed" : ""}${visual ? " has-brand-visual" : ""}" id="slide-${index + 1}" data-slide-id="${esc(slide.id)}" data-index="${index}" data-entrance="${esc(entrance)}" data-transition="${esc(transition)}">
-${visual}${bleed}<div class="grid" style="${grid}">${zones}</div>
+${visual}${signature}${bleed}<div class="grid" style="${grid}">${zones}</div>
 </section>`;
 }

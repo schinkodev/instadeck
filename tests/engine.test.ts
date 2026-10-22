@@ -13,6 +13,37 @@ function withSlide(patch: Partial<Slide>, at = 2): Deck {
 }
 
 describe("render", () => {
+  it("draws the signature of the deck on every slide, else the school default, and none switches it off", () => {
+    const signed = (d: Deck) => (renderDeckHtml(d, SAMPLE_ASSETS, "static").match(/class="signature signature-[a-z]+"/g) ?? []).length;
+    const deck = sampleDeck();
+    const bleed = deck.slides.filter((s) => s.layout === "image-full").length;
+    expect(signed(deck)).toBe(0);
+    deck.design.signature = { kind: "rule", edge: "top", weight: "heavy" };
+    // Every slide but the full bleed image, which fills the margins.
+    expect(signed(deck)).toBe(deck.slides.length - bleed);
+    expect(renderDeckHtml(deck, SAMPLE_ASSETS, "static")).toContain("height:8px");
+    const school = sampleDeck();
+    school.brief.concept = { idea: "A Swiss deck on a strict grid", school: "swiss", avoid: "Decoration", signature: "A heavy rule above every headline" };
+    expect(signed(school)).toBe(school.slides.length - bleed);
+    school.design.signature = { kind: "none" };
+    expect(signed(school)).toBe(0);
+  });
+
+  it("numbers the folio by slide, not on the cover, and keeps every primitive in the margin", () => {
+    const deck = sampleDeck();
+    deck.design.signature = { kind: "folio", corner: "top-right" };
+    const html = renderDeckHtml(deck, SAMPLE_ASSETS, "static");
+    const folios = [...html.matchAll(/class="signature-folio-text"[^>]*>(\d+)</g)].map((m) => m[1]);
+    expect(folios[0]).toBe("02");
+    expect(folios).not.toContain("01");
+    expect(html).toContain("right:var(--mx);top:calc(var(--my) / 2)");
+    // The band takes a quarter of the margin, the left rule sits in the middle of it: the grid inset (--mx, --my) stays free.
+    deck.design.signature = { kind: "band", edge: "left" };
+    expect(renderDeckHtml(deck, SAMPLE_ASSETS, "static")).toContain("width:calc(var(--mx) / 4)");
+    deck.design.signature = { kind: "rule", edge: "left" };
+    expect(renderDeckHtml(deck, SAMPLE_ASSETS, "static")).toContain("left:calc(var(--mx) / 2 - 1px);top:var(--my);bottom:var(--my);width:2px");
+  });
+
   it("renders every slide and the player only in present mode", () => {
     const deck = sampleDeck();
     const present = renderDeckHtml(deck, SAMPLE_ASSETS, "present");

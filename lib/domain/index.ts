@@ -4,6 +4,7 @@ export * from "./fonts";
 export * from "./tokens";
 export * from "./icons";
 export * from "./composition";
+export * from "./signature";
 export * from "./blocks";
 export * from "./layouts";
 export * from "./motion";

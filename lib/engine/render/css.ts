@@ -176,6 +176,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .bg-image img{display:block;width:100%;height:100%;object-fit:cover}
 .bg-overlay{position:absolute;inset:0}
 .brand-visual>div{position:absolute}
+.signature{position:absolute;inset:0;pointer-events:none}
+.signature>div{position:absolute}
+.signature-folio-text{font-family:var(--font-heading);font-weight:var(--hw);font-size:var(--fs-small);line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
 .brand-numeral-text{bottom:24px;font-family:var(--font-heading);font-weight:var(--hw);font-size:880px;line-height:.8;letter-spacing:-.04em;white-space:nowrap}
 .axis-center .grid{justify-content:center}
 .axis-center .zone{text-align:center}

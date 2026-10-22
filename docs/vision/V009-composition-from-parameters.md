@@ -57,6 +57,14 @@ The model may override on any slide. The deck stays coherent because a deck uses
 
 A `signature` is free text today. It gets a small set of render primitives that repeat on every slide: **a rule**, **a chapter number**, **a frame**, **a color field**, **a crop**. The model picks one and parameterizes it (position, weight, which color), the engine draws it and measures that it stays out of the text. A signature that no primitive can draw stays a sentence in the concept and the guide says so, instead of promising it.
 
+Step 4 as built (`design.signature`, `lib/domain/signature.ts`):
+
+- **Primitives:** `rule` (top, bottom or left edge, hairline or heavy), `frame`, `folio` (the slide number in a corner, from the second slide) and `band` (a strip of brand tint along an edge), plus `none`. The large chapter number and the color field behind a moment already exist as slide backgrounds (`background: brand`, #42), so they are not repeated here: they mark moments, a signature repeats.
+- **No color parameter.** The accent is a signal and never decoration, so rules and the frame use the text color, the folio the muted color and the band a tint of the brand.
+- **Out of the text by construction.** Every primitive is centered in or confined to the slide margin, outside the grid inset, so no measurement is needed, the same argument as dominance by construction. Full bleed slides skip it.
+- **School defaults:** swiss a heavy top rule, editorial a folio. A deck's own `design.signature` wins, `{ kind: none }` switches the default off. This answers the open question below for the structured part: the model's choice wins.
+- **PowerPoint for free.** The primitives are plain boxes, borders and one line of text, and the snapshot already exports those, so step 5 needs nothing for them.
+
 ## What is measured
 
 Principles, each with the perception it follows from:
@@ -82,7 +90,7 @@ Each is one pull request with its own eval where it changes deck quality.
 1. This document (no code).
 2. `composition` on a slide with `axis`, `split` and `dominant`, the measurement of the grid, and the cross-school geometry test. Schools get defaults for these three.
 3. `field` and `scale`, with the empty space measurement.
-4. Signature primitives: rule, chapter number, frame, color field. The crop waits for V008 phase 3.
+4. Signature primitives: rule, frame, folio, band (built, see above). The chapter number and the color field are slide backgrounds since #42. The crop waits for V008 phase 3.
 5. PowerPoint for all of the above.
 
 ## Not now

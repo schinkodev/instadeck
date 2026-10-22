@@ -5,6 +5,7 @@
  * Fonts only from the curated list (fonts.ts), a test guards it.
  */
 import type { Composition } from "./composition";
+import type { Signature } from "./signature";
 import type { Intensity } from "./motion-limits";
 import type { Tempo } from "./motion";
 import type { TYPE_SCALES } from "./tokens";
@@ -25,6 +26,8 @@ export interface DesignSchool {
   motion: { intensity: Intensity; tempo: Tempo; note: string };
   /** The default geometry of a slide in this school (V009). A slide may override it. */
   composition?: Composition;
+  /** The signature device the school draws on every slide when the deck sets none (V009). */
+  signature?: Signature;
   avoid: string;
 }
 
@@ -42,6 +45,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     imagery: "Objective photography, tightly cropped, often grayscale. Images align to the grid like text.",
     motion: { intensity: "subtle", tempo: "confident", note: "Cuts and wipes, nothing decorative. Motion reveals structure." },
     composition: { axis: "asymmetric" },
+    signature: { kind: "rule", edge: "top", weight: "heavy" },
     avoid: "Centered body text, rounded corners, more than one accent color, decoration.",
   },
   {
@@ -56,6 +60,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     space: { density: "airy", radius: 0, cards: "flat" },
     imagery: "Full bleed photography with short captions. Pull quotes set large.",
     motion: { intensity: "subtle", tempo: "calm", note: "Reveal and fade, like turning a page." },
+    signature: { kind: "folio", corner: "bottom-right" },
     avoid: "Uniform sizes, bullet lists, many small elements competing.",
   },
   {
@@ -196,9 +201,14 @@ export function getSchool(id: string): DesignSchool | undefined {
 }
 
 export const CONCEPT_GUIDANCE =
-  "Before choosing colors and fonts, write the concept of the deck: the visual idea in one sentence, a school (section schools) or your own named references, what the deck must not look like, and one signature device that recurs (a rule, a crop, a number style, a color field). Then derive the design from it. Schools are recommendations with reasons, combine them or name your own references.";
+  "Before choosing colors and fonts, write the concept of the deck: the visual idea in one sentence, a school (section schools) or your own named references, what the deck must not look like, and one signature device that recurs (a rule, a crop, a number style, a color field), drawn by design.signature when a primitive fits (section design, signature). Then derive the design from it. Schools are recommendations with reasons, combine them or name your own references.";
 
 /** The default composition of a school, for slides that set none (V009). */
 export function schoolComposition(id: string | undefined): Composition | undefined {
   return DESIGN_SCHOOLS.find((s) => s.id === id)?.composition;
+}
+
+/** The default signature of a school, for decks that set none (V009). */
+export function schoolSignature(id: string | undefined): Signature | undefined {
+  return DESIGN_SCHOOLS.find((s) => s.id === id)?.signature;
 }
