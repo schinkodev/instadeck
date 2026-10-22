@@ -62,6 +62,13 @@ export type SlideInput = z.infer<typeof slideInputSchema>;
 export const slideSchema = slideInputSchema.extend({ id: z.string().min(1) });
 export type Slide = z.infer<typeof slideSchema>;
 
+/** Chapter number of each slide that uses the numeral visual: its place among those slides, from 1. */
+export function chapterNumbers(slides: readonly Slide[]): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const s of slides) if (s.background?.type === "brand" && s.background.visual === "numeral") out.set(s.id, out.size + 1);
+  return out;
+}
+
 export const deckSchema = z.strictObject({
   id: z.string().min(1),
   title: z.string().min(1),

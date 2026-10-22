@@ -5,7 +5,7 @@
  * Only plain boxes, circles and one line of text, in solid colors: the PowerPoint snapshot reads the same DOM, so the
  * background exports as shapes and text with no special case.
  */
-import { mix, type Background, type Deck, type Palette, type Slide } from "@/lib/domain";
+import { chapterNumbers, mix, type Background, type Deck, type Palette, type Slide } from "@/lib/domain";
 import { esc } from "../text";
 
 /**
@@ -20,23 +20,13 @@ export function brandColors(palette: Palette, accentSlide: boolean): { tint: str
   return { tint: mix(palette.bg, ink, BRAND_VISUAL_STRENGTH), solid: mix(palette.bg, ink, BRAND_VISUAL_STRENGTH * 1.6) };
 }
 
-/** Chapter number of a slide: its place among the slides that use the numeral visual. */
-export function chapterNumber(deck: Deck, slide: Slide): number {
-  let n = 0;
-  for (const s of deck.slides) {
-    if (s.background?.type === "brand" && s.background.visual === "numeral") n += 1;
-    if (s === slide || s.id === slide.id) break;
-  }
-  return n;
-}
-
 /** The visual layer, placed behind the grid. Positions alternate with the slide index so neighboring slides do not repeat. */
 export function renderBrandVisual(background: Background, deck: Deck, slide: Slide, index: number, palette: Palette): string {
   const { tint, solid } = brandColors(palette, slide.tone === "accent");
   const right = index % 2 === 0;
   switch (background.visual) {
     case "numeral": {
-      const label = String(chapterNumber(deck, slide)).padStart(2, "0");
+      const label = String(chapterNumbers(deck.slides).get(slide.id) ?? 0).padStart(2, "0");
       return `<div class="brand-visual brand-numeral" aria-hidden="true"><div class="brand-numeral-text" style="color:${tint};${right ? "right" : "left"}:72px">${esc(label)}</div></div>`;
     }
     case "field": {

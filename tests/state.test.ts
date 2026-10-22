@@ -45,6 +45,19 @@ describe("decks", () => {
     expect(gone.deck.slides[0]!.background).toBeUndefined();
   });
 
+  it("marks the numeral slides renumbered by an edit as touched", async () => {
+    const { deck } = await created();
+    const [a, b, c] = deck.slides.map((s) => s.id) as [string, string, string];
+    const numeral = { type: "brand", visual: "numeral" } as const;
+    const set = await store.applyOps(deck.id, 1, [{ op: "update_slide", slide_id: b, background: numeral }, { op: "update_slide", slide_id: c, background: numeral }], "mcp", "numerals");
+    expect(set.deck.slides.map((s) => s.background?.type)).toEqual([undefined, "brand", "brand"]);
+    // A numeral slide inserted before them renumbers both, so the edit touches them too, not only the new slide.
+    const added = await store.applyOps(deck.id, 2, [{ op: "update_slide", slide_id: a, background: numeral }], "mcp", "first");
+    expect(new Set(added.touched)).toEqual(new Set([a, b, c]));
+    const removed = await store.applyOps(deck.id, 3, [{ op: "update_slide", slide_id: a, background: null }], "mcp", "undo");
+    expect(new Set(removed.touched)).toEqual(new Set([a, b, c]));
+  });
+
   it("applies ops atomically and bumps the revision", async () => {
     const { deck } = await created();
     const [a, b, c] = deck.slides.map((s) => s.id);

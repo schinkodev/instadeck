@@ -2,7 +2,7 @@
  * Applying operations to a deck, a pure function. An invalid operation (unknown slide, position outside the deck)
  * throws OpError and changes nothing: either all operations pass, or none.
  */
-import { designFromBrand, patchMotion, type BrandKit, type Deck, type DesignPatch, type Op, type Slide } from "@/lib/domain";
+import { chapterNumbers, designFromBrand, patchMotion, type BrandKit, type Deck, type DesignPatch, type Op, type Slide } from "@/lib/domain";
 
 export class OpError extends Error {
   constructor(
@@ -118,5 +118,8 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
       }
     }
   });
+  // A chapter number depends on the other numeral slides: inserting, removing or moving one renumbers the rest.
+  const before = chapterNumbers(input.slides);
+  for (const [id, n] of chapterNumbers(deck.slides)) if (before.get(id) !== n) touched.add(id);
   return { deck, touched: [...touched], global };
 }

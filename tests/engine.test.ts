@@ -228,6 +228,16 @@ describe("motion language", () => {
     expect(renderDeckHtml(sampleDeck(), SAMPLE_ASSETS, "static")).not.toContain('class="brand-visual');
   });
 
+  it("draws the background behind the image of a full bleed layout, not over it", () => {
+    const d = sampleDeck();
+    const at = d.slides.findIndex((x) => x.layout === "image-full");
+    d.slides[at]!.background = { type: "brand", visual: "field" };
+    const html = renderDeckHtml(d, SAMPLE_ASSETS, "static");
+    const slide = html.slice(html.indexOf(`data-slide-id="${d.slides[at]!.id}"`));
+    expect(slide.indexOf('class="brand-visual')).toBeGreaterThan(-1);
+    expect(slide.indexOf('class="brand-visual')).toBeLessThan(slide.indexOf('class="bleed"'));
+  });
+
   it("keeps text legible on a brand background and warns where the image hides it", () => {
     const d = sampleDeck();
     d.slides[0]!.background = { type: "brand", visual: "field" };
