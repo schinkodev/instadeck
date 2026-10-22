@@ -69,6 +69,7 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
           ...s,
           ...(op.layout !== undefined && { layout: op.layout }),
           ...(op.intent !== undefined && { intent: op.intent }),
+          ...(op.beat !== undefined && { beat: op.beat }),
           ...(op.tone !== undefined && { tone: op.tone }),
           ...(op.motion !== undefined && { motion: op.motion }),
           ...(op.notes !== undefined && { notes: op.notes }),

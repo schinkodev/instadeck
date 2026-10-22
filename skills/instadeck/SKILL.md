@@ -11,7 +11,7 @@ You decide the story, content, structure and design. InstaDeck renders, validate
 
 1. Brief: company, topic, audience, goal and content language. Ask the user only for what you cannot infer.
 2. Brand: add the logo and brand files with add_asset and read candidate colors with extract_brand_colors. Pick the primary color and a mood, call suggest_brand_system, then create_brand_kit with its brand_kit plus the name and logos. Read the findings it returns. Skip when the user has no brand.
-3. Story: read the example closest to the brief with get_example. Pick and order pitch beats for this audience (section pitch). Write each slide intent as one sentence before choosing layouts.
+3. Story: read the example closest to the brief with get_example. Pick a narrative frame and the beats for this audience (section pitch: frames, beats). For every beat that needs evidence the user has not given, ask the user before building: at most five questions in one message, each with a suggested default. Never invent numbers, names or quotes. Write each slide intent as one sentence before choosing layouts, and give every slide its beat.
 4. Design: use the design and motion from suggest_brand_system, or choose colors, fonts, type scale and density yourself (sections design, fonts). Design the motion language for the audience: intensity, rationale, entrance, transition and, when the presets do not fit, your own vocabulary (section motion). Explain the choice to the user in two or three sentences.
 5. Build: call create_deck once with the brief, brand kit, design, motion and all slides. Keep the structure, rhythm and text lengths of the example, replace all of its content.
 6. Review: read findings and look at the previews. Fix every error and the warnings that matter with apply_ops, passing expected_revision.
@@ -26,6 +26,19 @@ You decide the story, content, structure and design. InstaDeck renders, validate
 - Use the accent tone for at most two moments, typically the hook or the ask.
 - Close with a callback to the opening hook.
 - 10 to 13 slides for a first meeting.
+- Pick one frame for the audience and goal and set brief.frame. Give every slide its beat. The frame decides the order, the beats decide the content.
+- Before building, check every beat you plan against the brief. When a beat needs evidence the user has not given (askUser), ask the user in one message: at most five questions, the most important first, each with a suggested default they can accept. Never invent numbers, names or quotes and never put a placeholder on a slide. A beat without its evidence is left out.
+- Open with the hook and end with the ask or the decision. The last slide calls back to the hook.
+
+Narrative frames (`brief.frame`):
+
+- `classical` (Cicero, Quintilian): Formal persuasion of a skeptical, expert audience: investors, boards, procurement. The most complete arc, it already has a head and a tail.
+- `scqa` (Barbara Minto): Busy decision makers and analytic decks: boards, consultants, finance. The answer comes early and the rest proves it.
+- `abt` (Randy Olson): Short decks and any audience: a crisp three act tension in ten slides or fewer.
+- `monroe` (Alan Monroe): Selling to customers and partners: moves the audience from attention to action.
+- `story-spine` (Kenn Adams, Pixar): Founder stories, consumer launches, nonprofits: when the audience must feel it before they analyze it.
+- `sparkline` (Nancy Duarte): Vision, keynotes, launches and change inside a company: contrast pulls the audience out of the status quo.
+- `toulmin` (Stephen Toulmin): Skeptical analysts, due diligence, financial and technical reviews: every claim carries its proof and its limits.
 
 ## Layouts
 

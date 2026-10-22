@@ -133,3 +133,13 @@ describe("brand", () => {
     expect(designSchema.safeParse(d).success).toBe(true);
   });
 });
+
+describe("narrative frames", () => {
+  it("name only existing beats and every beat tells what to ask the user", async () => {
+    const { NARRATIVE_FRAMES, PITCH_BEATS, BEAT_IDS } = await import("@/lib/domain");
+    for (const f of NARRATIVE_FRAMES) for (const st of f.stages) for (const b of st.beats) expect(BEAT_IDS, `${f.id}/${st.name}`).toContain(b);
+    for (const b of PITCH_BEATS) expect(b.askUser.length, b.id).toBeGreaterThan(20);
+    // every beat has a place in every frame, so a frame never rejects a beat silently
+    for (const f of NARRATIVE_FRAMES) for (const b of BEAT_IDS) expect(f.stages.some((s) => s.beats.includes(b)), `${f.id} lacks ${b}`).toBe(true);
+  });
+});

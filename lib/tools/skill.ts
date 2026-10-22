@@ -2,7 +2,7 @@
  * Skill pro Claude Code (skills/instadeck/SKILL.md), generovaný z domény a workflow.
  * npm run skill ho přepíše, test hlídá, že je aktuální.
  */
-import { ENTRANCES, INTENSITY, LAYOUTS, MOTION_LIMITS, PITCH_GUIDANCE, TRANSITIONS } from "@/lib/domain";
+import { ENTRANCES, INTENSITY, LAYOUTS, MOTION_LIMITS, NARRATIVE_FRAMES, NARRATIVE_GUIDANCE, PITCH_GUIDANCE, TRANSITIONS } from "@/lib/domain";
 import { workflow } from "./guide";
 
 export function skillMarkdown(): string {
@@ -23,6 +23,13 @@ ${workflow("local").join("\n")}
 
 ${PITCH_GUIDANCE.rules.map((r) => `- ${r}`).join("\n")}
 - ${PITCH_GUIDANCE.slides.sweetSpot}.
+- ${NARRATIVE_GUIDANCE.choose}
+- ${NARRATIVE_GUIDANCE.elicit}
+- ${NARRATIVE_GUIDANCE.close}
+
+Narrative frames (\`brief.frame\`):
+
+${NARRATIVE_FRAMES.map((f) => `- \`${f.id}\` (${f.author}): ${f.fits}`).join("\n")}
 
 ## Layouts
 
