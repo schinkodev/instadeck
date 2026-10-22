@@ -307,3 +307,37 @@ describe("typesetting and placeholders", () => {
     expect(hits({ title: { type: "heading", level: "h1", text: "Revenue grew 3x in two years" }, body: { type: "bullets", items: ["Replaced spreadsheets in 40 teams", "Add-ons sold to 12 customers"] } })).toBe(0);
   });
 });
+
+describe("story", () => {
+  const story = (beats: (string | undefined)[], frame?: string) => {
+    const d = sampleDeck();
+    d.slides = d.slides.slice(0, beats.length).map((s, i) => ({ ...s, beat: beats[i] }));
+    if (frame) d.brief = { ...d.brief, frame };
+    return rules(validateDeck(d, SAMPLE_ASSET_INDEX)).filter((r) => r.startsWith("story"));
+  };
+
+  it("checks nothing when slides carry no beats", () => {
+    expect(story([undefined, undefined, undefined])).toEqual([]);
+  });
+
+  it("wants a hook first and the ask or a decision last", () => {
+    expect(story(["problem", "solution", "traction"])).toEqual(expect.arrayContaining(["story-open", "story-close"]));
+    expect(story(["hook", "problem", "ask"])).not.toContain("story-open");
+    expect(story(["hook", "problem", "decision"])).not.toContain("story-close");
+  });
+
+  it("follows the stages of the declared frame", () => {
+    // classical: refutatio (competition) before narratio (problem) goes backwards
+    expect(story(["hook", "competition", "problem", "ask"], "classical")).toContain("story-order");
+    expect(story(["hook", "problem", "solution", "competition", "ask"], "classical")).not.toContain("story-order");
+  });
+});
+
+describe("story evidence", () => {
+  it("flags a beat that needs proof but has text only", () => {
+    const text = withSlide({ layout: "points", beat: "traction", blocks: { title: { type: "heading", level: "h1", text: "Customers love the product and keep using it" }, body: { type: "bullets", items: ["Strong growth", "High retention"] } } });
+    expect(rules(validateDeck(text, SAMPLE_ASSET_INDEX))).toContain("story-evidence");
+    const proof = withSlide({ layout: "headline-stat", beat: "traction", blocks: { title: { type: "heading", level: "h1", text: "Revenue tripled in twelve months" }, stat: { type: "stat", value: 3, suffix: "x", label: "revenue growth" } } });
+    expect(rules(validateDeck(proof, SAMPLE_ASSET_INDEX))).not.toContain("story-evidence");
+  });
+});

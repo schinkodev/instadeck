@@ -5,6 +5,8 @@
 import { z } from "zod";
 import { blockSchema } from "./blocks";
 import { LAYOUT_IDS } from "./layouts";
+import { FRAME_IDS } from "./narrative";
+import { BEAT_IDS } from "./pitch";
 import { deckMotionPatchSchema, slideMotionSchema, storedDeckMotionSchema } from "./motion";
 import { designSchema, TONES } from "./tokens";
 
@@ -14,12 +16,14 @@ export const briefSchema = z.strictObject({
   audience: z.string().optional().describe("Who will see it: seed investors, enterprise buyers, partners"),
   goal: z.string().optional().describe("What the audience should do or believe afterwards"),
   language: z.string().min(2).describe("Language of the slide content, BCP 47 tag, e.g. en, cs, de"),
+  frame: z.enum(FRAME_IDS).optional().describe("Narrative frame that orders the story (section pitch, frames): classical, scqa, abt, monroe, story-spine, sparkline, toulmin"),
 });
 export type Brief = z.infer<typeof briefSchema>;
 
 export const slideInputSchema = z.strictObject({
   layout: z.enum(LAYOUT_IDS).describe("Layout id from instadeck://layouts"),
   intent: z.string().min(1).max(160).describe("The one thing this slide must communicate, as a sentence. Not shown on the slide"),
+  beat: z.enum(BEAT_IDS).optional().describe("The story beat this slide carries (section pitch, beats): hook, problem, traction, ask..."),
   tone: z.enum(TONES).optional().describe("default, inverse (dark on light swapped) or accent (accent colored background, for one or two key moments)"),
   blocks: z.record(z.string(), blockSchema).describe("Block per zone of the layout, keyed by zone name"),
   motion: slideMotionSchema.optional(),
@@ -64,6 +68,7 @@ export const opSchema = z.discriminatedUnion("op", [
     slide_id: z.string(),
     layout: slideInputSchema.shape.layout.optional(),
     intent: slideInputSchema.shape.intent.optional(),
+    beat: slideInputSchema.shape.beat,
     tone: slideInputSchema.shape.tone,
     blocks: z.record(z.string(), blockSchema.nullable()).optional().describe("Zones to set. null removes the block from the zone. Unlisted zones stay"),
     motion: slideMotionSchema.optional(),

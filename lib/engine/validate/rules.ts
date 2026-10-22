@@ -16,7 +16,10 @@ import {
   deriveTokens,
   findGoogleFont,
   entranceOf,
+  getBeat,
+  getFrame,
   getLayout,
+  stagesOf,
   transitionOf,
   type Block,
   type Deck,
@@ -347,12 +350,52 @@ function checkMotion(deck: Deck): Finding[] {
   return out;
 }
 
+/** Bloky, které dokládají tvrzení: číslo, graf, tabulka, citace, loga, srovnání, obraz, časová osa, tým. */
+const EVIDENCE = new Set(["stat", "stats", "chart", "table", "quote", "logos", "comparison", "image", "timeline", "team"]);
+
+/**
+ * Příběh (narrative.ts, storytelling principy): hlava a pata, pořadí podle rámce a beaty, které tvrdí bez
+ * důkazu. Hlídá se jen to, co deck sám deklaruje (beat u slidu, frame v briefu).
+ */
+function checkStory(deck: Deck, push: Push) {
+  const beats = deck.slides.flatMap((s, i) => (s.beat ? [{ slide: s, beat: s.beat, i }] : []));
+  if (!beats.length) return;
+  if (beats[0]!.beat !== "hook") push("warning", "story-open", `The story opens with the ${beats[0]!.beat} beat. Open with the hook: why should the audience listen for the next ten minutes`);
+  const last = beats.at(-1)!.beat;
+  if (last !== "ask" && last !== "decision") push("warning", "story-close", `The story ends with the ${last} beat. End with the ask or the decision, so the audience knows what to do`);
+
+  const frame = deck.brief.frame ? getFrame(deck.brief.frame) : undefined;
+  if (frame) {
+    let reached = 0;
+    let reachedBy = "";
+    for (const { slide, beat, i } of beats) {
+      const stages = stagesOf(frame, beat);
+      if (!stages.length) continue;
+      const stage = stages.find((x) => x >= reached) ?? stages[0]!;
+      if (stage < reached) {
+        push("warning", "story-order", `Slide ${i + 1} (${slide.id}) carries ${beat}, which belongs to the ${frame.stages[stage]!.name} stage of the ${frame.name} frame, after ${reachedBy} already reached ${frame.stages[reached]!.name}. Move it, or pick a frame that fits this order`);
+      } else if (stage > reached) {
+        reached = stage;
+        reachedBy = beat;
+      }
+    }
+  }
+
+  for (const { slide, beat, i } of beats) {
+    if (!getBeat(beat)?.needsEvidence) continue;
+    if (!Object.values(slide.blocks).some((b) => EVIDENCE.has(b.type))) {
+      push("warning", "story-evidence", `Slide ${i + 1} (${slide.id}) carries ${beat} with text only. It asserts but does not prove: show the number, chart, table or quote, or ask the user for it`);
+    }
+  }
+}
+
 export function validateDeck(deck: Deck, assets: AssetIndex): Finding[] {
   const deckFindings: Finding[] = [];
   const push: Push = (severity, rule, message) => deckFindings.push({ severity, rule, message });
   checkFonts(deck, assets, push);
   checkContrast(deck, push);
   checkRhythm(deck, push);
+  checkStory(deck, push);
   return [...deckFindings, ...checkMotion(deck), ...deck.slides.flatMap((s) => validateSlide(s, deck, assets))];
 }
 

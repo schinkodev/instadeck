@@ -23,7 +23,7 @@ export interface Capability {
 export const CAPABILITIES: Capability[] = [
   {
     id: "design-knowledge",
-    claim: "Knows how great pitch decks are built: story beats, layouts, typography, color, motion and the design, storytelling and motion principles behind them.",
+    claim: "Knows how great pitch decks are built: story beats and narrative frames (classical rhetoric, Minto, Duarte, Toulmin and more), layouts, typography, color, motion and the design, storytelling and motion principles behind them. Asks you for the numbers and proof a story needs instead of inventing them.",
     status: "done",
     tools: ["get_design_guide"],
     resources: ["instadeck://guide", "instadeck://layouts", "instadeck://blocks", "instadeck://motion", "instadeck://fonts", "instadeck://pitch", "instadeck://principles/design", "instadeck://principles/storytelling", "instadeck://principles/motion"],

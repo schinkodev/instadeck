@@ -38,24 +38,24 @@ A principle is covered when layers 1 to 3 enforce it. A principle with critique 
 | Cognitive Load / 4+/-1 Chunks | Miller/Cowan | 1 schema: stats takes 2 to 4 items, bullets at most 5 | Cards and blocks per slide are not capped |
 | Signal-to-Noise Ratio | Reynolds/Tufte | 2 tokens: the renderer has no decorative elements |  |
 
-## Storytelling principles (2 of 14 covered)
+## Storytelling principles (6 of 14 covered)
 
 | Principle | Author | Enforced by | Gap |
 |---|---|---|---|
 | Pyramid Principle | Barbara Minto | 4 critique: judged by the model |  |
-| Situation-Complication-Resolution | Minto/McKinsey | 4 critique: judged by the model |  |
+| Situation-Complication-Resolution | Minto/McKinsey | 3 lint: story-order: with brief.frame scqa the beats follow situation, complication, answer, support |  |
 | Sparkline | Nancy Duarte | 4 critique: judged by the model |  |
-| Monroe's Motivated Sequence | Alan Monroe | 4 critique: judged by the model |  |
-| Narrative Arc | Freytag/McKee | 4 critique: judged by the model |  |
+| Monroe's Motivated Sequence | Alan Monroe | 3 lint: story-order: with brief.frame monroe the beats follow attention, need, satisfaction, visualization, action |  |
+| Narrative Arc | Freytag/McKee | 3 lint: story-order: beats follow the stages of the declared narrative frame |  |
 | Ethos-Logos-Pathos | Aristotle | 4 critique: judged by the model |  |
 | Curiosity Gap | Loewenstein/Heath Brothers | 4 critique: judged by the model |  |
 | Stakes Escalation | McKee | 4 critique: judged by the model |  |
 | Contrast Principle | Duarte/Cialdini | 4 critique: judged by the model |  |
-| Assertion-Evidence | Michael Alley | 3 lint: heading-label: a content slide heading of one or two words without a number |  |
+| Assertion-Evidence | Michael Alley | 3 lint: heading-label: a content slide heading of one or two words without a number<br>3 lint: story-evidence: a beat that needs proof carries a stat, chart, table or quote |  |
 | Rule of Three | Classical Rhetoric | 4 critique: judged by the model |  |
 | Progressive Disclosure | Cognitive Science/Norman | 1 schema: click steps and build in the block schemas<br>3 lint: motion-steps |  |
 | One Controlling Idea | Robert McKee | 4 critique: judged by the model |  |
-| Bookend Callback | Classical Rhetoric | 4 critique: judged by the model |  |
+| Bookend Callback | Classical Rhetoric | 3 lint: story-open: the story opens with the hook<br>3 lint: story-close: the story ends with the ask or the decision<br>4 critique: the callback itself is judged by the model |  |
 
 ## Motion principles
 
