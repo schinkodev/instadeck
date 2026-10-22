@@ -6,6 +6,7 @@ Jedno jádro, dvě cesty: **hostovaný konektor** `https://instadeck.app/mcp` (v
 
 ## Specifikace
 
+- [docs/vision/V008-design-od-principu-dolu.md](docs/vision/V008-design-od-principu-dolu.md): audit principů podle vrstev vynucení, koncept a školy, obrazová vrstva (assety, pozadí), analytické decky s `dataset` a kontrolou čísel, eval
 - [docs/vision/V006-pohybovy-jazyk.md](docs/vision/V006-pohybovy-jazyk.md): pohybový jazyk decku navrhuje model (intenzita, vlastní keyframes, sdílené přechody), hlídají ho měřené principy místo výčtů
 - [docs/vision/V005-priklady-brand-a-hranice-zdarma.md](docs/vision/V005-priklady-brand-a-hranice-zdarma.md): golden examples, brandový systém, hranice zdarma a prémie (doplňuje V004)
 - [docs/vision/V004-konektor-a-lokalni-server.md](docs/vision/V004-konektor-a-lokalni-server.md): aktuální směr (hostovaný konektor s MCP App jako výchozí, lokální server jako pro varianta)
