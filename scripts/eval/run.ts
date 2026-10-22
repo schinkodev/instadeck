@@ -13,8 +13,6 @@ import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { closeBrowser, measureDeck, renderPng, validateDeck } from "@/lib/engine";
-import { Store } from "@/lib/state";
 import { BRIEFS } from "./briefs";
 import { generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, type DeckRef, type DeckStats, type PairResult, type Verdict } from "./core";
 
@@ -52,6 +50,24 @@ function claude(args: string[], cwd: string, timeoutMs: number): Promise<ClaudeR
   });
 }
 
+/** Vykreslí a změří deck kódem měřeného checkoutu (render.ts v podprocesu s jeho tsconfig). */
+function renderIn(home: string, out: string): Promise<{ slides: number; errors?: number; warnings?: number }> {
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn(join(REPO, "node_modules/.bin/tsx"), ["--tsconfig", join(REPO, "tsconfig.json"), join(ROOT, "scripts/eval/render.ts"), home, out], { cwd: REPO, stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (d) => (stdout += d));
+    child.stderr.on("data", (d) => (stderr += d));
+    child.on("close", (code) => {
+      try {
+        resolvePromise(JSON.parse(stdout.trim().split("\n").at(-1)!));
+      } catch {
+        reject(new Error(`Rendering failed with ${code}: ${stderr.slice(0, 600)}`));
+      }
+    });
+  });
+}
+
 function flag(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
   return i >= 0 ? process.argv[i + 1] : undefined;
@@ -76,11 +92,10 @@ async function generate(label: string) {
       console.error(`[${label}] ${brief.id}: done before, skipped (--force to redo)`);
       continue;
     }
-    const store = Store.local(home);
     // Navázání po přerušení: deck, který model už vytvořil, se jen vykreslí, negeneruje se znovu.
     let run: ClaudeResult;
     const metaPath = join(dir, "run.json");
-    if ((await store.listDecks()).length && existsSync(metaPath) && !process.argv.includes("--force")) {
+    if (readdirSync(home).length && existsSync(metaPath) && !process.argv.includes("--force")) {
       run = JSON.parse(readFileSync(metaPath, "utf8")) as ClaudeResult;
       console.error(`[${label}] ${brief.id}: deck exists, rendering only`);
     } else {
@@ -90,26 +105,18 @@ async function generate(label: string) {
       writeFileSync(metaPath, JSON.stringify(run));
     }
 
-    const decks = await store.listDecks();
-    if (!decks.length) {
+    const rendered = await renderIn(home, dir);
+    if (!rendered.slides) {
       console.error(`[${label}] ${brief.id}: no deck created (${run.is_error ? "error" : run.result.slice(0, 120)})`);
       writeFileSync(join(dir, "stats.json"), JSON.stringify({ briefId: brief.id, errors: 0, warnings: 0, slides: 0, costUsd: run.total_cost_usd, failed: true }));
       continue;
     }
-    const deck = await store.getDeck(decks[0]!.id);
-    const assets = await store.assetsFor(deck);
-    const findings = [...validateDeck(deck, await store.assetIndex(deck)), ...(await measureDeck(deck, assets))];
-    const pngs = await renderPng(deck, assets, deck.slides.map((_, i) => i), 0.5);
-    const slidesDir = join(dir, "slides");
-    mkdirSync(slidesDir, { recursive: true });
-    pngs.forEach((p, i) => writeFileSync(join(slidesDir, `${String(i + 1).padStart(2, "0")}.png`), p));
-    writeFileSync(join(dir, "findings.json"), JSON.stringify(findings, null, 2));
-    const stats: DeckStats = { briefId: brief.id, errors: findings.filter((f) => f.severity === "error").length, warnings: findings.filter((f) => f.severity === "warning").length, slides: deck.slides.length, costUsd: run.total_cost_usd };
+    const stats: DeckStats = { briefId: brief.id, errors: rendered.errors!, warnings: rendered.warnings!, slides: rendered.slides, costUsd: run.total_cost_usd };
     writeFileSync(join(dir, "stats.json"), JSON.stringify(stats));
     console.error(`[${label}] ${brief.id}: ${stats.slides} slides, ${stats.errors} errors, ${stats.warnings} warnings, ${run.num_turns ?? "?"} turns`);
   }
-  await closeBrowser();
 }
+
 
 function deckRef(label: string, briefId: string): DeckRef | undefined {
   const dir = join(OUT, label, briefId, "slides");
