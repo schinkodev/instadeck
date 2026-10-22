@@ -30,7 +30,7 @@ export const briefSchema = z.strictObject({
   delivery: z
     .enum(["live", "pre-read", "both"])
     .optional()
-    .describe("How the deck is used: live (spoken to an audience), pre-read (read alone, no speaker) or both. It decides text density, motion and speaker notes. Ask the user, do not infer it from the industry"),
+    .describe("How the deck is used: live (spoken to an audience), pre-read (read alone, no speaker) or both. It decides text density, motion and speaker notes (validation checks density and motion). Ask the user, do not infer it from the industry"),
   bigIdea: z.string().min(10).max(200).optional().describe("What the audience should take away and do, in one sentence. Every slide serves it"),
   frame: z.enum(FRAME_IDS).optional().describe("Narrative frame that orders the story (section pitch, frames): classical, scqa, abt, monroe, story-spine, sparkline, toulmin"),
 });

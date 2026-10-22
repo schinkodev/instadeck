@@ -22,7 +22,7 @@ describe("eval briefs", () => {
 
 describe("asking eval", () => {
   const asks = "Before I build:\n1. Will you present this live or send it as a pre-read?\n2. What is the big idea: what should the audience take away?\n3. How long is the slot?";
-  const storyline = ["1. Hook: Margins are thinning", "2. Problem: Cost drift", "3. Evidence: Q3 bridge", "4. Risk: Fuel prices", "5. Ask: Approve budget"].join("\n");
+  const storyline = ["1. Hook: Margins are thinning", "2. Problem: Cost drift", "3. Traction: Q3 bridge", "4. Risks: Fuel prices", "5. Ask: Approve budget"].join("\n");
 
   it("keeps sparse briefs out of the quality eval and lets the model ask", () => {
     expect(BRIEFS.some((b) => SPARSE_BRIEFS.some((s) => s.id === b.id))).toBe(false);
@@ -36,6 +36,13 @@ describe("asking eval", () => {
   it("reads a storyline given as a table", () => {
     const table = ["| # | Beat | Headline |", "|---|---|---|", ...[1, 2, 3, 4, 5].map((n) => `| ${n} | hook | Headline ${n} |`)].join("\n");
     expect(scoreAsk(asks, table, false).showedStoryline).toBe(true);
+  });
+
+  it("does not credit a statement, a list of picked answers or a list without beats", () => {
+    expect(scoreAsk("I will treat this as a live talk, and the big idea is one sentence.", storyline, false).pass).toBe(false);
+    expect(scoreAsk(asks, "I picked:\n1. live\n2. twelve minutes\n3. navy\n4. no logo\n5. yes", false).showedStoryline).toBe(false);
+    expect(scoreAsk("Ready.", storyline, false).questions).toBe(0);
+    expect(scoreAsk("Ready.", storyline, false).pass).toBe(false);
   });
 
   it("fails when the model builds early, skips delivery or skips the storyline", () => {

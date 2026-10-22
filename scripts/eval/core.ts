@@ -2,6 +2,7 @@
  * Pure eval logic (no model, no disk): building prompts, the order of pairs, merging verdicts,
  * results and the report. Tested in vitest. The CLI is in run.ts.
  */
+import { BEAT_IDS } from "@/lib/domain/pitch";
 import type { EvalBrief } from "./briefs";
 
 export const CRITERIA = ["focus", "hierarchy", "concept", "rhythm", "legibility", "polish"] as const;
@@ -18,7 +19,7 @@ export const RUBRIC: Record<Criterion, string> = {
 
 export function generationPrompt(b: EvalBrief): string {
   const lang = b.language === "cs" ? "Czech" : "English";
-  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available, so do not ask for them. Decide everything yourself and do not ask questions. Finish when the deck exists and every error finding is fixed.
+  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available, so do not ask for them. Decide everything yourself, do not ask questions and do not wait for anyone to confirm a storyline: build the deck directly. Finish when the deck exists and every error finding is fixed.
 
 Brief: ${b.text}`;
 }
@@ -52,11 +53,15 @@ const LISTED = /^\s*(?:\d+[.)]|[-*\u2022]|\|\s*\d+\s*\|)\s*\S/;
 
 /** Judges the two replies of the asking eval by what they contain. Deterministic, so it can be tested. */
 export function scoreAsk(first: string, second: string, deckCreated: boolean): AskResult {
-  const askedDelivery = /\b(?:live|pre-?read|read (?:alone|beforehand|in advance)|in person)\b/i.test(first);
-  const askedBigIdea = /\b(?:big idea|take ?away|one sentence|should (?:do|believe|decide))\b/i.test(first);
-  const questions = first.split("\n").filter((l) => LISTED.test(l) && l.includes("?")).length || (first.match(/\?/g) ?? []).length;
-  const showedStoryline = second.split("\n").filter((l) => LISTED.test(l)).length >= 5;
-  return { builtEarly: deckCreated, askedDelivery, askedBigIdea, questions, showedStoryline, pass: !deckCreated && askedDelivery && askedBigIdea && questions <= 5 && showedStoryline };
+  // Only a line that asks counts: "I'll treat this as a pre-read" decides, it does not ask.
+  const asking = first.split("\n").filter((l) => l.includes("?"));
+  const askedDelivery = asking.some((l) => /\b(?:live|pre-?read|read (?:alone|beforehand|in advance)|in person)\b/i.test(l));
+  const askedBigIdea = asking.some((l) => /\b(?:big idea|take ?away|one sentence|should (?:do|believe|decide))\b/i.test(l));
+  const questions = asking.length;
+  // A storyline lists the slides with their story beats. A list of picked answers or of concepts has no beats.
+  const beats = new RegExp(`\\b(?:${BEAT_IDS.join("|")})\\b`, "i");
+  const showedStoryline = second.split("\n").filter((l) => LISTED.test(l) && beats.test(l)).length >= 4;
+  return { builtEarly: deckCreated, askedDelivery, askedBigIdea, questions, showedStoryline, pass: !deckCreated && askedDelivery && askedBigIdea && questions >= 1 && questions <= 5 && showedStoryline };
 }
 
 export interface DeckRef {

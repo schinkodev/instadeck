@@ -13,7 +13,7 @@
  *       The report is in out/eval/report-<A>-vs-<B>.md. A person decides the ambiguous pairs.
  */
 import { spawn } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { BRIEFS, SPARSE_BRIEFS } from "./briefs";
@@ -177,10 +177,13 @@ async function ask(label: string) {
   const runs = Number(flag("runs") ?? 3);
   const model = flag("model");
   const results: unknown[] = [];
-  for (const brief of SPARSE_BRIEFS) {
+  const only = flag("brief");
+  for (const brief of SPARSE_BRIEFS.filter((b) => !only || b.id === only)) {
     for (let i = 1; i <= runs; i++) {
       const dir = join(OUT, label, "ask", `${brief.id}-${i}`);
       const home = join(dir, "home");
+      // A run starts clean: a deck left by an earlier or interrupted run would score as built too early.
+      rmSync(dir, { recursive: true, force: true });
       mkdirSync(home, { recursive: true });
       const config = join(dir, "mcp.json");
       writeFileSync(config, JSON.stringify({ mcpServers: { instadeck: { command: join(REPO, "node_modules/.bin/tsx"), args: ["--tsconfig", join(REPO, "tsconfig.json"), join(REPO, "server/stdio.ts")], env: { INSTADECK_HOME: home } } } }));
@@ -188,13 +191,19 @@ async function ask(label: string) {
       const work = mkdtempSync(join(tmpdir(), "instadeck-eval-"));
       console.error(`[${label}] ${brief.id} #${i}: round one`);
       const one = await claude([...base, askPrompt(brief)], work, GEN_TIMEOUT_MS);
-      if (!one.session_id) throw new Error("claude gave no session_id, cannot continue the conversation");
+      // A round that failed is a failure of the harness, not an answer of the model: do not score it.
+      if (one.is_error || !one.result || !one.session_id) throw new Error(`Round one of ${brief.id} #${i} gave no answer (${one.is_error ? "error" : "no result or session"}). See ${dir}`);
       console.error(`[${label}] ${brief.id} #${i}: round two`);
       const two = await claude([...base, "--resume", one.session_id, ASK_REPLY], work, GEN_TIMEOUT_MS);
-      const deckCreated = existsSync(join(home, "decks")) ? readdirSync(join(home, "decks")).length > 0 : readdirSync(home).length > 0;
-      const score = scoreAsk(one.result ?? "", two.result ?? "", deckCreated);
+      if (two.is_error || !two.result) throw new Error(`Round two of ${brief.id} #${i} gave no answer. See ${dir}`);
+      // Locally every deck is a folder with a deck.json directly in the home, next to hidden folders for assets and brand kits.
+      const deckCreated = readdirSync(home, { withFileTypes: true }).some((e) => e.isDirectory() && !e.name.startsWith(".") && existsSync(join(home, e.name, "deck.json")));
+      const score = scoreAsk(one.result, two.result, deckCreated);
       writeFileSync(join(dir, "replies.json"), JSON.stringify({ first: one.result, second: two.result, score }, null, 2));
       results.push({ briefId: brief.id, run: i, ...score, costUsd: (one.total_cost_usd ?? 0) + (two.total_cost_usd ?? 0) });
+      // Written after every run, so an interruption keeps what was measured.
+      mkdirSync(join(OUT, label), { recursive: true });
+      writeFileSync(join(OUT, label, "ask.json"), JSON.stringify(results, null, 2));
       console.error(`[${label}] ${brief.id} #${i}: ${score.pass ? "pass" : "fail"} ${JSON.stringify(score)}`);
     }
   }
