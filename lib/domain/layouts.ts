@@ -81,9 +81,11 @@ export const LAYOUTS: readonly LayoutDef[] = [
     zones: [
       { name: "title", accepts: H, required: true, align: "start" },
       { name: "stat", accepts: ["stat"], required: true, align: "center" },
-      { name: "support", accepts: SUPPORT, required: false, align: "end" },
+      { name: "support", accepts: SUPPORT, required: false, align: "center" },
     ],
-    grid: { areas: ["title stat", "support stat"], columns: "1fr 1.1fr", rows: "1fr auto" },
+    // The number stands under the headline on the same left edge and the support text beside it on the same center line,
+    // so the three read as one figure instead of three corners (Müller-Brockmann, a shared edge for every element).
+    grid: { areas: ["title title", "stat support"], columns: "auto minmax(0, 1fr)", rows: "auto 1fr" },
     density: "low",
   },
   {
@@ -237,7 +239,7 @@ export const LAYOUTS: readonly LayoutDef[] = [
   },
   {
     id: "closing",
-    purpose: "The ask and the way to reach you. Callback to the opening hook.",
+    purpose: "The ask and the way to reach you. A display heading is the callback to the opening hook and the ask supports it. An h1 or h2 heading is a short label and the ask becomes the large figure of the slide.",
     zones: [
       { name: "title", accepts: H, required: true, align: "end" },
       { name: "cta", accepts: ["cta", "stat"], required: true, align: "center" },

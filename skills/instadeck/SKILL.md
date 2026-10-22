@@ -61,7 +61,7 @@ Narrative frames (`brief.frame`):
 - `quote`: A customer or expert voice, large, with attribution.
 - `logos`: Social proof: who uses, backs or writes about us.
 - `table`: Structured detail: pricing tiers, use of funds, competitive features.
-- `closing`: The ask and the way to reach you. Callback to the opening hook.
+- `closing`: The ask and the way to reach you. A display heading is the callback to the opening hook and the ask supports it. An h1 or h2 heading is a short label and the ask becomes the large figure of the slide.
 
 Zones and accepted blocks: `get_design_guide` or the resource `instadeck://layouts`.
 

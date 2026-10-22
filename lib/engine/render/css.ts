@@ -138,7 +138,14 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .block-table th{text-align:left;font-size:var(--fs-small);font-weight:600;color:var(--muted);padding:0 var(--sp-sm) var(--sp-sm) 0;border-bottom:2px solid var(--fg)}
 .block-table td{padding:var(--sp-sm) var(--sp-sm) var(--sp-sm) 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .block-table .is-highlight{color:var(--accent);font-weight:700}
-.cta-text{font-family:var(--font-heading);font-weight:var(--hw);font-size:var(--fs-h3);color:var(--accent);line-height:var(--lh-heading);letter-spacing:var(--ht);max-width:22ch;text-wrap:balance}
+.cta-text{font-family:var(--font-heading);font-weight:var(--hw);font-size:var(--fs-h3);color:var(--accent);line-height:var(--lh-heading);letter-spacing:var(--ht);max-width:28ch;text-wrap:balance}
+.layout-headline-stat .zone-stat{max-width:15em;padding-top:var(--sp-lg)}
+.layout-headline-stat .zone-support{padding-top:var(--sp-lg)}
+/* Closing: one dominant element. A display heading is the callback and the ask supports it; an h1 or h2 heading is a
+   label: it steps down to h2 and the ask becomes the figure of the slide (peak and end, Kahneman), at least three steps
+   apart on any scale. */
+.layout-closing:has(.zone-title .heading-h1, .zone-title .heading-h2) .zone-title .heading{font-size:var(--fs-h2)}
+.layout-closing:has(.zone-title .heading-h1, .zone-title .heading-h2) .cta-text{font-size:var(--fs-display);max-width:20ch}
 .cta-detail{margin-top:var(--sp-md);font-size:var(--fs-lead);color:var(--muted)}
 .bleed{position:absolute;inset:0}
 .bleed .block-image{position:absolute;inset:0;border-radius:0}
