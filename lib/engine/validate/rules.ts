@@ -249,6 +249,15 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
     }
   }
 
+  // An icon carries a meaning or it is decoration (Mayer, coherence): all cards have one or none, and no two share it.
+  for (const [zone, block] of Object.entries(slide.blocks)) {
+    if (block.type !== "cards") continue;
+    const icons = block.items.map((c) => c.icon);
+    const withIcon = icons.filter(Boolean).length;
+    if (withIcon > 0 && withIcon < icons.length) push("warning", "icon-consistency", `${withIcon} of ${icons.length} cards have an icon. Give every card one or none, otherwise the icons read as decoration`, zone);
+    if (new Set(icons.filter(Boolean)).size < withIcon) push("warning", "icon-repeat", "Two cards share the same icon, so it tells the reader nothing. Pick an icon for what each card means or drop them", zone);
+  }
+
   const steps = slideSteps(slide);
   if (steps > MOTION_LIMITS.stepsPerSlide) push("warning", "motion-steps", `${steps} click steps, at most ${MOTION_LIMITS.stepsPerSlide} keep the talk flowing`);
 

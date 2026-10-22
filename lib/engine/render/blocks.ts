@@ -7,7 +7,7 @@
  *   data-part   parts of a hero motion (column, line, segment)
  *   data-shared element that glides to the same element of the next slide on a transition with `shared`
  */
-import { chartDecimals, heroMotionOf, type Block, type Palette } from "@/lib/domain";
+import { ICON_SHAPES, ICON_STROKE, chartDecimals, heroMotionOf, type Block, type IconName, type Palette } from "@/lib/domain";
 import { esc, formatNumber, inline } from "../text";
 import { plotChart, seriesColor } from "./plot";
 
@@ -25,6 +25,11 @@ export interface RenderContext {
   heroBlock: Block | undefined;
   /** Elements that may glide to the neighboring slide (sharedKeys in motion.ts). */
   shared: Map<Block, string>;
+}
+
+/** An icon as inline SVG in the color of the text (currentColor). The snapshot reads data-icon and exports it as a picture. */
+function iconSvg(name: IconName): string {
+  return `<svg class="icon" data-icon="${name}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${ICON_STROKE}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_SHAPES[name]}</svg>`;
 }
 
 type StatItem = { value: number; decimals?: number; prefix?: string; suffix?: string; label: string; detail?: string };
@@ -218,7 +223,7 @@ export function renderBlock(block: Block, ctx: RenderContext): string {
         .join("")}</div>`;
     case "cards":
       return `<div class="block block-cards" style="--n:${block.items.length}"${s}>${block.items
-        .map((c, i) => `<div class="card"${itemStep(block, i)}><div class="card-title">${inline(c.title, ctx.locale)}</div><div class="card-text">${inline(c.text, ctx.locale)}</div></div>`)
+        .map((c, i) => `<div class="card"${itemStep(block, i)}>${c.icon ? iconSvg(c.icon) : ""}<div class="card-title">${inline(c.title, ctx.locale)}</div><div class="card-text">${inline(c.text, ctx.locale)}</div></div>`)
         .join("")}</div>`;
     case "table": {
       const hc = (i: number) => (block.highlightColumn === i ? ' class="is-highlight"' : "");

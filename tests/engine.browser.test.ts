@@ -188,6 +188,18 @@ describe("exports", () => {
     expect(all).toContain(author);
   });
 
+  it("exports icons as pictures in the color of the text", async () => {
+    const deck = sampleDeck();
+    const at = deck.slides.findIndex((x) => x.layout === "cards");
+    (deck.slides[at]!.blocks.cards as { items: { icon?: string }[] }).items.forEach((c, i) => (c.icon = (["risk", "security", "speed", "money"] as const)[i]));
+    const snap = await snapshotDeck(deck, SAMPLE_ASSETS);
+    const icons = snap[at]!.items.filter((i) => i.kind === "icon");
+    expect(icons.map((i) => (i.kind === "icon" ? i.name : ""))).toEqual(["risk", "security", "speed", "money"].slice(0, icons.length));
+    expect(icons.length).toBeGreaterThan(0);
+    const zip = await JSZip.loadAsync(await exportPptx(deck, SAMPLE_ASSETS));
+    expect(Object.keys(zip.files).some((f) => /^ppt\/media\/.*\.svg$/.test(f))).toBe(true);
+  });
+
   it("renders PNG previews at the requested scale", async () => {
     const [png] = await renderPng(sampleDeck(), SAMPLE_ASSETS, [0], 0.5);
     const b = Buffer.from(png!);

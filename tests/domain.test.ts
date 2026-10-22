@@ -144,6 +144,15 @@ describe("narrative frames", () => {
   });
 });
 
+describe("icons", () => {
+  it("are plain stroke shapes on a 24 grid with unique meanings", async () => {
+    const { ICON_NAMES, ICON_SHAPES } = await import("@/lib/domain");
+    expect(ICON_NAMES.length).toBeGreaterThanOrEqual(24);
+    expect(new Set(Object.values(ICON_SHAPES)).size).toBe(ICON_NAMES.length);
+    for (const name of ICON_NAMES) expect(ICON_SHAPES[name], name).toMatch(/^(?:<(?:path|rect|circle|line|polyline|polygon|ellipse)\b[^<>]*\/>)+$/);
+  });
+});
+
 describe("design schools", () => {
   it("use only curated fonts and known type scales, with unique ids", async () => {
     const { DESIGN_SCHOOLS, GOOGLE_FONTS, TYPE_SCALES, findGoogleFont } = await import("@/lib/domain");

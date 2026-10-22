@@ -6,6 +6,7 @@
  * Highlighting in text: ==word== renders in the accent (only in headings, statements and numbers).
  */
 import { z } from "zod";
+import { ICON_NAMES } from "./icons";
 
 const text = (max: number, what: string) => z.string().min(1).describe(`${what}. Aim for at most ${max} characters`);
 
@@ -133,7 +134,16 @@ export const blockSchema = z.discriminatedUnion("type", [
   }),
   z.strictObject({
     type: z.literal("cards"),
-    items: z.array(z.strictObject({ title: text(32, "Card title"), text: text(110, "Card text") })).min(2).max(4),
+    items: z
+      .array(
+        z.strictObject({
+          title: text(32, "Card title"),
+          text: text(110, "Card text"),
+          icon: z.enum(ICON_NAMES).optional().describe("An icon that carries the meaning of the card (the kind of risk, the step of a process). All cards have one or none, and no two cards share the same"),
+        }),
+      )
+      .min(2)
+      .max(4),
     build,
     step,
   }),
@@ -176,7 +186,7 @@ export const BLOCK_INFO: Record<BlockType, BlockInfo> = {
   timeline: { purpose: "Roadmap or history. Three to six milestones, mark where we are now.", hero: "timeline-draw" },
   team: { purpose: "Founders and key people with one line of credibility each." },
   comparison: { purpose: "Us versus alternatives, before versus after. Highlight our column." },
-  cards: { purpose: "Two to four parallel ideas with a title and a sentence: features, pillars, use cases." },
+  cards: { purpose: "Two to four parallel ideas with a title and a sentence: features, pillars, use cases. A card may carry an icon for what it means (the kind of risk, the step of a process); all cards have one or none, never as decoration." },
   table: { purpose: "Small structured comparison. Keep it under six rows." },
   cta: { purpose: "The ask: amount, use of funds headline, or next step with contact." },
 };

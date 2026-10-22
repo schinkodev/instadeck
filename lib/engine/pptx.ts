@@ -6,7 +6,7 @@
  * Slide 1920x1080 px = 13.333 x 7.5 inches: 144 px per inch, 1 px = 0.5 pt.
  */
 import PptxGenJS from "pptxgenjs";
-import { bridgeSteps, chartDecimals, deriveTokens, type Block, type Deck, type Palette } from "@/lib/domain";
+import { ICON_SHAPES, ICON_STROKE, bridgeSteps, chartDecimals, deriveTokens, type Block, type Deck, type IconName, type Palette } from "@/lib/domain";
 import type { AssetData } from "./render/blocks";
 import type { SlideSnapshot, SnapshotItem } from "./snapshot";
 
@@ -192,6 +192,13 @@ function addItem(pptx: Pptx, s: PptxSlide, it: SnapshotItem, ctx: { slide: Deck[
         sizing: { type: it.fit, w: box.w, h: box.h },
         ...(it.radius >= Math.min(it.w, it.h) / 2 - 0.5 && { rounding: true }),
       });
+      return;
+    }
+    case "icon": {
+      const shapes = ICON_SHAPES[it.name as IconName];
+      if (!shapes) throw new Error(`Unknown icon ${it.name}`);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="96" height="96" fill="none" stroke="#${it.color}" stroke-width="${ICON_STROKE}" stroke-linecap="round" stroke-linejoin="round">${shapes}</svg>`;
+      s.addImage({ data: `image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`, ...pos(it) });
       return;
     }
     case "chart": {
