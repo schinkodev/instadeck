@@ -1,10 +1,13 @@
 /**
  * Deck quality eval (V008). Calls the model through `claude -p`, so it is outside `npm test` and costs money.
  *
- *   npm run eval -- generate <label> [--brief id] [--model name] [--repo path]
+ *   npm run eval -- generate <label> [--brief id] [--model name] [--repo path] [--school id] [--runs n]
  *       For every brief the model creates a deck through InstaDeck from THIS checkout, and the slide PNGs,
  *       findings and cost are saved to out/eval/<label>/<brief>/. Compare versions by generating from different branches
  *       (worktrees) under different labels: --repo points at the checkout whose server is used.
+ *       --school fixes the design school of every deck, so two decks of one brief do not follow different schools.
+ *       --runs n generates n decks per brief (ids <brief>, <brief>-r2, ...), one deck cannot tell a change from variance.
+ *       Pass the same --brief, --school and --runs to compare.
  *   npm run eval -- ask <label> [--runs n] [--model name] [--repo path]
  *       Sparse briefs: does the model ask about delivery and the big idea instead of building, and after "use your
  *       defaults" show the storyline before building? Two replies per run, scored by content, results in out/eval/<label>/ask.json.
@@ -17,7 +20,7 @@ import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { BRIEFS, SPARSE_BRIEFS } from "./briefs";
-import { ASK_REPLY, askPrompt, generationPrompt, scoreAsk, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, type DeckRef, type DeckStats, type PairResult, type Verdict } from "./core";
+import { ASK_REPLY, RUN_ID, askPrompt, expandRuns, generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, scoreAsk, type DeckRef, type DeckStats, type PairResult, type Verdict } from "./core";
 
 const ROOT = resolve(import.meta.dirname, "../..");
 const OUT = join(ROOT, "out/eval");
@@ -77,21 +80,42 @@ function flag(name: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
+/** A whole number flag. A missing value, a word or 1e1 is an error, not a quiet default. */
+function intFlag(name: string, fallback: number): number {
+  const i = process.argv.indexOf(`--${name}`);
+  if (i < 0) return fallback;
+  const raw = process.argv[i + 1];
+  if (!raw || !/^\d+$/.test(raw)) throw new Error(`--${name} needs a whole number, got ${raw === undefined ? "nothing" : `"${raw}"`}`);
+  return Number(raw);
+}
+
+/** The briefs to run: --brief takes a brief id or one run of it (seed-saas-r2), --runs the number of decks per brief. */
 const selected = () => {
   const only = flag("brief");
-  const list = only ? BRIEFS.filter((b) => b.id === only) : BRIEFS;
+  const list = expandRuns(BRIEFS, intFlag("runs", 1)).filter((b) => !only || b.id === only || b.id.replace(RUN_ID, "$1") === only);
   if (!list.length) throw new Error(`Unknown brief ${only}`);
   return list;
 };
 
+/** The design school every deck must follow (--school). The server refuses an unknown one and the deck is checked after. */
+const fixedSchool = () => flag("school");
+
 async function generate(label: string) {
   const model = flag("model");
+  const school = fixedSchool();
   for (const brief of selected()) {
     const dir = join(OUT, label, brief.id);
     const home = join(dir, "home");
     mkdirSync(home, { recursive: true });
     const config = join(dir, "mcp.json");
     writeFileSync(config, JSON.stringify({ mcpServers: { instadeck: { command: join(REPO, "node_modules/.bin/tsx"), args: ["--tsconfig", join(REPO, "tsconfig.json"), join(REPO, "server/stdio.ts")], env: { INSTADECK_HOME: home } } } }));
+    // Results of another school must not be reused under this label: the point of --school is to remove that variance.
+    const schoolPath = join(dir, "school.txt");
+    const earlier = existsSync(schoolPath) ? readFileSync(schoolPath, "utf8") : undefined;
+    if (earlier !== undefined && earlier !== (school ?? "") && !process.argv.includes("--force")) {
+      throw new Error(`[${label}] ${brief.id} was generated with school "${earlier || "none"}", not "${school ?? "none"}". Use another label or --force`);
+    }
+    writeFileSync(schoolPath, school ?? "");
     if (existsSync(join(dir, "stats.json")) && !process.argv.includes("--force")) {
       console.error(`[${label}] ${brief.id}: done before, skipped (--force to redo)`);
       continue;
@@ -105,7 +129,7 @@ async function generate(label: string) {
     } else {
       const work = mkdtempSync(join(tmpdir(), "instadeck-eval-"));
       console.error(`[${label}] ${brief.id}: generating`);
-      run = await claude(["--mcp-config", config, "--strict-mcp-config", "--allowedTools", "mcp__instadeck", "--max-turns", "60", ...(model ? ["--model", model] : []), generationPrompt(brief)], work, GEN_TIMEOUT_MS);
+      run = await claude(["--mcp-config", config, "--strict-mcp-config", "--allowedTools", "mcp__instadeck", "--max-turns", "60", ...(model ? ["--model", model] : []), generationPrompt(brief, school)], work, GEN_TIMEOUT_MS);
       writeFileSync(metaPath, JSON.stringify(run));
     }
 
@@ -116,6 +140,17 @@ async function generate(label: string) {
       continue;
     }
     const stats: DeckStats = { briefId: brief.id, errors: rendered.errors!, warnings: rendered.warnings!, slides: rendered.slides, costUsd: run.total_cost_usd };
+    if (school) {
+      // The prompt only asks. The deck says which school it follows, and a deck that does not is not a fixed school run.
+      const deckFolders = readdirSync(home, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && existsSync(join(home, e.name, "deck.json")));
+      const deck = deckFolders[0] ? (JSON.parse(readFileSync(join(home, deckFolders[0].name, "deck.json"), "utf8")) as { brief?: { concept?: { school?: string } } }) : undefined;
+      stats.school = school;
+      stats.deckSchool = deck?.brief?.concept?.school ?? "none";
+      if (stats.deckSchool !== school) {
+        stats.schoolMismatch = true;
+        console.error(`[${label}] ${brief.id}: the deck follows "${stats.deckSchool}", not "${school}". It is left out of comparisons`);
+      }
+    }
     writeFileSync(join(dir, "stats.json"), JSON.stringify(stats));
     console.error(`[${label}] ${brief.id}: ${stats.slides} slides, ${stats.errors} errors, ${stats.warnings} warnings, ${run.num_turns ?? "?"} turns`);
   }
@@ -158,8 +193,14 @@ async function compare(a: string, b: string) {
       console.error(`${brief.id}: missing deck for ${!da ? a : b}, skipped`);
       continue;
     }
-    stats.a.push(JSON.parse(readFileSync(join(OUT, a, brief.id, "stats.json"), "utf8")));
-    stats.b.push(JSON.parse(readFileSync(join(OUT, b, brief.id, "stats.json"), "utf8")));
+    const sa = JSON.parse(readFileSync(join(OUT, a, brief.id, "stats.json"), "utf8")) as DeckStats;
+    const sb = JSON.parse(readFileSync(join(OUT, b, brief.id, "stats.json"), "utf8")) as DeckStats;
+    if (sa.schoolMismatch || sb.schoolMismatch) {
+      console.error(`${brief.id}: a deck does not follow the fixed school (${a}: ${sa.deckSchool ?? "-"}, ${b}: ${sb.deckSchool ?? "-"}), skipped`);
+      continue;
+    }
+    stats.a.push(sa);
+    stats.b.push(sb);
     console.error(`${brief.id}: judging both orders`);
     const dir = join(OUT, "judge", `${a}-vs-${b}`);
     mkdirSync(dir, { recursive: true });
@@ -174,7 +215,7 @@ async function compare(a: string, b: string) {
 
 /** Asking eval: round one must ask and not build, round two (after accepting the defaults) must show the storyline and not build yet. */
 async function ask(label: string) {
-  const runs = Number(flag("runs") ?? 3);
+  const runs = intFlag("runs", 3);
   const model = flag("model");
   const results: unknown[] = [];
   const only = flag("brief");
@@ -218,6 +259,6 @@ if (cmd === "ask" && x) await ask(x);
 else if (cmd === "generate" && x) await generate(x);
 else if (cmd === "compare" && x && y) await compare(x, y);
 else {
-  console.error("Usage: npm run eval -- generate <label> | ask <label> | compare <labelA> <labelB>  [--brief id] [--model name]");
+  console.error("Usage: npm run eval -- generate <label> | ask <label> | compare <labelA> <labelB>  [--brief id] [--model name] [--school id] [--runs n] [--repo path] [--force]");
   process.exit(1);
 }

@@ -17,11 +17,27 @@ export const RUBRIC: Record<Criterion, string> = {
   polish: "Alignment, spacing, consistent treatment, no awkward breaks. Would a designer ship it?",
 };
 
-export function generationPrompt(b: EvalBrief): string {
+export function generationPrompt(b: EvalBrief, school?: string): string {
   const lang = b.language === "cs" ? "Czech" : "English";
-  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available, so do not ask for them. Decide everything yourself, do not ask questions and do not wait for anyone to confirm a storyline: build the deck directly. Finish when the deck exists and every error finding is fixed.
+  // A fixed school takes the choice of the school out of the comparison: otherwise two decks of one brief may follow different schools.
+  const fixed = school ? ` Use the design school "${school}": set brief.concept.school to "${school}" in create_deck and follow the school.` : "";
+  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available, so do not ask for them. Decide everything yourself, do not ask questions and do not wait for anyone to confirm a storyline: build the deck directly.${fixed} Finish when the deck exists and every error finding is fixed.
 
 Brief: ${b.text}`;
+}
+
+/** `<brief>-r<n>`: the id of run n of a brief, n from 2. */
+export const RUN_ID = /^(.+)-r(\d+)$/;
+
+/**
+ * Several generations per brief, because one deck per brief cannot tell a change from run to run variance. Run 1 keeps the id
+ * of the brief, so earlier results stay valid, run n gets `<id>-r<n>`.
+ */
+export function expandRuns(briefs: readonly EvalBrief[], runs: number): EvalBrief[] {
+  if (!Number.isInteger(runs) || runs < 1) throw new Error(`--runs must be a whole number of at least 1, got ${runs}`);
+  const clash = briefs.find((b) => RUN_ID.test(b.id));
+  if (clash) throw new Error(`The brief id ${clash.id} looks like a run (<id>-r<n>), pick another id`);
+  return briefs.flatMap((b) => Array.from({ length: runs }, (_, i) => (i === 0 ? b : { ...b, id: `${b.id}-r${i + 1}` })));
 }
 
 /** Prompt of the asking eval: unlike generationPrompt the model may and should ask before building. */
@@ -151,6 +167,12 @@ export interface DeckStats {
   warnings: number;
   slides: number;
   costUsd?: number;
+  /** The school the run asked for (--school). */
+  school?: string;
+  /** What the deck really declares as `concept.school`, when a school was asked for. */
+  deckSchool?: string;
+  /** The deck does not follow the school that was asked for, so it must not be compared as a fixed school run. */
+  schoolMismatch?: true;
 }
 
 export function tally(results: readonly PairResult[]) {

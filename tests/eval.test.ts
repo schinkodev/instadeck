@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BRIEFS, SPARSE_BRIEFS } from "@/scripts/eval/briefs";
-import { CRITERIA, askPrompt, generationPrompt, scoreAsk, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, tally, type Criterion, type PairResult, type Verdict } from "@/scripts/eval/core";
+import { CRITERIA, RUN_ID, askPrompt, expandRuns, generationPrompt, judgePrompt, meanScores, parseVerdict, reconcile, reportMarkdown, scoreAsk, tally, type Criterion, type PairResult, type Verdict } from "@/scripts/eval/core";
 
 const scores = (n: number) => Object.fromEntries(CRITERIA.map((c) => [c, n])) as Record<Criterion, number>;
 const verdict = (winner: Verdict["winner"], first = 3, second = 3): Verdict => ({ scores: { first: scores(first), second: scores(second) }, winner, reason: "r" });
@@ -17,6 +17,29 @@ describe("eval briefs", () => {
     const cs = BRIEFS.find((b) => b.language === "cs")!;
     expect(generationPrompt(cs)).toContain("Czech");
     expect(generationPrompt(cs)).toContain("do not ask questions");
+  });
+});
+
+describe("eval design", () => {
+  it("can fix the school of every deck in the prompt", () => {
+    const b = BRIEFS[0]!;
+    expect(generationPrompt(b)).not.toContain("design school");
+    expect(generationPrompt(b, "swiss")).toContain('design school "swiss"');
+    expect(generationPrompt(b, "swiss")).toContain('brief.concept.school to "swiss"');
+    expect(generationPrompt(b, "swiss")).toContain("do not ask questions");
+  });
+
+  it("generates several decks per brief and keeps the id of run one", () => {
+    const two = expandRuns(BRIEFS.slice(0, 2), 3);
+    expect(two.map((b) => b.id)).toEqual([BRIEFS[0]!.id, `${BRIEFS[0]!.id}-r2`, `${BRIEFS[0]!.id}-r3`, BRIEFS[1]!.id, `${BRIEFS[1]!.id}-r2`, `${BRIEFS[1]!.id}-r3`]);
+    expect(two[1]!.text).toBe(BRIEFS[0]!.text);
+    expect(expandRuns(BRIEFS, 1)).toEqual([...BRIEFS]);
+    expect(() => expandRuns(BRIEFS, 0)).toThrow(/at least 1/);
+    expect(() => expandRuns(BRIEFS, 1.5)).toThrow(/whole number/);
+    // A brief id that looks like a run would collide with the ids of the runs.
+    expect(() => expandRuns([{ ...BRIEFS[0]!, id: "devtools-r2" }], 2)).toThrow(/looks like a run/);
+    for (const b of BRIEFS) expect(RUN_ID.test(b.id), b.id).toBe(false);
+    expect("seed-saas-r2".replace(RUN_ID, "$1")).toBe("seed-saas");
   });
 });
 
