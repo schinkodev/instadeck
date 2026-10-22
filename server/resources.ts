@@ -13,6 +13,7 @@ export const GUIDE_RESOURCES: Record<string, { name: string; description: string
   "instadeck://motion": { name: "motion", description: "Motion language: intensity, presets, your own keyframe vocabulary, shared transitions, tempos and what is measured", section: "motion" },
   "instadeck://fonts": { name: "fonts", description: "Curated Google Fonts with weights and character", section: "fonts" },
   "instadeck://pitch": { name: "pitch", description: "Story beats, narrative frames and how to ask the user for missing proof", section: "pitch" },
+  "instadeck://recipes": { name: "recipes", description: "Slide recipes per story beat, each with a good and a bad example", section: "recipes" },
   "instadeck://schools": { name: "schools", description: "Design schools and how to write the concept of a deck", section: "schools" },
   "instadeck://principles/design": { name: "design-principles", description: "Design principles behind the system", section: "design_principles" },
   "instadeck://principles/storytelling": { name: "storytelling-principles", description: "Storytelling principles for structuring the deck", section: "storytelling_principles" },

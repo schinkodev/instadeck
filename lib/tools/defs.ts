@@ -216,7 +216,7 @@ export const TOOLS: ToolDef[] = [
     name: "get_example",
     title: "Get example deck",
     description:
-      "Returns a proven example deck. Without id it lists the examples with purpose, audience and layouts. With id it returns the full deck in the shape create_deck takes (slides, design, motion) and why it works. Read the example closest to the brief before choosing layouts, then keep its structure, rhythm and text lengths and replace all content.",
+      "Returns a proven example deck. Without id it lists the examples with purpose, audience and layouts. With id it returns the full deck in the shape create_deck takes (slides, design, motion) and why it works. Read the example closest to the brief for the rhythm and length of the whole deck, then compose each slide from a recipe for its beat (get_design_guide section recipes). Never copy the example slides.",
     input: { id: z.enum(EXAMPLES.map((e) => e.id) as [string, ...string[]]).optional().describe("Example id. Omit to list all") },
     annotations: READ,
     run: async (a) => {

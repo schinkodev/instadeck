@@ -165,3 +165,16 @@ describe("design schools", () => {
     expect(createBriefSchema.safeParse({ ...brief, concept: { idea: "A quiet editorial deck", avoid: "Clutter", signature: "One rule under every headline" } }).success).toBe(true);
   });
 });
+
+describe("slide recipes", () => {
+  it("use existing layouts and beats, and every beat has a recipe", async () => {
+    const { SLIDE_RECIPES, BEAT_IDS, getLayout, recipesFor } = await import("@/lib/domain");
+    expect(new Set(SLIDE_RECIPES.map((r) => r.id)).size).toBe(SLIDE_RECIPES.length);
+    for (const r of SLIDE_RECIPES) {
+      expect(getLayout(r.layout), `${r.id}: ${r.layout}`).toBeDefined();
+      for (const b of r.beats) expect(BEAT_IDS, `${r.id}: ${b}`).toContain(b);
+      for (const k of ["compose", "good", "bad", "why"] as const) expect(r[k].length, `${r.id}.${k}`).toBeGreaterThan(10);
+    }
+    for (const b of BEAT_IDS) expect(recipesFor(b).length, `no recipe for ${b}`).toBeGreaterThan(0);
+  });
+});
