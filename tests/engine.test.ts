@@ -351,7 +351,8 @@ describe("story", () => {
 describe("story evidence", () => {
   it("flags a beat that needs proof but has text only", () => {
     const text = withSlide({ layout: "points", beat: "traction", blocks: { title: { type: "heading", level: "h1", text: "Customers love the product and keep using it" }, body: { type: "bullets", items: ["Strong growth", "High retention"] } } });
-    expect(rules(validateDeck(text, SAMPLE_ASSET_INDEX))).toContain("story-evidence");
+    const f = validateDeck(text, SAMPLE_ASSET_INDEX).find((x) => x.rule === "story-evidence");
+    expect(f?.slideId).toBe(text.slides[2]!.id);
     const proof = withSlide({ layout: "headline-stat", beat: "traction", blocks: { title: { type: "heading", level: "h1", text: "Revenue tripled in twelve months" }, stat: { type: "stat", value: 3, suffix: "x", label: "revenue growth" } } });
     expect(rules(validateDeck(proof, SAMPLE_ASSET_INDEX))).not.toContain("story-evidence");
   });
