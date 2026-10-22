@@ -4,6 +4,9 @@
  *
  * Intensity is the model's declaration of how much the deck may move. Measurement in the browser compares the real
  * energy of the motion (travel, scale, blur, rotation, overshoot) with the declaration.
+ *
+ * Intensity covers decoration only: entrances and transitions. Data motion (numbers that count, charts that grow) is
+ * information, not decoration, so the deck declares it separately (DeckMotion.heroes) at any intensity.
  */
 
 export const INTENSITIES = ["still", "subtle", "expressive", "kinetic"] as const;
@@ -21,8 +24,6 @@ export interface IntensityDef {
   transitionTravelPx: number;
   /** Whether motion may overshoot the resting state (spring, bounce). */
   overshoot: boolean;
-  /** Whether the deck may animate numbers, charts and timelines. */
-  heroes: boolean;
 }
 
 export const INTENSITY: Record<Intensity, IntensityDef> = {
@@ -34,7 +35,6 @@ export const INTENSITY: Record<Intensity, IntensityDef> = {
     rotateDeg: 0,
     transitionTravelPx: 0,
     overshoot: false,
-    heroes: false,
   },
   subtle: {
     purpose: "Short moves that guide the eye and settle fast. Investors, enterprise buyers and most business decks.",
@@ -44,7 +44,6 @@ export const INTENSITY: Record<Intensity, IntensityDef> = {
     rotateDeg: 0,
     transitionTravelPx: 120,
     overshoot: false,
-    heroes: true,
   },
   expressive: {
     purpose: "Bigger moves, depth, slides that travel, elements that fly between slides. Product launches, vision, keynotes.",
@@ -54,7 +53,6 @@ export const INTENSITY: Record<Intensity, IntensityDef> = {
     rotateDeg: 4,
     transitionTravelPx: 1920,
     overshoot: false,
-    heroes: true,
   },
   kinetic: {
     purpose: "Energetic and springy, motion is part of the brand. Consumer apps, events, creative work. Still one focal motion at a time.",
@@ -64,7 +62,6 @@ export const INTENSITY: Record<Intensity, IntensityDef> = {
     rotateDeg: 20,
     transitionTravelPx: 3840,
     overshoot: true,
-    heroes: true,
   },
 };
 

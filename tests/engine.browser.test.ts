@@ -215,6 +215,23 @@ describe("exports", () => {
     expect(withIcons.png).toBe(without.png + icons.length);
   });
 
+  it("gives two schools measurably different geometry for the same content", async () => {
+    const rects = async (school: "swiss" | "keynote" | "ibcs") => {
+      const d = sampleDeck();
+      d.brief.concept = { ...d.brief.concept!, school };
+      return (await snapshotDeck(d, SAMPLE_ASSETS)).map((s) => s.items.filter((i) => i.kind === "text").map((i) => (i.kind === "text" ? [Math.round(i.x), Math.round(i.y), Math.round(i.w)] : [])));
+    };
+    const [swiss, keynote, ibcs] = [await rects("swiss"), await rects("keynote"), await rects("ibcs")];
+    const differing = (a: number[][][], b: number[][][]) => a.filter((slide, i) => JSON.stringify(slide) !== JSON.stringify(b[i])).length;
+    const total = swiss.length;
+    // Tokens alone would move none of them. The axis moves the title, statement and closing slides and the uneven split moves
+    // the two column slides, so a few slides differ, not all: the dense ones keep their layout in every school.
+    expect(differing(swiss, keynote)).toBeGreaterThanOrEqual(3);
+    expect(differing(swiss, ibcs)).toBeGreaterThanOrEqual(3);
+    expect(differing(keynote, ibcs)).toBeGreaterThanOrEqual(2);
+    expect(differing(swiss, keynote)).toBeLessThan(total);
+  });
+
   it("renders PNG previews at the requested scale", async () => {
     const [png] = await renderPng(sampleDeck(), SAMPLE_ASSETS, [0], 0.5);
     const b = Buffer.from(png!);

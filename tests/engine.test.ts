@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Deck, Slide } from "@/lib/domain";
-import { chartDecimals, deckMotionSchema, keyframeSchema } from "@/lib/domain";
+import { DESIGN_SCHOOLS, INTENSITY, chartDecimals, deckMotionSchema, keyframeSchema } from "@/lib/domain";
 import { blockSteps, colorsFromSvg, hasErrors, isNeutral, layoutFindings, motionFindings, playerConfig, quantize, renderDeckHtml, slideSteps, validateDeck, type Finding } from "@/lib/engine";
 import { LOGO_SVG, SAMPLE_ASSET_INDEX, SAMPLE_ASSETS, sampleDeck } from "./fixtures/sample-deck";
 
@@ -230,12 +230,87 @@ describe("motion language", () => {
     expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("icon-repeat");
   });
 
-  it("keeps still decks still and shared transitions meaningful", () => {
+  it("renders a composition as a grid and rejects one the layout cannot take", () => {
+    const d = sampleDeck();
+    const at = d.slides.findIndex((x) => x.layout === "text-image");
+    d.slides[at]!.composition = { split: "1:3", dominant: "image" };
+    const html = renderDeckHtml(d, SAMPLE_ASSETS, "static");
+    expect(html).toContain("grid-template-columns:1fr 3fr");
+    expect(html).toContain('data-zone="image" data-dominant');
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "error")).toEqual([]);
+    d.slides[at]!.composition = { axis: "center", dominant: "nope" };
+    const errors = validateDeck(d, SAMPLE_ASSET_INDEX).filter((f) => f.rule === "composition");
+    expect(errors).toHaveLength(2);
+    expect(errors.every((f) => f.severity === "error" && f.slideId === d.slides[at]!.id)).toBe(true);
+    const centered = sampleDeck();
+    centered.slides[0]!.composition = { axis: "center" };
+    expect(renderDeckHtml(centered, SAMPLE_ASSETS, "static")).toContain("axis-center");
+  });
+
+  it("resets the composition of a slide when its layout changes, unless the op gives one", async () => {
+    const { applyOpsToDeck } = await import("@/lib/state");
+    const ctx = { newSlideId: () => "new", brandKit: () => undefined };
+    const d = sampleDeck();
+    const at = d.slides.findIndex((x) => x.layout === "text-image");
+    const id = d.slides[at]!.id;
+    d.slides[at]!.composition = { split: "1:3", dominant: "image" };
+    const kept = applyOpsToDeck(d, [{ op: "update_slide", slide_id: id, intent: "Same layout, new intent" }], ctx).deck.slides[at]!;
+    expect(kept.composition).toEqual({ split: "1:3", dominant: "image" });
+    const reset = applyOpsToDeck(d, [{ op: "update_slide", slide_id: id, layout: "image-text" }], ctx).deck.slides[at]!;
+    expect(reset.composition).toBeUndefined();
+    const given = applyOpsToDeck(d, [{ op: "update_slide", slide_id: id, layout: "image-text", composition: { split: "1:2" } }], ctx).deck.slides[at]!;
+    expect(given.composition).toEqual({ split: "1:2" });
+    const same = applyOpsToDeck(d, [{ op: "update_slide", slide_id: id, layout: "text-image" }], ctx).deck.slides[at]!;
+    expect(same.composition).toEqual({ split: "1:3", dominant: "image" });
+  });
+
+  it("checks the delivery against motion and density", () => {
+    const d = sampleDeck();
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("delivery-motion");
+    d.brief.delivery = "pre-read";
+    d.motion.intensity = "kinetic";
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).toContain("delivery-motion");
+    d.motion.intensity = "still";
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("delivery-motion");
+
+    d.brief.delivery = "live";
+    d.slides[0]!.layout = "table" as never;
+    expect(validateDeck(d, SAMPLE_ASSET_INDEX).find((f) => f.rule === "delivery-density")?.slideId).toBe(d.slides[0]!.id);
+    d.brief.delivery = "both";
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("delivery-density");
+  });
+
+  it("suggests a build for comparisons and risks, and stops once one is set", () => {
+    const d = sampleDeck();
+    const at = d.slides.findIndex((x) => x.layout === "comparison");
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "info")).toContain("build-suggestion");
+    (d.slides[at]!.blocks.comparison as { build?: string }).build = "items";
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "info")).not.toContain("build-suggestion");
+    // Risks: bullets and cards of a slide with the risks beat.
+    for (const block of [{ type: "bullets", items: ["a", "b", "c"] }, { type: "cards", items: [{ title: "a", text: "x" }, { title: "b", text: "y" }] }] as const) {
+      const r = sampleDeck();
+      r.slides[at] = { ...r.slides[at]!, layout: block.type === "bullets" ? "points" : "cards", beat: "risks", blocks: { title: { type: "heading", level: "h1", text: "Risks" }, [block.type === "bullets" ? "body" : "cards"]: block } } as never;
+      expect(rules(validateDeck(r, SAMPLE_ASSET_INDEX), "info"), block.type).toContain("build-suggestion");
+    }
+    // Without the risks beat bullets are plain bullets.
+    const plain = sampleDeck();
+    plain.slides[at] = { ...plain.slides[at]!, layout: "points", blocks: { title: { type: "heading", level: "h1", text: "Points" }, body: { type: "bullets", items: ["a", "b", "c"] } } } as never;
+    expect(rules(validateDeck(plain, SAMPLE_ASSET_INDEX), "info")).not.toContain("build-suggestion");
+  });
+
+  it("lets a still deck animate data and keeps shared transitions meaningful", () => {
     const d = sampleDeck();
     d.motion.intensity = "still";
-    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).toContain("motion-intensity");
-    d.motion.heroes = false;
+    d.motion.heroes = true;
     expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("motion-intensity");
+
+    // Intensity has no say over data motion, and no school's motion with heroes declared draws a motion warning.
+    for (const school of DESIGN_SCHOOLS) {
+      const sd = sampleDeck();
+      sd.motion = { ...sd.motion, intensity: school.motion.intensity, tempo: school.motion.tempo, heroes: true };
+      expect(validateDeck(sd, SAMPLE_ASSET_INDEX).filter((f) => f.rule.startsWith("motion") && f.severity !== "info").map((f) => f.rule), school.id).toEqual([]);
+    }
+    expect(Object.values(INTENSITY).some((i) => "heroes" in i)).toBe(false);
 
     const s = sampleDeck();
     s.motion.transition = "morph";
