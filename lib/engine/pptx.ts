@@ -30,8 +30,8 @@ function chartColors(b: Extract<Block, { type: "chart" }>, p: Palette): string[]
 }
 
 /**
- * Waterfall v PowerPointu: skládaný sloupcový graf s neviditelnou základnou (barva pozadí slidu) a viditelným
- * dílem, který je velikost změny. Součty (první a poslední) stojí na nule.
+ * Waterfall in PowerPoint: a stacked column chart with an invisible base (the slide background color) and a visible
+ * part that is the size of the change. Totals (the first and the last) stand on zero.
  */
 function waterfallData(b: Extract<Block, { type: "chart" }>) {
   const v = b.series[0]!.values;

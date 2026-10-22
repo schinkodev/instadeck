@@ -71,14 +71,14 @@ function checkData(block: Block, push: Push, zone: string) {
     }
     if (block.kind === "donut" && block.series.length !== 1) push("error", "chart-donut", "A donut chart takes exactly one series", zone);
     if (block.kind === "donut" && n > 6) push("error", "chart-donut", `A donut chart takes at most 6 segments, got ${n}`, zone);
-    // Cleveland a McGill: úhel a plochu oko porovnává hůř než délku. Víc výsečí už nejde přečíst.
+    // Cleveland and McGill: the eye compares angle and area worse than length. More segments can no longer be read.
     else if (block.kind === "donut" && n > 4) push("warning", "chart-donut", `${n} donut segments are hard to compare by angle. Use a bar chart, or group the small segments`, zone);
     if (block.kind === "waterfall") {
       const v = block.series[0]!.values;
       if (block.series.length !== 1) push("error", "chart-bridge", "A waterfall chart takes exactly one series: the start total, the changes and the end total", zone);
       else if (n < 3) push("error", "chart-bridge", "A waterfall chart needs a start total, at least one change and an end total", zone);
       else if (v.length === n) {
-        // Bridge musí sedět: start plus změny je konec. Tolerance na zaokrouhlení popisků.
+        // The bridge must add up: start plus changes is the end. Tolerance for rounded labels.
         const expected = v.slice(0, -1).reduce((a, x) => a + x, 0);
         const end = v.at(-1)!;
         if (Math.abs(expected - end) > Math.max(Math.abs(end) * 0.005, 0.05)) {

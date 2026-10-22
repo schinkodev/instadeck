@@ -67,7 +67,7 @@ describe("pptx", () => {
       const { files, read } = await unzip(await buildPptx(deck, snap, {}));
       const chart = await read(files.find((f) => /^ppt\/charts\/chart\d+\.xml$/.test(f))!);
       expect(chart, kind).toContain('<c:grouping val="stacked"/>');
-      // Robotics stojí na základně 540 (start), FX na 586 (po Robotics 588 minus 2).
+      // Robotics stands on a base of 540 (start), FX on 586 (after Robotics 588 minus 2).
       if (kind === "waterfall") for (const v of ["540", "586"]) expect(chart.split(`<c:v>${v}</c:v>`).length - 1, v).toBeGreaterThanOrEqual(2);
     }
   });

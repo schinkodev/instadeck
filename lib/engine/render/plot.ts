@@ -1,13 +1,13 @@
 /**
- * Sloupcové grafy se škálou hodnot: column (seskupené série), stacked a waterfall (bridge).
- * Sloupce leží absolutně na škále od minima k maximu, takže fungují i záporné hodnoty. Nula je výrazná
- * linka, osa s mřížkou jen na přání (Tufte: popisky u sloupců většinou stačí). Hezké dílky dává d3-array.
+ * Column charts with a value scale: column (grouped series), stacked and waterfall (bridge).
+ * Columns sit absolutely on a scale from the minimum to the maximum, so negative values work too. Zero is a strong
+ * line, an axis with gridlines only on request (Tufte: labels at the columns are usually enough). d3-array gives nice ticks.
  *
- * Výchozí HTML je koncový stav. Pohyb (chart-grow) roste z nuly: kladné sloupce nahoru, záporné dolů
- * (transform-origin u každého sloupce), viz player.js.
+ * The default HTML is the final state. Motion (chart-grow) grows from zero: positive columns up, negative down
+ * (transform-origin on every column), see player.js.
  *
- * Barvy podle IBCS a principu signální barvy: zvýraznění = akcent, ostatní linka. Waterfall: součty tlumeně,
- * přírůstky akcentem, úbytky barvou textu. Odhad (estimate) šrafovaně.
+ * Colors by IBCS and the signal color principle: highlight = accent, the rest line. Waterfall: totals muted,
+ * increases in the accent, decreases in the text color. Estimates hatched.
  */
 import { nice, ticks } from "d3-array";
 import { bestContrast, type Block } from "@/lib/domain";
@@ -22,7 +22,7 @@ interface Bar {
   from: number;
   to: number;
   color: string;
-  /** Hodnota v popisku (u waterfallu změna, ne pozice). */
+  /** Value in the label (for a waterfall the change, not the position). */
   value: number;
   label: "outside" | "inside" | "none";
 }
@@ -71,8 +71,8 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
   const stackTotals = b.kind === "stacked" ? b.categories.map((_, ci) => b.series.reduce((a, s) => a + s.values[ci]!, 0)) : [];
   const values = [0, ...list.flatMap((x) => [x.from, x.to]), ...(b.reference ? [b.reference.value] : [])];
   let [lo, hi] = nice(Math.min(...values), Math.max(...values), 5);
-  // Bridge: změny bývají malé proti součtům a od nuly by z nich zbyly proužky. Osa proto začíná pod nejnižší
-  // úrovní mostu a součtové sloupce nesou značku přerušení (IBCS), aby nebylo skryto, že nezačínají od nuly.
+  // Bridge: changes are often small against the totals and from zero they would be slivers. So the axis starts below the lowest
+  // level of the bridge and the total columns carry a break mark (IBCS), so it is not hidden that they do not start at zero.
   let broken = false;
   if (b.kind === "waterfall") {
     const levels = list.flatMap((x, i) => (i === 0 || i === list.length - 1 ? [x.to] : [x.from, x.to]));
@@ -119,7 +119,7 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
 
   const totals = stackTotals.map((t, ci) => `<span class="plot-total" style="left:${pct(ci * slot)};width:${pct(slot)};bottom:${pct(y(t))}">${fmt(t)}</span>`).join("");
 
-  // Spojnice waterfallu: vodorovně od vršku sloupce k dalšímu, čtenář vidí, odkud změna navazuje.
+  // Waterfall links: horizontal from the top of a column to the next, the reader sees where a change continues from.
   const links =
     b.kind === "waterfall"
       ? list
