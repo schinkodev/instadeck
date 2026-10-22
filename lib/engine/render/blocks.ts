@@ -109,17 +109,19 @@ function lineChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): st
     )
     .join("");
   const last = b.series[0]!.values.at(-1)!;
+  const decimals = chartDecimals(b);
   const unit = b.unit ? esc(b.unit) : "";
   const labels = b.categories.map((c, i) => `<span style="left:${pct(x(i), W)}">${esc(c)}</span>`).join("");
   return `<div class="chart chart-line">
 <div class="line-plot"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${paths}</svg>${dots}
-<div class="line-end" style="top:${pct(y(last), H)}">${formatNumber(last, chartDecimals(b), ctx.locale)}${unit}</div></div>
+<div class="line-end" style="top:${pct(y(last), H)}">${formatNumber(last, decimals, ctx.locale)}${unit}</div></div>
 <div class="line-labels">${labels}</div>
 </div>`;
 }
 
 function donutChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): string {
   const values = b.series[0]!.values;
+  const decimals = chartDecimals(b);
   const total = values.reduce((a, v) => a + v, 0);
   const R = 80;
   const C = 2 * Math.PI * R;
@@ -137,7 +139,7 @@ function donutChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): s
     .join("");
   const unit = b.unit ? esc(b.unit) : "";
   const legend = b.categories
-    .map((c, i) => `<li${b.highlight === i ? ' class="is-highlight"' : ""}><i style="background:${colors[i]}"></i><span>${esc(c)}</span><b>${formatNumber(values[i]!, chartDecimals(b), ctx.locale)}${unit}</b></li>`)
+    .map((c, i) => `<li${b.highlight === i ? ' class="is-highlight"' : ""}><i style="background:${colors[i]}"></i><span>${esc(c)}</span><b>${formatNumber(values[i]!, decimals, ctx.locale)}${unit}</b></li>`)
     .join("");
   return `<div class="chart chart-donut"><svg viewBox="0 0 200 200"><g transform="rotate(-90 100 100)">${segs}</g></svg><ul class="legend">${legend}</ul></div>`;
 }

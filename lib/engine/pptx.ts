@@ -64,6 +64,12 @@ function waterfallChart(b: Extract<Block, { type: "chart" }>, p: Palette) {
   return { series, colors: ["transparent", "transparent", ...colors.flatMap((c) => [hex(c), hex(c)])] };
 }
 
+/** Number format of the labels: the same decimals as the browser (chartDecimals), the unit after the number. */
+function numberFormat(b: Extract<Block, { type: "chart" }>): string {
+  const d = chartDecimals(b);
+  return `#,##0${d ? `.${"0".repeat(d)}` : ""}${b.unit ? `"${b.unit.replace(/"/g, "")}"` : ""}`;
+}
+
 function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>, r: Rect, p: Palette, fonts: { body: string; size: number }) {
   if (b.kind === "waterfall") {
     const w = waterfallChart(b, p);
@@ -106,8 +112,7 @@ function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>
     dataLabelColor: hex(b.kind === "donut" ? p.bg : p.fg),
     // PowerPoint has no outside end position for stacked bars, the values sit inside the segments as in HTML.
     dataLabelPosition: b.kind === "donut" || b.kind === "stacked" ? "ctr" : "outEnd",
-    // The same decimals as the browser labels (chartDecimals), the unit after the number.
-    dataLabelFormatCode: `#,##0${chartDecimals(b) ? `.${"0".repeat(chartDecimals(b))}` : ""}${b.unit ? `"${b.unit.replace(/"/g, "")}"` : ""}`,
+    dataLabelFormatCode: numberFormat(b),
     catAxisLabelColor: hex(p.muted),
     catAxisLabelFontFace: fonts.body,
     catAxisLabelFontSize: fonts.size,

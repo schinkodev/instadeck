@@ -407,6 +407,21 @@ describe("analytic charts", () => {
     expect(chartRules({ ...tvpi, series: [{ name: "DPI", values: [0.04, 1, 2, 3] }], decimals: 0 })).toContain("chart-labels");
     expect(chartRules(tvpi)).toEqual([]);
     expect(chartRules({ ...tvpi, decimals: 1 })).toContain("chart-labels");
+    // FX rates need three decimals, and they get them without being asked.
+    expect(chartDecimals({ ...tvpi, series: [{ name: "EURUSD", values: [1.0832, 1.0857] }] } as never)).toBe(3);
+    expect(chartRules({ ...tvpi, categories: ["a", "b"], series: [{ name: "EURUSD", values: [1.0832, 1.0857] }] })).toEqual([]);
+    // Rounding as the labels round: 1.45 and 1.5 both read 1.5 at one decimal.
+    expect(chartRules({ ...tvpi, series: [{ name: "A", values: [1.45, 1.5, 2, 3] }], decimals: 1 })).toContain("chart-labels");
+    // A line labels only its end; stacked totals are labels too.
+    expect(chartRules({ kind: "line", categories: ["a", "b", "c"], series: [{ name: "A", values: [12.3, 12.4, 15] }], decimals: 0 })).toEqual([]);
+    expect(chartRules({ kind: "stacked", categories: ["a", "b"], series: [{ name: "A", values: [0.4, 1] }, { name: "B", values: [0.4, 0.2] }], decimals: 0 })).toContain("chart-labels");
+  });
+
+  it("writes axis ticks with the precision of their step, not of the data", () => {
+    const html = renderDeckHtml(chartSlide({ kind: "column", categories: ["a", "b", "c"], series: [{ name: "A", values: [1, 2, 3] }], axis: true }), SAMPLE_ASSETS, "static");
+    const ticks = [...html.matchAll(/class="plot-tick"[^>]*>([^<]*)</g)].map((m) => m[1]);
+    expect(new Set(ticks).size).toBe(ticks.length);
+    expect(ticks).toContain("0.5");
   });
 
   it("draws horizontal bars left of zero for negative values", () => {
