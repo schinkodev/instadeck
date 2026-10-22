@@ -96,6 +96,9 @@ describe("pptx", () => {
     expect(bridge.match(/<c:ser>[\s\S]*?<\/c:ser>/g)!.slice(0, 2).every((x) => x.includes("<a:noFill/>"))).toBe(true);
     const stacked = await chartXml({ kind: "stacked", categories: ["Q1", "Q2"], series: [{ name: "A", values: [1, 2] }, { name: "B", values: [3, 4] }] });
     expect(stacked).not.toContain('<c:dLblPos val="outEnd"/>');
+    // Labels in PowerPoint keep the decimals of the browser.
+    const tvpi = await chartXml({ kind: "column", categories: ["Q2", "Q3"], series: [{ name: "TVPI", values: [1.55, 1.62] }], unit: "x" });
+    expect(tvpi).toContain('formatCode="#,##0.00&quot;x&quot;"');
   });
 
   it("refuses a snapshot that misses a slide or points to a missing block", async () => {

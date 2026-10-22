@@ -24,7 +24,7 @@ import {
   type Block,
   type Deck,
   type Slide,
-  type Tone, bridgeSteps } from "@/lib/domain";
+  type Tone, MAX_DECIMALS, bridgeSteps, chartLabelsCollide } from "@/lib/domain";
 import { motionUsage, sharedKeys, slideEntrance, slideTransition, zoneEntrances } from "../motion";
 import { slideSteps } from "../steps";
 import { plain } from "../text";
@@ -93,6 +93,11 @@ function checkData(block: Block, push: Push, zone: string) {
     if (block.kind === "stacked" && block.highlight !== undefined) push("warning", "chart-highlight", "A stacked chart colors by series, highlight has no effect. Remove it or use a column chart", zone);
     if (block.kind === "line" && block.highlight !== undefined && block.series.length > 1) push("warning", "chart-highlight", "With highlight a line chart shows only the first series in the accent", zone);
     if (block.highlight !== undefined && block.highlight >= n) push("error", "chart-highlight", `highlight ${block.highlight} is outside the ${n} categories`, zone);
+    const collide = chartLabelsCollide(block);
+    if (collide !== undefined) {
+      const fix = block.decimals !== undefined && block.decimals < MAX_DECIMALS ? "Raise decimals or omit it, labels then keep the precision of the values" : "The values differ only in a digit no label shows: scale the unit (bp instead of %, thousands instead of units)";
+      push("warning", "chart-labels", `At ${collide} decimal places two different values read the same, or a value that is not zero reads 0. ${fix}`, zone);
+    }
   }
   if (block.type === "timeline" && block.current !== undefined && block.current >= block.items.length) push("error", "timeline-current", `current ${block.current} is outside the ${block.items.length} milestones`, zone);
   if (block.type === "table") {

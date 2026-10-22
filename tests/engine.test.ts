@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Deck, Slide } from "@/lib/domain";
-import { deckMotionSchema, keyframeSchema } from "@/lib/domain";
+import { chartDecimals, deckMotionSchema, keyframeSchema } from "@/lib/domain";
 import { blockSteps, colorsFromSvg, hasErrors, isNeutral, layoutFindings, motionFindings, playerConfig, quantize, renderDeckHtml, slideSteps, validateDeck, type Finding } from "@/lib/engine";
 import { LOGO_SVG, SAMPLE_ASSET_INDEX, SAMPLE_ASSETS, sampleDeck } from "./fixtures/sample-deck";
 
@@ -391,6 +391,37 @@ describe("analytic charts", () => {
   it("keeps estimate, axis and reference to the charts that draw them", () => {
     expect(chartRules({ kind: "line", categories: ["a", "b"], series: [{ name: "A", values: [1, 2] }], axis: true })).toContain("chart-option");
     expect(chartRules({ kind: "column", categories: ["a", "b"], series: [{ name: "A", values: [1, 2] }], estimate: 5 })).toContain("chart-option");
+  });
+
+  it("labels values with the decimals the data has, the same in every label", () => {
+    const tvpi = { kind: "column", categories: ["Q4 25", "Q1 26", "Q2 26", "Q3 26"], series: [{ name: "TVPI", values: [1.41, 1.47, 1.55, 1.62] }], unit: "x" };
+    const html = renderDeckHtml(chartSlide(tvpi), SAMPLE_ASSETS, "static");
+    for (const v of ["1.41x", "1.47x", "1.55x", "1.62x"]) expect(html).toContain(v);
+    expect(chartDecimals(tvpi as never)).toBe(2);
+    // The data has one decimal, so whole numbers are written with it too and the labels line up.
+    expect(chartDecimals({ ...tvpi, series: [{ name: "Revenue", values: [2.6, 3, 3.5, 4.1] }] } as never)).toBe(1);
+    expect(chartDecimals({ ...tvpi, series: [{ name: "Deals", values: [12, 15, 19, 24] }] } as never)).toBe(0);
+    // Margins of 10.9% and 11.8% stay 10.9 and 11.8, not 11 and 12 under a headline about +0.9 points.
+    expect(chartDecimals({ ...tvpi, series: [{ name: "Margin", values: [10.9, 11.8] }] } as never)).toBe(1);
+    // A value that is not zero never reads 0 when decimals are set by hand.
+    expect(chartRules({ ...tvpi, series: [{ name: "DPI", values: [0.04, 1, 2, 3] }], decimals: 0 })).toContain("chart-labels");
+    expect(chartRules(tvpi)).toEqual([]);
+    expect(chartRules({ ...tvpi, decimals: 1 })).toContain("chart-labels");
+    // FX rates need three decimals, and they get them without being asked.
+    expect(chartDecimals({ ...tvpi, series: [{ name: "EURUSD", values: [1.0832, 1.0857] }] } as never)).toBe(3);
+    expect(chartRules({ ...tvpi, categories: ["a", "b"], series: [{ name: "EURUSD", values: [1.0832, 1.0857] }] })).toEqual([]);
+    // Rounding as the labels round: 1.45 and 1.5 both read 1.5 at one decimal.
+    expect(chartRules({ ...tvpi, series: [{ name: "A", values: [1.45, 1.5, 2, 3] }], decimals: 1 })).toContain("chart-labels");
+    // A line labels only its end; stacked totals are labels too.
+    expect(chartRules({ kind: "line", categories: ["a", "b", "c"], series: [{ name: "A", values: [12.3, 12.4, 15] }], decimals: 0 })).toEqual([]);
+    expect(chartRules({ kind: "stacked", categories: ["a", "b"], series: [{ name: "A", values: [0.4, 1] }, { name: "B", values: [0.4, 0.2] }], decimals: 0 })).toContain("chart-labels");
+  });
+
+  it("writes axis ticks with the precision of their step, not of the data", () => {
+    const html = renderDeckHtml(chartSlide({ kind: "column", categories: ["a", "b", "c"], series: [{ name: "A", values: [1, 2, 3] }], axis: true }), SAMPLE_ASSETS, "static");
+    const ticks = [...html.matchAll(/class="plot-tick"[^>]*>([^<]*)</g)].map((m) => m[1]);
+    expect(new Set(ticks).size).toBe(ticks.length);
+    expect(ticks).toContain("0.5");
   });
 
   it("draws horizontal bars left of zero for negative values", () => {

@@ -6,7 +6,7 @@
  * Slide 1920x1080 px = 13.333 x 7.5 inches: 144 px per inch, 1 px = 0.5 pt.
  */
 import PptxGenJS from "pptxgenjs";
-import { deriveTokens, type Block, type Deck, type Palette, bridgeSteps } from "@/lib/domain";
+import { bridgeSteps, chartDecimals, deriveTokens, type Block, type Deck, type Palette } from "@/lib/domain";
 import type { AssetData } from "./render/blocks";
 import type { SlideSnapshot, SnapshotItem } from "./snapshot";
 
@@ -64,6 +64,12 @@ function waterfallChart(b: Extract<Block, { type: "chart" }>, p: Palette) {
   return { series, colors: ["transparent", "transparent", ...colors.flatMap((c) => [hex(c), hex(c)])] };
 }
 
+/** Number format of the labels: the same decimals as the browser (chartDecimals), the unit after the number. */
+function numberFormat(b: Extract<Block, { type: "chart" }>): string {
+  const d = chartDecimals(b);
+  return `#,##0${d ? `.${"0".repeat(d)}` : ""}${b.unit ? `"${b.unit.replace(/"/g, "")}"` : ""}`;
+}
+
 function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>, r: Rect, p: Palette, fonts: { body: string; size: number }) {
   if (b.kind === "waterfall") {
     const w = waterfallChart(b, p);
@@ -106,7 +112,7 @@ function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>
     dataLabelColor: hex(b.kind === "donut" ? p.bg : p.fg),
     // PowerPoint has no outside end position for stacked bars, the values sit inside the segments as in HTML.
     dataLabelPosition: b.kind === "donut" || b.kind === "stacked" ? "ctr" : "outEnd",
-    ...(b.unit && { dataLabelFormatCode: `#,##0.##"${b.unit.replace(/"/g, "")}"` }),
+    dataLabelFormatCode: numberFormat(b),
     catAxisLabelColor: hex(p.muted),
     catAxisLabelFontFace: fonts.body,
     catAxisLabelFontSize: fonts.size,

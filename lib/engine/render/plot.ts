@@ -10,7 +10,7 @@
  * increases in the accent, decreases in the text color. Estimates hatched.
  */
 import { nice, ticks } from "d3-array";
-import { bestContrast, bridgeSteps, type Block } from "@/lib/domain";
+import { bestContrast, bridgeSteps, chartDecimals, placesOf, type Block } from "@/lib/domain";
 import { esc, formatNumber } from "../text";
 import type { RenderContext } from "./blocks";
 
@@ -88,7 +88,8 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
   const span = hi - lo || 1;
   const y = (v: number) => ((v - lo) / span) * 100;
   const unit = b.unit ? esc(b.unit) : "";
-  const fmt = (v: number, sign = false) => `${sign && v > 0 ? "+" : ""}${formatNumber(v, Number.isInteger(v) ? 0 : 1, ctx.locale)}${unit}`;
+  const decimals = chartDecimals(b);
+  const fmt = (v: number, sign = false) => `${sign && v > 0 ? "+" : ""}${formatNumber(v, decimals, ctx.locale)}${unit}`;
 
   const slot = 100 / n;
   const group = slot * 0.72;
@@ -96,9 +97,12 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
   const width = group / perSeries;
 
   const grid = b.axis
-    ? ticks(lo, hi, 5)
-        .map((t) => `<i class="plot-grid" style="bottom:${pct(y(t))}"></i><span class="plot-tick" style="bottom:${pct(y(t))}">${fmt(t)}</span>`)
-        .join("")
+    ? (() => {
+        // Ticks carry the precision of their step (0, 0.5, 1...), not of the data.
+        const list = ticks(lo, hi, 5);
+        const places = Math.max(0, ...list.map(placesOf));
+        return list.map((t) => `<i class="plot-grid" style="bottom:${pct(y(t))}"></i><span class="plot-tick" style="bottom:${pct(y(t))}">${formatNumber(t, places, ctx.locale)}${unit}</span>`).join("");
+      })()
     : "";
 
   const barsHtml = list

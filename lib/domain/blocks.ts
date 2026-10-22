@@ -61,6 +61,13 @@ export const blockSchema = z.discriminatedUnion("type", [
       .max(3)
       .describe("One value per category. Donut takes exactly one series"),
     unit: z.string().max(6).optional().describe("Shown after values, e.g. %, $M"),
+    decimals: z
+      .number()
+      .int()
+      .min(0)
+      .max(3)
+      .optional()
+      .describe("Decimal places of the value labels. Omit it: labels keep the decimals the values have (at most 3), the same for every label"),
     estimate: z.number().int().min(0).optional().describe("Index of the first category that is an estimate or plan (IBCS): from there bars are hatched. Name those categories e.g. 2025E"),
     axis: z.boolean().optional().describe("Show a value axis with gridlines. Only when the audience must read values off the chart, labels on the bars usually suffice (Tufte)"),
     reference: z
@@ -213,4 +220,57 @@ export function bridgeSteps(values: readonly number[]): { from: number; to: numb
     running = to;
     return { from, to, total };
   });
+}
+
+/** Most decimal places a label shows. More is false precision on a slide; scale the unit instead (bp, thousands). */
+export const MAX_DECIMALS = 3;
+
+/** Decimal places a value is written with (0.48 has 2), at most MAX_DECIMALS. */
+export const placesOf = (v: number) => {
+  for (let p = 0; p < MAX_DECIMALS; p++) if (Math.abs(Math.round(v * 10 ** p) - v * 10 ** p) < 1e-9) return p;
+  return MAX_DECIMALS;
+};
+
+/**
+ * Values of a chart that appear as labels: what each kind draws. A line labels only the end of its first series, a
+ * stacked chart its segments and their totals, the others every value; a reference line carries its value too.
+ */
+export function chartValues(b: Extract<Block, { type: "chart" }>): number[] {
+  const reference = b.reference ? [b.reference.value] : [];
+  if (b.kind === "line") return [b.series[0]!.values.at(-1)!, ...reference];
+  const values = b.series.flatMap((s) => s.values);
+  if (b.kind === "stacked") return [...values, ...b.categories.map((_, ci) => b.series.reduce((a, s) => a + (s.values[ci] ?? 0), 0)), ...reference];
+  return [...values, ...reference];
+}
+
+/** Rounds like the labels do (Intl, half away from zero), so the check sees what the audience sees. */
+const label = (v: number, p: number) => new Intl.NumberFormat("en", { minimumFractionDigits: p, maximumFractionDigits: p, useGrouping: false }).format(v);
+
+/** Labels at `p` decimals lose a difference the chart shows: two different values read the same, or a value that is not zero reads 0. */
+export function labelsCollide(values: readonly number[], p: number): boolean {
+  const seen = new Map<string, number>();
+  for (const v of values) {
+    const text = label(v, p);
+    if (v !== 0 && Number(text) === 0) return true;
+    const other = seen.get(text);
+    if (other !== undefined && Math.abs(other - v) > 1e-9) return true;
+    seen.set(text, v);
+  }
+  return false;
+}
+
+/**
+ * Decimal places of the value labels of a chart, the same for every label (tabular figures line up). The block's
+ * `decimals` when set; otherwise the precision the values have (at most MAX_DECIMALS). A label must not lose a difference the
+ * chart shows: 1.55 and 1.62 both shown as 1.6 make a rising chart look flat, 10.9 and 11.8 shown as 11 and 12
+ * contradict a headline about +0.9 points.
+ */
+export function chartDecimals(b: Extract<Block, { type: "chart" }>): number {
+  return b.decimals ?? Math.max(0, ...chartValues(b).map(placesOf));
+}
+
+/** The decimals a chart is drawn with when its labels lose a difference there, otherwise undefined. */
+export function chartLabelsCollide(b: Extract<Block, { type: "chart" }>): number | undefined {
+  const d = chartDecimals(b);
+  return labelsCollide(chartValues(b), d) ? d : undefined;
 }
