@@ -294,6 +294,9 @@ describe("motion language", () => {
     // A foreground close to the accent cannot stay legible on a tint of the accent.
     d.design.colors.fg = d.design.colors.accent;
     expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX))).toContain("background-contrast");
+    // The geometry line stays outside the margins, so it does not bear on the text.
+    d.slides[0]!.background = { type: "brand", visual: "geometry" };
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX))).not.toContain("background-contrast");
 
     const bleed = sampleDeck();
     const at = bleed.slides.findIndex((s) => s.layout === "image-full");

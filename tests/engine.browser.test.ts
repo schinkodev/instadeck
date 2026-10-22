@@ -281,8 +281,10 @@ describe("exports", () => {
     deck.slides[1]!.background = { type: "brand", visual: "numeral" };
     const snap = await snapshotDeck(deck, SAMPLE_ASSETS);
     const geometry = snap.find((s) => s.slideId === deck.slides[0]!.id)!;
-    // One thin line with a solid fill along the full height, and no new kind of item.
-    expect(geometry.items.filter((i) => i.kind === "box" && !i.ellipse && i.fill && i.w === BRAND_LINE_WIDTH && i.h === 1080)).toHaveLength(1);
+    // One thin line with a solid fill along the full height of the right edge (first slide), and no new kind of item.
+    const line = geometry.items.filter((i) => i.kind === "box" && !i.ellipse && i.fill && i.w === BRAND_LINE_WIDTH && i.h === 1080);
+    expect(line).toHaveLength(1);
+    expect(line[0]).toMatchObject({ x: 1920 - BRAND_LINE_WIDTH, y: 0 });
     const numeral = snap.find((s) => s.slideId === deck.slides[1]!.id)!;
     expect(numeral.items.some((i) => i.kind === "text" && i.runs.some((r) => r.text === "01" && r.size >= 800))).toBe(true);
   });

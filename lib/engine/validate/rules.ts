@@ -268,12 +268,15 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
   if (slide.background?.type === "brand") {
     if (layout.bleed) push("warning", "background-layout", `${layout.id} is full bleed, so the brand background is hidden behind the image. Use it on another layout`);
     // Figure and ground: text on the visual must stay legible, so the visual may not move too far from the background.
-    const p = deriveTokens(deck.design).palette[slide.tone ?? "default"];
-    const { tint } = brandColors(p, slide.tone === "accent");
-    for (const [name, ink] of [["text", p.fg], ["secondary text", p.muted]] as const) {
-      const worst = contrastRatio(ink, tint);
-      if (worst < CONTRAST.largeText) push("error", "background-contrast", `${name} on the brand background has a contrast of ${worst.toFixed(1)}:1, below ${CONTRAST.largeText}:1`);
-      else if (worst < CONTRAST.text) push("warning", "background-contrast", `${name} on the brand background has a contrast of ${worst.toFixed(1)}:1, aim for ${CONTRAST.text}:1`);
+    // The geometry line stays outside the margins, so no text stands on it.
+    if (slide.background.visual !== "geometry") {
+      const p = deriveTokens(deck.design).palette[slide.tone ?? "default"];
+      const { tint } = brandColors(p, slide.tone === "accent");
+      for (const [name, ink] of [["text", p.fg], ["secondary text", p.muted]] as const) {
+        const contrast = contrastRatio(ink, tint);
+        if (contrast < CONTRAST.largeText) push("error", "background-contrast", `${name} on the brand background has a contrast of ${contrast.toFixed(1)}:1, below ${CONTRAST.largeText}:1`);
+        else if (contrast < CONTRAST.text) push("warning", "background-contrast", `${name} on the brand background has a contrast of ${contrast.toFixed(1)}:1, aim for ${CONTRAST.text}:1`);
+      }
     }
   }
 
