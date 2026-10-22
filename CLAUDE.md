@@ -1,82 +1,87 @@
 # InstaDeck
 
-Brandované pitch decky jako open source MCP server (MIT, npm `instadeck`, `instadeck.app`). Uživatel ve svém Claude popíše firmu a téma a přidá brand assety, výsledkem je animovaná prezentace a PDF. **MCP first**: žádné vlastní UI ani harness.
+Branded pitch decks as an open source MCP server (MIT, npm `instadeck`, `instadeck.app`). The user describes the company and topic in their own Claude and adds brand assets, the result is an animated presentation and a PDF. **MCP first**: no UI or harness of our own.
 
-Jedno jádro, dvě cesty: **hostovaný konektor** `https://instadeck.app/mcp` (výchozí, bez instalace, prezentace jako MCP App přímo v chatu claude.ai a Desktopu, odkaz `/d/<id>`) a **lokální server** `npx -y instadeck` (pro varianta: soubory ve složce, náhledy a měření v Chromiu).
+One core, two paths: the **hosted connector** `https://instadeck.app/mcp` (default, nothing to install, the presentation plays as an MCP App right in the claude.ai and Desktop chat, link `/d/<id>`) and the **local server** `npx -y instadeck` (the pro option: files in a folder, previews and measurement in Chromium).
 
-## Specifikace
+## Specs
 
-- [docs/vision/V008-design-od-principu-dolu.md](docs/vision/V008-design-od-principu-dolu.md): audit principů podle vrstev vynucení, koncept a školy, obrazová vrstva (assety, pozadí), analytické decky s `dataset` a kontrolou čísel, eval
-- [docs/vision/V006-pohybovy-jazyk.md](docs/vision/V006-pohybovy-jazyk.md): pohybový jazyk decku navrhuje model (intenzita, vlastní keyframes, sdílené přechody), hlídají ho měřené principy místo výčtů
-- [docs/vision/V005-priklady-brand-a-hranice-zdarma.md](docs/vision/V005-priklady-brand-a-hranice-zdarma.md): golden examples, brandový systém, hranice zdarma a prémie (doplňuje V004)
-- [docs/vision/V004-konektor-a-lokalni-server.md](docs/vision/V004-konektor-a-lokalni-server.md): aktuální směr (hostovaný konektor s MCP App jako výchozí, lokální server jako pro varianta)
-- [docs/vision/V003-open-source-lokalne.md](docs/vision/V003-open-source-lokalne.md): open source, npm, rozšíření, landing (výchozí cesta překonaná V004)
-- [docs/vision/V002-mcp-first.md](docs/vision/V002-mcp-first.md): vrstvy, tools a principy (distribuce překonaná V003)
+- [docs/vision/V008-design-from-principles-down.md](docs/vision/V008-design-from-principles-down.md): audit of the principles by enforcement layer, concept and schools, story frames and asking the user, image layer (assets, backgrounds), analytic decks with facts and checked numbers, eval
+- [docs/vision/V006-motion-language.md](docs/vision/V006-motion-language.md): the model designs the motion language of a deck (intensity, its own keyframes, shared transitions), measured principles guard it instead of lists
+- [docs/vision/V005-examples-brand-and-free-tier.md](docs/vision/V005-examples-brand-and-free-tier.md): golden examples, brand system, free and premium boundary (extends V004)
+- [docs/vision/V004-connector-and-local-server.md](docs/vision/V004-connector-and-local-server.md): current direction (hosted connector with an MCP App as the default, local server as the pro option)
+- [docs/vision/V003-open-source-local.md](docs/vision/V003-open-source-local.md): open source, npm, extensions, landing (default path superseded by V004)
+- [docs/vision/V002-mcp-first.md](docs/vision/V002-mcp-first.md): layers, tools and principles (distribution superseded by V003)
 
-## Vrstvy (závislosti jen dolů, hlídá ESLint)
+## Layers (dependencies only point down, ESLint enforces it)
 
 ```
-lib/domain   bloky, layouty, tokeny, brand kit, pohybový jazyk a presety, principy designu, storytellingu a pohybu, golden examples (examples.json)
-lib/engine   deterministické: HTML prezentace, validace, měření přetečení a pohybu, PDF, PNG, barvy z loga
-lib/state    úložiště decků s revizemi, applyOps (jediná cesta zápisu), assety
-lib/tools    tools v MCP tvaru a service
-server/      MCP server: stdio (lokálně), HTTP (konektor, Lambda), MCP App
-skills/      skill pro Claude Code
-site/        statická landing page (instadeck.app)
+lib/domain   blocks, layouts, tokens, brand kit, motion language and presets, design, storytelling and motion principles, narrative frames, design schools, golden examples (examples.json)
+lib/engine   deterministic: HTML presentation, validation, overflow, composition and motion measurement, PDF, PNG, colors from a logo
+lib/state    deck storage with revisions, applyOps (the only write path), assets
+lib/tools    tools in MCP shape and the service
+server/      MCP server: stdio (local), HTTP (connector, Lambda), MCP App
+skills/      skill for Claude Code
+site/        static landing page (instadeck.app)
+scripts/     build, bundles, generated files, golden example promotion, eval
 ```
 
-## Pravidla
+## Rules
 
-- **Model rozhoduje o obsahu, struktuře, designu a pohybu. Engine renderuje, měří, validuje a exportuje.** Model nepíše HTML. Skládá slidy z bloků a layoutů a navrhuje pohybový jazyk decku jako data (presety nebo vlastní keyframes, V006).
-- **Prezentace, ne video.** Animace běží v prohlížeči (CSS a Web Animations), kroky posouvá řečník.
-- **Jediná cesta zápisu** je `applyOps` v `lib/state`.
-- **Doménová znalost** patří do `lib/domain`. Popisy tools, resources a skill se z ní generují, nenesou ji natvrdo.
-- **Tools drží MCP tvar**: ID v argumentech, žádný stav v procesu, `structuredContent` a textová kopie, `isError` při selhání.
-- **Server je obecný MCP podle standardu.** Výstupy musí dávat smysl v jakémkoli klientovi (text, PNG, cesta nebo odkaz).
-- **Sebepopis** podle vzoru stavebak.cz: registr schopností `server/capabilities.ts` (`done | partial | planned`), z něj instructions a resource. Nový tool = záznam v registru, jinak test selže.
-- **Žádné fallbacky ani heuristiky „pro jistotu“.** Opravuj příčinu.
-- **Pravidla vkusu jsou principy, ne výčty.** Model smí všechno, co umí. Hlídá se to, na čem záleží (koherence, čitelnost, pohyb jen když něco nese), měřitelně a s odůvodněním z vnímání. Zúžení „pro jistotu“ nepřidávat.
-- **Golden examples** jsou data v `lib/domain/examples.json`, bez assetů a se smyšleným obsahem. Každý musí projít `create_deck` bez chyb a varování. Přidávají se jen přes `npm run example`.
-- **Testy přes vitest** u domain, engine, state a tools, bez volání modelu. Po každé fázi typecheck, lint, testy a commit na větev. Do `main` se nepushuje, změny jdou přes pull request (viz Pracovní postup).
-- **Všechno jde přes MCP tools a resources.** Žádné vedlejší kanály jen pro náš klient (vzor stavebak). Co model nezná z popisu toolu, instructions nebo resources, neexistuje. Co server nemá, se neslibuje (`planned` v registru).
-- **Nic nepublikovat ani nenasazovat bez pokynu:** zveřejnění repa, `npm publish`, GitHub Release, GitHub Pages, DNS, AWS zdroje. Předem říct, co přesně vznikne.
-- **Claude spouští server a testy sám**, uživatele nežádá, aby něco spouštěl.
+- **The model decides content, structure, design and motion. The engine renders, measures, validates and exports.** The model does not write HTML. It composes slides from blocks and layouts and designs the motion language of the deck as data (presets or its own keyframes, V006).
+- **A presentation, not a video.** Animation runs in the browser (CSS and Web Animations), the presenter advances the steps.
+- **The only write path** is `applyOps` in `lib/state`.
+- **Domain knowledge** lives in `lib/domain`. Tool descriptions, resources and the skill are generated from it and do not hard-code it.
+- **Tools keep the MCP shape**: ids in arguments, no state in the process, `structuredContent` plus a text copy, `isError` on failure.
+- **The server is a standard, generic MCP server.** Every output must make sense in any client (text, PNG, path or link).
+- **Self-description**: the capability registry `server/capabilities.ts` (`done | partial | planned`) feeds the instructions and a resource. A new tool needs an entry in the registry, otherwise a test fails.
+- **No fallbacks or heuristics "just in case".** Fix the cause.
+- **Taste rules are principles, not lists.** The model may do everything it can. What matters is guarded (coherence, legibility, motion only when it carries meaning), measurably and with a reason grounded in perception. Do not add narrowing "just in case".
+- **Golden examples** are data in `lib/domain/examples.json`, without assets and with made-up content. Each must pass `create_deck` without errors and warnings. They are added only through `npm run example`.
+- **Tests with vitest** for domain, engine, state and tools, without calling a model. After each step: typecheck, lint, tests and a commit on a branch. Nothing is pushed to `main`, changes go through a pull request (see Workflow).
+- **A design change is measured.** A change to the guide, principles, validation or renderer that affects deck quality comes with an eval result in its pull request (`npm run eval`, see `scripts/eval/run.ts`). A change that regresses in the eval is not merged.
+- **Everything goes through MCP tools and resources.** No side channels only for our own client. What the model does not learn from a tool description, the instructions or a resource does not exist. What the server does not have is not promised (`planned` in the registry).
+- **Nothing is published or deployed without an explicit go:** making the repo public, `npm publish`, GitHub Release, GitHub Pages, DNS, AWS resources. Say beforehand what exactly will be created.
+- **Claude runs the server and the tests itself** and does not ask the user to run anything.
 
-## Pracovní postup
+## Workflow
 
-- `main` je chráněná větev. Nikdo do ní nepushuje přímo, vše jde přes **pull request** s zeleným CI (typecheck, lint, testy, kontrola secrets).
-- Přispěvatel pracuje ve **forku**, na krátké větvi, a PR otevře do `main` tohoto repa. Šablona PR je v `.github/`. Podrobně `CONTRIBUTING.md` a pro kolegy `docs/ONBOARDING.md`.
-- Změny v `.github/`, `lib/domain/examples.json`, `server/capabilities.ts` a `LICENSE` schvaluje vlastník (CODEOWNERS).
-- **Do repa nepatří** klíče, tokeny, `.env`, čísla účtů ani názvy produkčních zdrojů. Lokálně hlídá gitleaks (`.githooks/pre-commit`), v CI taky.
-- Release (tag `v*`, GitHub Release, npm) dělá jen vlastník, postup je v `docs/RELEASING.md`.
+- `main` is a protected branch. Nobody pushes to it directly, everything goes through a **pull request** with green CI (typecheck, lint, tests, secrets check).
+- A contributor works in a **fork**, on a short branch, and opens the PR against `main` of this repo. The PR template is in `.github/`. Details in `CONTRIBUTING.md`, and for collaborators `docs/ONBOARDING.md`.
+- One pull request is one change with one reason. Stack pull requests at most two deep, then merge first.
+- Changes to `.github/`, `lib/domain/examples.json`, `server/capabilities.ts` and `LICENSE` are approved by the owner (CODEOWNERS).
+- **Never in the repo:** keys, tokens, `.env`, account numbers or names of production resources. gitleaks guards it locally (`.githooks/pre-commit`) and in CI.
+- Releases (tag `v*`, GitHub Release, npm) are made only by the owner, the steps are in `docs/RELEASING.md`.
 
-## Texty
+## Language and copy
 
-- Identifikátory, popisy tools a texty v prezentaci (ovládání) anglicky. Obsah decku v jazyce briefu. Interní dokumentace česky.
-- V textech pro uživatele **nikdy slovo „AI“**.
-- **Nikdy em dash**, nikde. Čárka, tečka, svislítko nebo přeformulovat. Hlídá `tests/copy-rules.test.ts`.
+- **Everything in this repository is in English:** documentation, specs, code comments, identifiers, tool descriptions and the presentation controls. Deck content follows the language of the brief.
+- Other languages appear only as data: tests of Czech typesetting, the Czech eval briefs, the Czech one-letter words in the typesetting rules.
+- **Never the word "AI"** in user facing copy.
+- **Never an em dash**, anywhere. Use a comma, a period, a pipe or rephrase. `tests/copy-rules.test.ts` guards it.
 
-## Vkus decků (vynucuje doména a validace, ne prompt)
+## Taste of the decks (enforced by the domain and validation, not by the prompt)
 
-Principy z předchůdce projektu: dvě písma, modulární škála, akcent jen na signál, kognitivní limit kolem 4 položek na slide, hodně bílého místa, žádné dekorativní prvky bez funkce. Pohyb vede pozornost (`lib/domain/principles/motion.ts`): deck deklaruje intenzitu od `still` po `kinetic` a měření hlídá, že jí pohyb odpovídá. Jeden hero pohyb na slide, jeden vstup a přechod nese deck a výjimky jsou vzácné, text po blocích, nikdy po písmenech, vstupy zpomalují do klidu, překmit jen u `kinetic`.
+Two typefaces, a modular scale, the accent only as a signal, a cognitive limit of about four items per slide, plenty of white space, no decoration without a function. Every principle names the layer that enforces it, see the generated `docs/principles-audit.md`. Motion leads attention (`lib/domain/principles/motion.ts`): the deck declares an intensity from `still` to `kinetic` and the measurement checks the motion matches it. One hero motion per slide, one entrance and one transition carry the deck and exceptions are rare, text moves in blocks, never letter by letter, entrances decelerate into rest, overshoot only for `kinetic`.
 
-## Vývoj
+## Development
 
 ```bash
 npm test             # vitest
 npm run typecheck
 npm run lint
-npm run mcp          # MCP server přes stdio (pro claude mcp add)
-npm run eval         # eval kvality decků přes `claude -p` (stojí peníze, mimo CI), viz scripts/eval/run.ts
+npm run mcp          # MCP server over stdio (for claude mcp add)
+npm run gen          # regenerate generated files (skill, principles audit, player and view sources)
+npm run eval         # deck quality eval through `claude -p` (costs money, outside CI), see scripts/eval/run.ts
 ```
 
-Připojení v Claude Code (vývoj): `claude mcp add instadeck -- npx tsx /cesta/k/instadeck/server/stdio.ts`. Po publikaci `npx -y instadeck`.
-Data: `INSTADECK_HOME` (výchozí `~/InstaDeck`), každý deck je složka. Prohlížeč: nainstalovaný Chrome, Edge nebo Chromium, případně `INSTADECK_CHROME`.
+Connect in Claude Code (development): `claude mcp add instadeck -- npx tsx /path/to/instadeck/server/stdio.ts`. After publishing: `npx -y instadeck`.
+Data: `INSTADECK_HOME` (default `~/InstaDeck`), every deck is a folder. Browser: an installed Chrome, Edge or Chromium, or `INSTADECK_CHROME`.
 
-## Provoz hostovaného konektoru
+## Operating the hosted connector
 
-Infrastruktura, deploy a produkční údaje nejsou součástí tohoto repa. Spravuje je vlastník v soukromém repu. Přispěvatel se jich nedotýká a nic nenasazuje ani nepublikuje.
+Infrastructure, deployment and production details are not part of this repo. The owner manages them in a private repo. Contributors do not touch them and do not deploy or publish anything.
 
-## Verze (ověřeno 2026-10-18)
+## Versions (checked 2026-10-18)
 
-`@modelcontextprotocol/sdk` 1.32.1, `zod` 4, `vitest` 5, `typescript` 6, Node 22. Před přidáním závislosti ověřit aktuální verzi přes `npm view`.
+`@modelcontextprotocol/sdk` 1.32.1, `zod` 4, `vitest` 5, `typescript` 6, Node 22. Check the current version with `npm view` before adding a dependency.

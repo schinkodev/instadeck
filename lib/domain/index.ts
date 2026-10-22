@@ -1,4 +1,4 @@
-// Layer: lib/domain. Znalost o tvorbě decků, žádné I/O. See docs/vision/V002-mcp-first.md
+// Layer: lib/domain. Knowledge of how decks are made, no I/O. See docs/vision/V002-mcp-first.md
 export * from "./color";
 export * from "./fonts";
 export * from "./tokens";

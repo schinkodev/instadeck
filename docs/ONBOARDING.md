@@ -1,47 +1,48 @@
-# Onboarding: jak se podílet na InstaDecku
+# Onboarding: how to contribute to InstaDeck
 
-Pro kolegy, kteří se učí vibecoding. Claude Code ti pomůže se vším, co je tady popsané. Stačí mu říct, co chceš.
+For collaborators who are learning to build with Claude Code. Claude Code helps you with everything described here, just tell it what you want.
 
-## Jak to funguje
+## How it works
 
-- Do `main` pushuje jen vlastník repa. Ty pracuješ ve **forku** (vlastní kopie repa) a změny posíláš jako **pull request** (PR). Vlastník ho zkontroluje a sloučí.
-- Každý PR musí projít **CI** (typecheck, lint, testy a kontrola secrets). Červené CI znamená, že se ještě nemerguje.
-- Nasazení na instadeck.app, publikace na npm a tagy `v*` dělá jen vlastník.
+- Only the owner of the repo pushes to `main`. You work in a **fork** (your own copy of the repo) and send changes as a **pull request** (PR). The owner reviews and merges it.
+- Every PR has to pass **CI** (typecheck, lint, tests and a secrets check). Red CI means it is not merged yet.
+- Deploying to instadeck.app, publishing to npm and `v*` tags are done only by the owner.
 
-## První nastavení
+## First setup
 
-1. Na GitHubu otevři repo a klikni na **Fork**.
-2. Naklonuj svůj fork a nainstaluj závislosti:
+1. Open the repo on GitHub and click **Fork**.
+2. Clone your fork and install the dependencies:
 
    ```bash
-   git clone git@github.com:<tvoje-jmeno>/instadeck.git
+   git clone git@github.com:<your-name>/instadeck.git
    cd instadeck
    npm install
    ```
 
-3. Zapni ochranu před commitem klíčů a hesel (jednou):
+3. Turn on the protection against committing keys and passwords (once):
 
    ```bash
    brew install gitleaks
    git config core.hooksPath .githooks
    ```
 
-4. Spusť Claude Code ve složce repa. Přečte `CLAUDE.md` a bude se řídit pravidly projektu.
+4. Start Claude Code in the repo folder. It reads `CLAUDE.md` and follows the rules of the project.
 
-## Každá změna
+## Every change
 
-1. Řekni Claude, co chceš udělat. Pro novou práci vždy nová větev (`git switch -c nazev-zmeny`).
-2. Před PR ať Claude spustí `npm run typecheck`, `npm run lint` a `npm test`. Všechno musí být zelené.
-3. Pushni větev do svého forku a otevři PR do `main` původního repa. Vyplň šablonu.
-4. Pokud CI nebo review něco vrátí, oprav to ve stejné větvi, PR se aktualizuje.
+1. Tell Claude what you want to do. New work always gets a new branch (`git switch -c change-name`).
+2. Before the PR, let Claude run `npm run typecheck`, `npm run lint` and `npm test`. Everything must be green.
+3. Push the branch to your fork and open a PR against `main` of the original repo. Fill in the template.
+4. When CI or the review sends something back, fix it on the same branch, the PR updates itself.
 
-## Co nedělat
+## What not to do
 
-- Nepushuj do původního repa a nespouštěj workflow Deploy ani Release.
-- Do repa nepatří klíče, hesla, `.env` ani osobní data. Pokud se to stane, hned řekni vlastníkovi.
-- Nic nenasazuj a nepublikuj (AWS, npm, GitHub Pages, DNS). Pokyn k tomu dává jen vlastník.
-- Do textů nepiš em dash (dlouhou pomlčku). Hlídá to test.
+- Do not push to the original repo and do not run the Deploy or Release workflows.
+- Keys, passwords, `.env` files and personal data never belong in the repo. If it happens, tell the owner right away.
+- Do not deploy or publish anything (AWS, npm, GitHub Pages, DNS). Only the owner gives that go.
+- Do not use an em dash (the long dash) in any text. A test checks it.
+- Write everything in English: code, comments and docs.
 
-## Když nevíš
+## When you are not sure
 
-Zeptej se Claude, nebo napiš vlastníkovi. Ptát se je v pořádku.
+Ask Claude, or write to the owner. Asking is fine.
