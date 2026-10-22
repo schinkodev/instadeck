@@ -89,6 +89,12 @@ export const MOTION_LIMITS = {
   overshootScale: 0.005,
   /** How much motion remains at half time. More means the element speeds up into rest instead of slowing down. */
   remainingAtHalf: 0.6,
+  /**
+   * How long the text of two slides may be legible at once during a transition. Two texts in one place compete for the
+   * same figure (figure and ground, Gestalt) and read as a glitch, so it may last no longer than a jump the eye does
+   * not perceive as motion (minMs).
+   */
+  overlapMs: 120,
 } as const;
 
 /** Share of the transition duration after which the content entrance of the new slide starts. */
@@ -106,6 +112,14 @@ export interface MotionSample {
   blurPx: number;
   rotateDeg: number;
   overshoot: boolean;
-  /** Share of the motion remaining at half time (0 to 1). Only for entrance and enter. */
+  /** Share of the motion remaining at half time (0 to 1), half of the active time. Only for entrance and enter. */
   remainingAtHalf: number;
+  /** How long the element really moves, from its first change to its rest, in ms. Only for entrance and enter. */
+  activeMs: number;
+}
+
+/** Measured transition (measure.js): how long the text of both slides is legible at once, in ms. */
+export interface MotionOverlap {
+  name: string;
+  overlapMs: number;
 }

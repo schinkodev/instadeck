@@ -68,7 +68,41 @@ const scaled = (deck: Deck) => {
   return { t, ms: (v: number) => Math.round(v * t.duration) };
 };
 
-const compileKeyframes = (k: readonly Keyframe[]) => k.map((f) => (f.easing ? { ...f, easing: cssEasing(f.easing) } : { ...f }));
+/**
+ * Keyframes for Web Animations with the easing on every keyframe and none on the effect. The domain describes `offset`
+ * as a position in time; with an effect level easing it would be a position in eased progress, and an exit at offset
+ * 0.5 under out-expo would be gone after a tenth of the time. The player and the measurement run the effect linear.
+ */
+const compileKeyframes = (k: readonly Keyframe[], easing: string) => k.map((f) => ({ ...f, easing: cssEasing(f.easing ?? easing) }));
+
+/**
+ * Explicit offsets of keyframes followed by the implicit resting keyframe at 1, spaced like Web Animations does:
+ * missing offsets are spread evenly between the known ones, the first defaults to 0.
+ */
+function offsets(k: readonly Keyframe[]): number[] {
+  const all = [...k.map((f) => f.offset), 1];
+  if (all[0] === undefined) all[0] = 0;
+  for (let i = 1; i < all.length; i++) {
+    if (all[i] !== undefined) continue;
+    let j = i;
+    while (all[j] === undefined) j++;
+    const a = all[i - 1]!;
+    const b = all[j]!;
+    for (let n = i; n < j; n++) all[n] = a + ((b - a) * (n - i + 1)) / (j - i + 1);
+  }
+  return all as number[];
+}
+
+/**
+ * When the content entrance of the incoming slide starts, as a share of the transition. At CONTENT_DELAY, or later when
+ * the incoming slide is still invisible then (a fade through holds opacity 0 until the old slide is gone), so the
+ * entrance plays where the audience sees it.
+ */
+function contentDelay(enter: readonly Keyframe[]): number {
+  const at = offsets(enter);
+  const hidden = enter.reduce((m, f, i) => (f.opacity === 0 ? Math.max(m, at[i]!) : m), 0);
+  return Math.max(CONTENT_DELAY, hidden);
+}
 
 /** Every entrance of the deck (presets and vocabulary) with its duration by tempo. */
 export function compiledEntrances(deck: Deck) {
@@ -77,7 +111,7 @@ export function compiledEntrances(deck: Deck) {
   return Object.fromEntries(
     Object.entries(all).map(([k, e]) => [
       k,
-      { keyframes: compileKeyframes(e.keyframes), duration: ms(e.duration), easing: cssEasing(e.easing), stagger: e.stagger === undefined ? t.stagger : ms(e.stagger) },
+      { keyframes: compileKeyframes(e.keyframes, e.easing), duration: ms(e.duration), easing: cssEasing(e.easing), stagger: e.stagger === undefined ? t.stagger : ms(e.stagger) },
     ]),
   );
 }
@@ -91,10 +125,11 @@ export function compiledTransitions(deck: Deck) {
       {
         duration: ms(s.duration),
         easing: cssEasing(s.easing),
-        exit: compileKeyframes(s.exit ?? []),
-        enter: compileKeyframes(s.enter ?? []),
+        exit: compileKeyframes(s.exit ?? [], s.easing),
+        enter: compileKeyframes(s.enter ?? [], s.easing),
         over: s.over ?? "exit",
         shared: s.shared ?? false,
+        contentDelay: contentDelay(s.enter ?? []),
       },
     ]),
   );
@@ -117,7 +152,6 @@ export function playerConfig(deck: Deck) {
     revision: deck.revision,
     locale: deck.brief.language,
     stagger: t.stagger,
-    contentDelay: CONTENT_DELAY,
     entrances: compiledEntrances(deck),
     transitions: compiledTransitions(deck),
     heroes: Object.fromEntries(Object.entries(HERO_MOTIONS).map(([k, h]) => [k, { duration: ms(h.duration), easing: cssEasing(h.easing) }])),

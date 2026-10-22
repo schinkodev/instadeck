@@ -98,7 +98,15 @@ export const ENTRANCES = {
 
 export const TRANSITIONS = {
   cut: { purpose: "No transition. Fast, factual.", duration: 0, easing: "out-cubic" },
-  fade: { purpose: "Cross fade. The safe default.", duration: 450, easing: "in-out", exit: [{ opacity: 0 }] },
+  // Fade through, not a cross fade: the old slide is gone at half time and the new one appears from there, so two texts
+  // never cover each other (principle one-figure-at-a-time).
+  fade: {
+    purpose: "Fade through: the old slide fades out, then the new one fades in. The safe default.",
+    duration: 450,
+    easing: "in-out",
+    exit: [{ opacity: 0, offset: 0.5 }, { opacity: 0 }],
+    enter: [{ opacity: 0 }, { opacity: 0, offset: 0.5 }],
+  },
   slide: {
     purpose: "New slide slides in from the right, old one moves left. Sense of progress.",
     duration: 600,
@@ -110,14 +118,14 @@ export const TRANSITIONS = {
     purpose: "Old slide drops back and fades, new one rises. Calm depth.",
     duration: 650,
     easing: "out-expo",
-    exit: [{ transform: "scale(0.94)", opacity: 0 }],
+    exit: [{ transform: "scale(0.94)", opacity: 0, offset: 0.5 }, { transform: "scale(0.94)", opacity: 0 }],
     enter: [{ transform: "translateY(48px)", opacity: 0 }],
   },
   morph: {
-    purpose: "Shared elements (headline, logo, same image) glide to their new place while the rest cross fades. Feels like one continuous canvas.",
+    purpose: "Shared elements (headline, logo, same image) glide to their new place while the rest of the old slide clears quickly. Feels like one continuous canvas.",
     duration: 700,
     easing: "out-expo",
-    exit: [{ opacity: 0 }],
+    exit: [{ opacity: 0, offset: 0.3 }, { opacity: 0 }],
     shared: true,
   },
 } as const satisfies Record<string, TransitionSpec>;

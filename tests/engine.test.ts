@@ -164,10 +164,10 @@ describe("motion language", () => {
     const d = vocab(sampleDeck());
     d.motion.tempo = "calm";
     const c = playerConfig(d);
-    expect(c.entrances["soft-rise"]).toEqual({ keyframes: [{ opacity: 0, transform: "translateY(36px)" }], duration: 1000, easing: "cubic-bezier(0.16, 1, 0.3, 1)", stagger: 250 });
+    expect(c.entrances["soft-rise"]).toEqual({ keyframes: [{ opacity: 0, transform: "translateY(36px)", easing: "cubic-bezier(0.16, 1, 0.3, 1)" }], duration: 1000, easing: "cubic-bezier(0.16, 1, 0.3, 1)", stagger: 250 });
     expect(c.entrances.rise!.duration).toBe(800);
     expect(c.transitions.push).toMatchObject({ duration: 875, over: "enter", shared: true, exit: [], easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
-    expect(c.transitions.fade!.exit).toEqual([{ opacity: 0 }]);
+    expect(c.transitions.fade).toMatchObject({ exit: [{ opacity: 0, offset: 0.5 }, { opacity: 0 }], enter: [{ opacity: 0 }, { opacity: 0, offset: 0.5 }] });
   });
 
   it("uses vocabulary names on slides and zones", () => {
@@ -227,14 +227,29 @@ describe("motion language", () => {
 
   it("judges measured motion against the declared intensity", () => {
     const usage = { entrances: { big: ["s2"] }, transitions: { push: ["s3"] } };
-    const sample = { name: "big", part: "entrance" as const, travelPx: 300, scale: 0, blurPx: 0, rotateDeg: 0, overshoot: true, remainingAtHalf: 0.8 };
+    const sample = { name: "big", part: "entrance" as const, travelPx: 300, scale: 0, blurPx: 0, rotateDeg: 0, overshoot: true, remainingAtHalf: 0.8, activeMs: 600 };
     const subtle = motionFindings({ intensity: "subtle", usage }, [sample]);
     expect(subtle.map((f) => f.rule)).toEqual(["motion-intensity", "motion-overshoot", "motion-easing"]);
     expect(subtle[0]!.message).toContain("slides s2");
     expect(motionFindings({ intensity: "kinetic", usage }, [{ ...sample, remainingAtHalf: 0.3 }])).toEqual([]);
-    const slide = { name: "push", part: "enter" as const, travelPx: 1920, scale: 0, blurPx: 0, rotateDeg: 0, overshoot: false, remainingAtHalf: 0.1 };
+    const slide = { name: "push", part: "enter" as const, travelPx: 1920, scale: 0, blurPx: 0, rotateDeg: 0, overshoot: false, remainingAtHalf: 0.1, activeMs: 600 };
     expect(motionFindings({ intensity: "subtle", usage }, [slide]).map((f) => f.rule)).toEqual(["motion-intensity"]);
     expect(motionFindings({ intensity: "expressive", usage }, [slide])).toEqual([]);
+    // Holding still and then snapping into place in 40 ms reads as a jump, however the easing looks.
+    expect(motionFindings({ intensity: "kinetic", usage }, [{ ...sample, overshoot: false, remainingAtHalf: 0.5, activeMs: 40 }]).map((f) => f.rule)).toEqual(["motion-duration"]);
+    const overlap = motionFindings({ intensity: "subtle", usage }, [], [{ name: "push", overlapMs: 200 }]);
+    expect(overlap.map((f) => [f.rule, f.message.includes("slides s3")])).toEqual([["motion-overlap", true]]);
+    expect(motionFindings({ intensity: "subtle", usage }, [], [{ name: "push", overlapMs: 100 }])).toEqual([]);
+  });
+
+  it("plays keyframe offsets as positions in time and starts content when the slide appears", () => {
+    const c = playerConfig(sampleDeck());
+    // The easing sits on every keyframe, the effect runs linear (player.js, measure.js).
+    expect(c.transitions.fade!.exit.every((k) => k.easing === "cubic-bezier(0.65, 0, 0.35, 1)")).toBe(true);
+    expect(c.entrances.rise!.keyframes[0]!.easing).toBe("cubic-bezier(0.16, 1, 0.3, 1)");
+    // A fade through shows the new slide from half time, its content enters from there.
+    expect(c.transitions.fade!.contentDelay).toBe(0.5);
+    expect(c.transitions.slide!.contentDelay).toBe(0.45);
   });
 });
 

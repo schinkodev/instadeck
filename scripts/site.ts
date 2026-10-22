@@ -22,7 +22,7 @@ deck.motion = {
   tempo: "confident",
   heroes: true,
 };
-// Slides without a shared headline, logo or image with the previous one cut with a cross fade, morph has nothing to carry there.
+// Slides without a shared headline, logo or image with the previous one change with the fade, morph has nothing to carry there.
 for (const s of deck.slides) if (["quote", "image-full"].includes(s.layout)) s.motion = { transition: "fade" };
 writeFileSync(`${out}/index.html`, landingHtml(version));
 writeFileSync(`${out}/demo/deck.html`, renderDeckHtml(deck, SAMPLE_ASSETS, "present"));

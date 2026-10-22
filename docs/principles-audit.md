@@ -70,6 +70,7 @@ Motion principles name the validation rule that measures them (`measured`) and a
 - Perceptual Timing (Card, Moran and Newell (1983)): motion-duration
 - Duration Follows Distance (Material Design motion): not measured
 - Reading Needs Stillness (Rayner (eye movement research)): motion-readable
+- One Figure at a Time (Rubin, Koffka (Gestalt figure and ground)): motion-overlap
 - Repetition Builds Predictability (Williams, Vignelli): motion-consistency
 - Energy Is Tone (Norman, Emotional Design (2004)): motion-intensity
 - Motion Sensitivity (WCAG 2.3.3): not measured

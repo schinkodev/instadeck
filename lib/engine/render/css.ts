@@ -23,6 +23,7 @@ export function deckCss(t: Tokens): string {
         ? "border:2px solid var(--line);padding:var(--sp-lg);border-radius:var(--radius);"
         : "border-top:2px solid var(--fg);padding-top:var(--sp-md);";
   return `:root{
+--deck-bg:${t.palette.default.bg};
 --font-heading:${familyCss(t.fonts.heading)};--font-body:${familyCss(t.fonts.body)};
 --fs-display:${s.display}px;--fs-h1:${s.h1}px;--fs-h2:${s.h2}px;--fs-h3:${s.h3}px;--fs-lead:${s.lead}px;--fs-body:${s.body}px;--fs-small:${s.small}px;--fs-caption:${s.caption}px;--fs-stat:${s.stat}px;
 --lh-heading:${t.lineHeight.heading};--lh-body:${t.lineHeight.body};
@@ -148,8 +149,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 }
 
 /** Display mode: presentation (one slide across the whole window) or static pages (PDF, PNG, viewing). */
-/** Player rules: slide visibility, hidden steps, the notes panel. They apply in the presentation and in the chat. */
-const PLAYER_CSS = `.slide{visibility:hidden}.slide.is-active,.slide.is-leaving{visibility:visible}.slide.is-leaving{z-index:1}.slide.is-over{z-index:2}
+/** Player rules: slide visibility, hidden steps, the notes panel. They apply in the presentation and in the chat. The stage carries the deck background, so a fade through passes the deck color, not the dark window around it. */
+const PLAYER_CSS = `.stage{background:var(--deck-bg)}.slide{visibility:hidden}.slide.is-active,.slide.is-leaving{visibility:visible}.slide.is-leaving{z-index:1}.slide.is-over{z-index:2}
 .pending{opacity:0}
 .hud{position:absolute;left:0;right:0;bottom:0;z-index:2;display:none;gap:24px;align-items:flex-start;padding:16px 24px;background:rgba(11,11,12,.94);color:#E8E8EA;font:15px/1.5 system-ui,sans-serif;max-height:32%;overflow:auto}
 .show-notes .hud{display:flex}
