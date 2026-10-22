@@ -72,3 +72,16 @@ export const BRIEFS: readonly EvalBrief[] = [
     text: "Product deck for Tracewell, an observability tool that finds the cause of a production incident in minutes by linking traces, logs and deploys. Audience: engineering leads at companies with 50 to 500 engineers. Median time to diagnose drops from 47 to 9 minutes in the design partner group of 12 teams.",
   },
 ];
+
+/**
+ * Sparse briefs for the asking eval (`npm run eval -- ask`): too little to build a good deck, so the model should ask first
+ * and show the storyline before building. They are not part of the deck quality eval.
+ */
+export const SPARSE_BRIEFS: readonly EvalBrief[] = [
+  {
+    id: "sparse-finance",
+    language: "en",
+    probes: "asks about delivery, big idea and length, then shows a storyline before building",
+    text: "A deck for finance people, 10 slides.",
+  },
+];

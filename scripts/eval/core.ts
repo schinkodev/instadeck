@@ -2,6 +2,7 @@
  * Pure eval logic (no model, no disk): building prompts, the order of pairs, merging verdicts,
  * results and the report. Tested in vitest. The CLI is in run.ts.
  */
+import { BEAT_IDS } from "@/lib/domain/pitch";
 import type { EvalBrief } from "./briefs";
 
 export const CRITERIA = ["focus", "hierarchy", "concept", "rhythm", "legibility", "polish"] as const;
@@ -20,7 +21,7 @@ export function generationPrompt(b: EvalBrief, school?: string): string {
   const lang = b.language === "cs" ? "Czech" : "English";
   // A fixed school takes the choice of the school out of the comparison: otherwise two decks of one brief may follow different schools.
   const fixed = school ? ` Use the design school "${school}": set brief.concept.school to "${school}" in create_deck and follow the school.` : "";
-  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available, so do not ask for them. Decide everything yourself and do not ask questions.${fixed} Finish when the deck exists and every error finding is fixed.
+  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available, so do not ask for them. Decide everything yourself, do not ask questions and do not wait for anyone to confirm a storyline: build the deck directly.${fixed} Finish when the deck exists and every error finding is fixed.
 
 Brief: ${b.text}`;
 }
@@ -37,6 +38,46 @@ export function expandRuns(briefs: readonly EvalBrief[], runs: number): EvalBrie
   const clash = briefs.find((b) => RUN_ID.test(b.id));
   if (clash) throw new Error(`The brief id ${clash.id} looks like a run (<id>-r<n>), pick another id`);
   return briefs.flatMap((b) => Array.from({ length: runs }, (_, i) => (i === 0 ? b : { ...b, id: `${b.id}-r${i + 1}` })));
+}
+
+/** Prompt of the asking eval: unlike generationPrompt the model may and should ask before building. */
+export function askPrompt(b: EvalBrief): string {
+  const lang = b.language === "cs" ? "Czech" : "English";
+  return `Create a presentation with the InstaDeck tools for this brief. Write all slide content in ${lang}. No logo or image files are available. Follow the InstaDeck workflow. If it tells you to ask the user or to show something before building, do that in your reply and stop there: do not build until the user answers.
+
+Brief: ${b.text}`;
+}
+
+/** Answer to the first round of questions: accept the defaults, and pick an answer where there is none (a person would). */
+export const ASK_REPLY = "Yes, use your suggested defaults. Where there is no default, pick the most plausible answer yourself and tell me what you picked.";
+
+export interface AskResult {
+  /** The model created a deck before the user could confirm anything. */
+  builtEarly: boolean;
+  /** Round one: the reply asks about live versus pre-read delivery. */
+  askedDelivery: boolean;
+  /** Round one: the reply asks about the big idea, the takeaway or the audience action. */
+  askedBigIdea: boolean;
+  /** Round one: at most five questions. */
+  questions: number;
+  /** Round two: the reply lists at least five slides (headlines with beats) before building. */
+  showedStoryline: boolean;
+  pass: boolean;
+}
+
+const LISTED = /^\s*(?:\d+[.)]|[-*\u2022]|\|\s*\d+\s*\|)\s*\S/;
+
+/** Judges the two replies of the asking eval by what they contain. Deterministic, so it can be tested. */
+export function scoreAsk(first: string, second: string, deckCreated: boolean): AskResult {
+  // Only a line that asks counts: "I'll treat this as a pre-read" decides, it does not ask.
+  const asking = first.split("\n").filter((l) => l.includes("?"));
+  const askedDelivery = asking.some((l) => /\b(?:live|pre-?read|read (?:alone|beforehand|in advance)|in person)\b/i.test(l));
+  const askedBigIdea = asking.some((l) => /\b(?:big idea|take ?away|one sentence|should (?:do|believe|decide))\b/i.test(l));
+  const questions = asking.length;
+  // A storyline lists the slides with their story beats. A list of picked answers or of concepts has no beats.
+  const beats = new RegExp(`\\b(?:${BEAT_IDS.join("|")})\\b`, "i");
+  const showedStoryline = second.split("\n").filter((l) => LISTED.test(l) && beats.test(l)).length >= 4;
+  return { builtEarly: deckCreated, askedDelivery, askedBigIdea, questions, showedStoryline, pass: !deckCreated && askedDelivery && askedBigIdea && questions >= 1 && questions <= 5 && showedStoryline };
 }
 
 export interface DeckRef {

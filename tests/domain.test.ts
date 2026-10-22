@@ -144,6 +144,23 @@ describe("narrative frames", () => {
   });
 });
 
+describe("workflow", () => {
+  it("asks about delivery and the big idea, then shows the storyline before the design", async () => {
+    const { workflow } = await import("@/lib/tools/guide");
+    for (const mode of ["local", "hosted"] as const) {
+      const steps = workflow(mode);
+      expect(steps[0]).toContain("delivery");
+      expect(steps[0]).toContain("big idea");
+      const story = steps.findIndex((x) => x.includes("Story:"));
+      const storyline = steps.findIndex((x) => x.includes("Storyline:"));
+      const design = steps.findIndex((x) => x.includes("Design:"));
+      expect(story).toBeLessThan(storyline);
+      expect(storyline).toBeLessThan(design);
+      steps.forEach((x, i) => expect(x.startsWith(`${i + 1}.`), x.slice(0, 20)).toBe(true));
+    }
+  });
+});
+
 describe("design schools", () => {
   it("use only curated fonts and known type scales, with unique ids", async () => {
     const { DESIGN_SCHOOLS, GOOGLE_FONTS, TYPE_SCALES, findGoogleFont } = await import("@/lib/domain");
