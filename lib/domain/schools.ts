@@ -4,6 +4,7 @@
  * none of it is a restriction: they are recommendations with reasons, from which it derives the deck design.
  * Fonts only from the curated list (fonts.ts), a test guards it.
  */
+import type { Composition } from "./composition";
 import type { Intensity } from "./motion-limits";
 import type { Tempo } from "./motion";
 import type { TYPE_SCALES } from "./tokens";
@@ -22,6 +23,8 @@ export interface DesignSchool {
   space: { density: "airy" | "balanced" | "compact"; radius: number; cards: "flat" | "outline" | "filled" };
   imagery: string;
   motion: { intensity: Intensity; tempo: Tempo; note: string };
+  /** The default geometry of a slide in this school (V009). A slide may override it. */
+  composition?: Composition;
   avoid: string;
 }
 
@@ -38,6 +41,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     space: { density: "balanced", radius: 0, cards: "flat" },
     imagery: "Objective photography, tightly cropped, often grayscale. Images align to the grid like text.",
     motion: { intensity: "subtle", tempo: "confident", note: "Cuts and wipes, nothing decorative. Motion reveals structure." },
+    composition: { axis: "asymmetric" },
     avoid: "Centered body text, rounded corners, more than one accent color, decoration.",
   },
   {
@@ -66,6 +70,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     space: { density: "airy", radius: 4, cards: "flat" },
     imagery: "Single objects on calm backgrounds, natural light, lots of negative space.",
     motion: { intensity: "still", tempo: "calm", note: "Fades only, or nothing at all." },
+    composition: { axis: "asymmetric" },
     avoid: "Filling space, more than three items on a slide, saturated colors.",
   },
   {
@@ -80,6 +85,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     space: { density: "airy", radius: 24, cards: "filled" },
     imagery: "Product shots on black, large and centered, or full bleed.",
     motion: { intensity: "expressive", tempo: "confident", note: "Morph between slides, a focus entrance for the reveal." },
+    composition: { axis: "center" },
     avoid: "Bullet lists, small text, more than one message per slide.",
   },
   {
@@ -164,6 +170,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     space: { density: "compact", radius: 0, cards: "flat" },
     imagery: "None. Charts and tables carry the deck.",
     motion: { intensity: "still", tempo: "calm", note: "No decoration moves and numbers appear at their final value: declare heroes false." },
+    composition: { axis: "left" },
     avoid: "Pies, decorative color, inconsistent scales, charts without units.",
   },
   {
@@ -190,3 +197,8 @@ export function getSchool(id: string): DesignSchool | undefined {
 
 export const CONCEPT_GUIDANCE =
   "Before choosing colors and fonts, write the concept of the deck: the visual idea in one sentence, a school (section schools) or your own named references, what the deck must not look like, and one signature device that recurs (a rule, a crop, a number style, a color field). Then derive the design from it. Schools are recommendations with reasons, combine them or name your own references.";
+
+/** The default composition of a school, for slides that set none (V009). */
+export function schoolComposition(id: string | undefined): Composition | undefined {
+  return DESIGN_SCHOOLS.find((s) => s.id === id)?.composition;
+}

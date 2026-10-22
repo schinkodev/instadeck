@@ -2,7 +2,7 @@
  * Slide to HTML: the domain layout as a CSS grid, blocks in zones, tone and motion as data attributes
  * (slide entrance, optionally a zone entrance, the transition into the slide).
  */
-import { HERO_PRIORITY, getLayout, type Deck, type Slide, type Tokens } from "@/lib/domain";
+import { HERO_PRIORITY, getLayout, resolveGrid, schoolComposition, type Deck, type Slide, type Tokens } from "@/lib/domain";
 import { esc } from "../text";
 import { sharedKeys, slideEntrance, slideTransition } from "../motion";
 import { renderBlock, type AssetData, type RenderContext } from "./blocks";
@@ -37,6 +37,7 @@ export function renderSlide(slide: Slide, index: number, input: SlideRenderInput
     heroBlock: heroBlockOf(slide, input.deck),
     shared: sharedKeys(slide),
   };
+  const geometry = resolveGrid(layout, slide.composition, schoolComposition(input.deck.brief.concept?.school));
   const entrance = slideEntrance(slide, input.deck);
   const transition = slideTransition(slide, input.deck);
 
@@ -52,13 +53,13 @@ export function renderSlide(slide: Slide, index: number, input: SlideRenderInput
         bleed = `<div class="bleed"${enter}>${html}<div class="scrim"></div></div>`;
         return "";
       }
-      const figure = zone.figure ? " data-figure" : "";
+      const figure = `${zone.figure ? " data-figure" : ""}${geometry.dominant === zone.name ? " data-dominant" : ""}`;
       return `<div class="zone zone-${zone.name} align-${zone.align ?? "start"}" style="grid-area:${zone.name}" data-zone="${zone.name}"${figure}${enter}>${html}</div>`;
     })
     .join("");
 
-  const grid = `grid-template-areas:${layout.grid.areas.map((a) => `'${a}'`).join(" ")};grid-template-columns:${layout.grid.columns};grid-template-rows:${layout.grid.rows}`;
-  return `<section class="slide tone-${tone} layout-${layout.id}${bleed ? " has-bleed" : ""}" id="slide-${index + 1}" data-slide-id="${esc(slide.id)}" data-index="${index}" data-entrance="${esc(entrance)}" data-transition="${esc(transition)}">
+  const grid = `grid-template-areas:${geometry.areas.map((a) => `'${a}'`).join(" ")};grid-template-columns:${geometry.columns};grid-template-rows:${geometry.rows}`;
+  return `<section class="slide tone-${tone} layout-${layout.id} axis-${geometry.axis}${bleed ? " has-bleed" : ""}" id="slide-${index + 1}" data-slide-id="${esc(slide.id)}" data-index="${index}" data-entrance="${esc(entrance)}" data-transition="${esc(transition)}">
 ${bleed}<div class="grid" style="${grid}">${zones}</div>
 </section>`;
 }

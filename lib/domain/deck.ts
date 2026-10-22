@@ -4,6 +4,7 @@
  */
 import { z } from "zod";
 import { blockSchema } from "./blocks";
+import { COMPOSITION_AXES, COMPOSITION_SPLITS } from "./composition";
 import { LAYOUT_IDS } from "./layouts";
 import { FRAME_IDS } from "./narrative";
 import { BEAT_IDS } from "./pitch";
@@ -39,11 +40,21 @@ export type Brief = z.infer<typeof briefSchema>;
 /** Brief for create_deck: the concept is required, the model decides it before choosing colors and fonts. */
 export const createBriefSchema = briefSchema.extend({ concept: conceptSchema });
 
+export const compositionSchema = z
+  .strictObject({
+    axis: z.enum(COMPOSITION_AXES).optional().describe("left (default), center (low density layouts with one column) or asymmetric (the content is pushed right, the left side stays empty on purpose)"),
+    split: z.enum(COMPOSITION_SPLITS).optional().describe("Ratio of the two columns of title-image, text-image, image-text and chart-insight"),
+    dominant: z.string().min(1).optional().describe("The zone that leads and gets the larger column, in a two column layout"),
+  })
+  .describe("The geometry of the slide grid as intent: where the content sits, how two columns share the width and which zone leads. The engine derives the numbers and measures that the slide holds. Without it the slide follows the composition of the school");
+export type SlideComposition = z.infer<typeof compositionSchema>;
+
 export const slideInputSchema = z.strictObject({
   layout: z.enum(LAYOUT_IDS).describe("Layout id from instadeck://layouts"),
   intent: z.string().min(1).max(160).describe("The one thing this slide must communicate, as a sentence. Not shown on the slide"),
   beat: z.enum(BEAT_IDS).optional().describe("The story beat this slide carries (section pitch, beats): hook, problem, traction, ask..."),
   tone: z.enum(TONES).optional().describe("default, inverse (dark on light swapped) or accent (accent colored background, for one or two key moments)"),
+  composition: compositionSchema.optional(),
   blocks: z.record(z.string(), blockSchema).describe("Block per zone of the layout, keyed by zone name"),
   motion: slideMotionSchema.optional(),
   notes: z.string().max(1200).optional().describe("Speaker notes"),
@@ -89,6 +100,7 @@ export const opSchema = z.discriminatedUnion("op", [
     intent: slideInputSchema.shape.intent.optional(),
     beat: slideInputSchema.shape.beat,
     tone: slideInputSchema.shape.tone,
+    composition: compositionSchema.nullable().optional().describe("null returns the slide to the composition of its school. A new layout resets it too, unless you give one"),
     blocks: z.record(z.string(), blockSchema.nullable()).optional().describe("Zones to set. null removes the block from the zone. Unlisted zones stay"),
     motion: slideMotionSchema.optional(),
     notes: z.string().max(1200).optional(),

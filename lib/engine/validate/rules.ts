@@ -5,6 +5,7 @@
  */
 import {
   CONTRAST,
+  compositionProblems,
   ENTRANCES,
   MOTION_LIMITS,
   PITCH_GUIDANCE,
@@ -247,6 +248,8 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
       if ((block.type === "heading" || block.type === "cta") && block.text.includes("==")) push("warning", "highlight-on-accent", "The accent tone slide has an accent background, so ==highlight== is invisible. Remove the markers", zone);
     }
   }
+
+  if (slide.composition) for (const problem of compositionProblems(layout, slide.composition)) push("error", "composition", problem);
 
   const steps = slideSteps(slide);
   if (steps > MOTION_LIMITS.stepsPerSlide) push("warning", "motion-steps", `${steps} click steps, at most ${MOTION_LIMITS.stepsPerSlide} keep the talk flowing`);

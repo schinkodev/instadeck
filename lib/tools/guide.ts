@@ -126,6 +126,8 @@ const design = () => ({
   limits: { minFontPx: MIN_FONT_PX, maxPx: MAX_PX },
   density: Object.keys(DENSITY),
   cards: "filled (surface background), outline (thin border) or flat (top rule only).",
+  composition:
+    "A slide may set composition { axis, split, dominant } to change the geometry of its layout as intent, the engine derives the numbers. axis: left (default), center or asymmetric (the content is pushed right and the left side stays empty on purpose, the Swiss way). In one column only title, statement, section and closing take center or asymmetric, because a full bleed image, a quote, a logo grid or dense content (cards, stats, tables) is built for its width and a left edge. Two column layouts take asymmetric as an uneven split. split: 1:3, 1:2, 1:1, 2:1 or 3:1 for the two columns of title-image, text-image, image-text and chart-insight, the larger share goes to the dominant zone, else to the image or chart. dominant: the zone that gets the larger column. Without composition a slide follows the composition of its school (concept.school): swiss and ma push content right, keynote centers, the others keep the layout as it is. Use the school's default for most slides and set composition on the few slides that mark a moment, for example one centered statement in a left aligned deck. A composition that the layout cannot take is an error that names why. Changing the layout of a slide resets its composition unless you give one.",
 });
 
 export function designGuide(sections: readonly GuideSection[] = ["workflow", "layouts", "blocks", "motion", "design", "schools", "pitch"], mode: Mode = "local") {
