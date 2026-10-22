@@ -2,7 +2,7 @@
  * Brand visuals (V008, the image layer): a slide background drawn from the palette of the slide, so a deck without
  * photos looks deliberately typographic instead of empty. Deterministic, no stock and no generated images.
  *
- * Only plain boxes, circles and one line of text, in solid colors: the PowerPoint snapshot reads the same DOM, so the
+ * Only plain boxes and one line of text, in solid colors: the PowerPoint snapshot reads the same DOM, so the
  * background exports as shapes and text with no special case.
  */
 import { DEFAULT_IMAGE_OVERLAY, chapterNumbers, mix, withAlpha, type Background, type Deck, type Palette, type Slide } from "@/lib/domain";
@@ -15,10 +15,16 @@ import { esc } from "../text";
  */
 export const BRAND_VISUAL_STRENGTH = 0.1;
 
-/** Colors of the visual: the accent, or the foreground when the slide itself is the accent. `solid` is the one small, stronger shape. */
-export function brandColors(palette: Palette, accentSlide: boolean): { tint: string; solid: string } {
+/** Width of the geometry line in pixels: thin enough to stay a signal, wide enough to survive a projector. */
+export const BRAND_LINE_WIDTH = 12;
+
+/**
+ * Colors of the visual: the accent, or the foreground when the slide itself is the accent. `tint` is for shapes text may
+ * cross, `ink` the full color for a line that stays outside the margins.
+ */
+export function brandColors(palette: Palette, accentSlide: boolean): { tint: string; ink: string } {
   const ink = accentSlide ? palette.fg : palette.accent;
-  return { tint: mix(palette.bg, ink, BRAND_VISUAL_STRENGTH), solid: mix(palette.bg, ink, BRAND_VISUAL_STRENGTH * 1.6) };
+  return { tint: mix(palette.bg, ink, BRAND_VISUAL_STRENGTH), ink };
 }
 
 /** An image under the content with an overlay in the slide color. The overlay is what keeps text legible, the browser measures it. */
@@ -32,7 +38,7 @@ export function renderImageBackground(background: Extract<Background, { type: "i
 
 /** The visual layer, placed behind the grid. Positions alternate with the slide index so neighboring slides do not repeat. */
 export function renderBrandVisual(background: Extract<Background, { type: "brand" }>, deck: Deck, slide: Slide, index: number, palette: Palette): string {
-  const { tint, solid } = brandColors(palette, slide.tone === "accent");
+  const { tint, ink } = brandColors(palette, slide.tone === "accent");
   const right = index % 2 === 0;
   switch (background.visual) {
     case "numeral": {
@@ -43,8 +49,8 @@ export function renderBrandVisual(background: Extract<Background, { type: "brand
       return `<div class="brand-visual brand-field" aria-hidden="true"><div style="background:${tint};${right ? "right" : "left"}:0;width:640px;top:0;height:1080px"></div></div>`;
     }
     case "geometry": {
-      const side = right ? "right" : "left";
-      return `<div class="brand-visual brand-geometry" aria-hidden="true"><div class="brand-circle" style="background:${tint};${side}:-160px;bottom:-200px;width:880px;height:880px;border-radius:440px"></div><div style="background:${solid};${side}:640px;bottom:96px;width:120px;height:120px"></div></div>`;
+      // One thin line along the edge, outside the margins: it marks the slide without competing with the title.
+      return `<div class="brand-visual brand-geometry" aria-hidden="true"><div style="background:${ink};${right ? "right" : "left"}:0;width:${BRAND_LINE_WIDTH}px;top:0;height:1080px"></div></div>`;
     }
   }
 }

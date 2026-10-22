@@ -43,7 +43,7 @@ export const CAPABILITIES: Capability[] = [
   },
   {
     id: "brand-visuals",
-    claim: "Gives a deck without photos a deliberate look: the title and chapter slides can carry a large chapter number, a color field or a circle and a square, drawn from the brand colors, with the contrast of the text on them checked, and exported to PowerPoint. A slide can also take an image you supply as its background under an overlay, and the browser measures the text over it and tells how strong the overlay must be.",
+    claim: "Gives a deck without photos a deliberate look: the title and chapter slides can carry a large chapter number, a color field or a thin accent line, drawn from the brand colors, with the contrast of the text on them checked, and exported to PowerPoint. A slide can also take an image you supply as its background under an overlay, and the browser measures the text over it and tells how strong the overlay must be.",
     status: "done",
     tools: ["create_deck", "apply_ops"],
   },

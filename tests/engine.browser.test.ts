@@ -6,6 +6,7 @@ import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import JSZip from "jszip";
 import { closeBrowser, colorsFromRaster, exportPdf, exportPptx, measureDeck, renderDeckHtml, renderPng, snapshotDeck } from "@/lib/engine";
 import { withPage } from "@/lib/engine/browser";
+import { BRAND_LINE_WIDTH } from "@/lib/engine/render/brand-visual";
 import { EXAMPLES, DEFAULT_DESIGN, LAYOUT_LIMITS, type Deck } from "@/lib/domain";
 import { SAMPLE_ASSETS, sampleDeck } from "./fixtures/sample-deck";
 
@@ -280,9 +281,10 @@ describe("exports", () => {
     deck.slides[1]!.background = { type: "brand", visual: "numeral" };
     const snap = await snapshotDeck(deck, SAMPLE_ASSETS);
     const geometry = snap.find((s) => s.slideId === deck.slides[0]!.id)!;
-    // A circle and a square, both with a solid fill, and no new kind of item.
-    expect(geometry.items.filter((i) => i.kind === "box" && i.ellipse && i.fill && i.w >= 800)).toHaveLength(1);
-    expect(geometry.items.some((i) => i.kind === "box" && !i.ellipse && i.fill && i.w === 120)).toBe(true);
+    // One thin line with a solid fill along the full height of the right edge (first slide), and no new kind of item.
+    const line = geometry.items.filter((i) => i.kind === "box" && !i.ellipse && i.fill && i.w === BRAND_LINE_WIDTH && i.h === 1080);
+    expect(line).toHaveLength(1);
+    expect(line[0]).toMatchObject({ x: 1920 - BRAND_LINE_WIDTH, y: 0 });
     const numeral = snap.find((s) => s.slideId === deck.slides[1]!.id)!;
     expect(numeral.items.some((i) => i.kind === "text" && i.runs.some((r) => r.text === "01" && r.size >= 800))).toBe(true);
   });
