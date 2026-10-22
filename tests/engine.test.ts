@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Deck, Slide } from "@/lib/domain";
-import { chartDecimals, deckMotionSchema, keyframeSchema } from "@/lib/domain";
+import { DESIGN_SCHOOLS, chartDecimals, deckMotionSchema, keyframeSchema } from "@/lib/domain";
 import { blockSteps, colorsFromSvg, hasErrors, isNeutral, layoutFindings, motionFindings, playerConfig, quantize, renderDeckHtml, slideSteps, validateDeck, type Finding } from "@/lib/engine";
 import { LOGO_SVG, SAMPLE_ASSET_INDEX, SAMPLE_ASSETS, sampleDeck } from "./fixtures/sample-deck";
 
@@ -211,12 +211,18 @@ describe("motion language", () => {
     expect(validateDeck(d, SAMPLE_ASSET_INDEX).find((f) => f.rule === "motion-duration")!.message).toContain("jump");
   });
 
-  it("keeps still decks still and shared transitions meaningful", () => {
+  it("lets a still deck animate data and keeps shared transitions meaningful", () => {
     const d = sampleDeck();
     d.motion.intensity = "still";
-    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).toContain("motion-intensity");
-    d.motion.heroes = false;
+    d.motion.heroes = true;
     expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("motion-intensity");
+
+    // Every school declares a motion that passes validation without a warning, data motion included.
+    for (const school of DESIGN_SCHOOLS) {
+      const sd = sampleDeck();
+      sd.motion = { ...sd.motion, intensity: school.motion.intensity, tempo: school.motion.tempo, heroes: true };
+      expect(rules(validateDeck(sd, SAMPLE_ASSET_INDEX), "warning"), school.id).not.toContain("motion-intensity");
+    }
 
     const s = sampleDeck();
     s.motion.transition = "morph";

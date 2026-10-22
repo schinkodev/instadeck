@@ -75,7 +75,7 @@ const blocks = () => ({
 const motion = () => ({
   approach:
     "Design a motion language for this deck the way you design its type scale. Declare how much it moves (intensity) and why (rationale), pick one entrance and one transition that carry the deck, and mark a few key moments with exceptions. Use the presets or write your own entrances and transitions as Web Animations keyframes in vocabulary. Every motion ends in the slide's resting state, which is also what prints. InstaDeck measures what the motion really does and reports it.",
-  intensity: Object.fromEntries(Object.entries(INTENSITY).map(([k, v]) => [k, { use: v.purpose, entranceTravelPx: v.travelPx, scale: v.scale, blurPx: v.blurPx, rotateDeg: v.rotateDeg, transitionTravelPx: v.transitionTravelPx, overshoot: v.overshoot, heroes: v.heroes }])),
+  intensity: Object.fromEntries(Object.entries(INTENSITY).map(([k, v]) => [k, { use: v.purpose, entranceTravelPx: v.travelPx, scale: v.scale, blurPx: v.blurPx, rotateDeg: v.rotateDeg, transitionTravelPx: v.transitionTravelPx, overshoot: v.overshoot }])),
   presets: { entrances: ENTRANCES, transitions: TRANSITIONS },
   vocabulary: {
     entrance: "{ purpose, keyframes: states from hidden towards rest (the resting keyframe is implicit), duration ms, easing, stagger? ms between blocks }",
@@ -102,11 +102,13 @@ const motion = () => ({
   tempos: Object.fromEntries(Object.entries(TEMPOS).map(([k, v]) => [k, `durations x${v.duration}, ${v.stagger} ms between blocks`])),
   limits: MOTION_LIMITS,
   measured: [
-    "Without a browser: names exist, durations between a jump and a wait, the time until a slide is readable, exceptions stay rare, still decks do not animate numbers, shared transitions have something to share.",
+    "Without a browser: names exist, durations between a jump and a wait, the time until a slide is readable, exceptions stay rare, shared transitions have something to share.",
     "In a browser (the deck view in the chat, or the local server): how far, how big, how blurred and how rotated each motion really is against the declared intensity, overshoot outside kinetic decks, entrances that speed up into place instead of easing out.",
   ],
   rules: [
-    "Motion must earn its place. A deck that does not move (intensity still, entrance none or fade, transition cut or fade, heroes false) is a strong choice for boards, reports and minimalist professional decks.",
+    "Motion must earn its place. A deck that does not move (intensity still, entrance none or fade, transition cut or fade) is a strong choice for boards, reports and minimalist professional decks.",
+    "Intensity governs decoration (entrances and transitions). Data motion is information and is declared apart with heroes, at any intensity: a still deck may grow a chart once, count a number or reveal plan and then actual. Motion in data matches what changes: columns grow from the baseline, a line draws left to right, a bridge builds step by step.",
+    "Click builds are for arguments that build: a comparison column by column, risks one by one, plan then actual. A recommendation, not a requirement.",
     "One entrance and one transition carry the deck. Exceptions mark the hook, the reveal or the ask, about one per five slides.",
     "Each slide gets at most one hero motion. Priority: chart, timeline, stats, stat. Other numbers show their final value.",
     "Use click steps for arguments that build, not for decoration. Most slides need none.",

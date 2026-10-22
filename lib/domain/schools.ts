@@ -149,7 +149,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     color: "White or light paper, ink text, one strong data color and grays for everything else.",
     space: { density: "balanced", radius: 0, cards: "flat" },
     imagery: "Charts and tables, rarely photos.",
-    motion: { intensity: "still", tempo: "calm", note: "Charts may grow once, nothing else moves." },
+    motion: { intensity: "still", tempo: "calm", note: "Decoration does not move. Charts may grow once (heroes), nothing else moves." },
     avoid: "Chart junk, 3D, legends where direct labels fit, decorative color.",
   },
   {
