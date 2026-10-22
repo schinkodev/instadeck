@@ -4,6 +4,7 @@
  * A test checks: every tool is in the registry, planned entries have no tools, partial entries have `now`,
  * the tools of a capability exist in every mode in which the server offers it.
  */
+import { ICON_NAMES } from "@/lib/domain";
 import type { Mode } from "@/lib/tools";
 
 export type CapabilityStatus = "done" | "partial" | "planned";
@@ -33,6 +34,12 @@ export const CAPABILITIES: Capability[] = [
     claim: "Turns a logo and brand files into a brand kit: colors read from the logo, brand fonts, logo variants and tone. Suggests a coherent system (readable palette, font pair, type scale) from a primary color and a mood, and checks the brand kit for contrast and fonts.",
     status: "done",
     tools: ["add_asset", "list_assets", "extract_brand_colors", "suggest_brand_system", "create_brand_kit", "get_brand_kit", "list_brand_kits"],
+  },
+  {
+    id: "icons",
+    claim: `Cards can carry an icon from a curated set of ${ICON_NAMES.length} (risk, growth, delivery, partnership and more) that stands for what the card means, drawn in the text color and exported to PowerPoint as pictures.`,
+    status: "done",
+    tools: ["create_deck", "apply_ops"],
   },
   {
     id: "brand-visuals",

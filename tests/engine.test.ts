@@ -211,6 +211,25 @@ describe("motion language", () => {
     expect(validateDeck(d, SAMPLE_ASSET_INDEX).find((f) => f.rule === "motion-duration")!.message).toContain("jump");
   });
 
+  it("draws icons on cards and asks for one per card or none", () => {
+    const d = sampleDeck();
+    const at = d.slides.findIndex((x) => x.layout === "cards");
+    const cards = d.slides[at]!.blocks.cards as { items: { icon?: string }[] };
+    expect(renderDeckHtml(d, SAMPLE_ASSETS, "static")).not.toContain('data-icon="');
+    cards.items.forEach((c, i) => (c.icon = (["risk", "security", "speed", "money"] as const)[i]));
+    const html = renderDeckHtml(d, SAMPLE_ASSETS, "static");
+    expect(html.match(/data-icon="/g)).toHaveLength(cards.items.length);
+    expect(html).toContain('viewBox="0 0 24 24"');
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX))).not.toContain("icon-consistency");
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX))).not.toContain("icon-repeat");
+
+    delete cards.items[0]!.icon;
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).toContain("icon-consistency");
+    cards.items[0]!.icon = "security";
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "info")).toContain("icon-repeat");
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("icon-repeat");
+  });
+
   it("draws a brand background from the palette and numbers the chapters", () => {
     const d = sampleDeck();
     d.slides[0]!.background = { type: "brand", visual: "numeral" };

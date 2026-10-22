@@ -224,7 +224,10 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Same treatment for same function across all slides.',
     why: 'Inconsistency forces re-learning on each slide. Repetition lets the audience predict structure.',
     slideApplication: 'Every heading is the same size/weight/position. Every stat renders identically. No one-off styling.',
-    enforced: [{ layer: 2, by: 'the renderer styles each block type once' }],
+    enforced: [
+      { layer: 2, by: 'the renderer styles each block type once' },
+      { layer: 3, by: 'icon-consistency' },
+    ],
   },
   {
     id: 'less-but-better',

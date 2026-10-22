@@ -152,6 +152,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .comparison-col li{padding:var(--sp-xs) 0;border-top:1px solid color-mix(in srgb, currentColor 18%, transparent);font-size:var(--fs-body)}
 .block-cards{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:var(--sp-md);align-items:stretch}
 .card{${card}}
+.icon{display:block;width:calc(var(--fs-h3) * 1.75);height:calc(var(--fs-h3) * 1.75);margin-bottom:var(--sp-md);color:var(--fg)}
 .card-title{font-family:var(--font-heading);font-weight:var(--hw);font-size:var(--fs-h3);line-height:1.15;text-wrap:balance}
 .card-text{margin-top:var(--sp-sm);color:var(--muted);text-wrap:pretty}
 .block-table table{width:100%;border-collapse:collapse;font-size:var(--fs-body)}

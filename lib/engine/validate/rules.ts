@@ -250,6 +250,15 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
     }
   }
 
+  // An icon carries a meaning or it is decoration (Mayer, coherence): all cards have one or none, and no two share it.
+  for (const [zone, block] of Object.entries(slide.blocks)) {
+    if (block.type !== "cards") continue;
+    const icons = block.items.map((c) => c.icon);
+    const withIcon = icons.filter(Boolean).length;
+    if (withIcon > 0 && withIcon < icons.length) push("warning", "icon-consistency", `${withIcon} of ${icons.length} cards have an icon. Give every card one or none, otherwise the icons read as decoration`, zone);
+    if (new Set(icons.filter(Boolean)).size < withIcon) push("info", "icon-repeat", "Two cards share the same icon, so it does not tell them apart. Fine when they mean the same thing, otherwise pick an icon for what each card means", zone);
+  }
+
   if (slide.background) {
     if (layout.bleed) push("warning", "background-layout", `${layout.id} is full bleed, so the brand background is hidden behind the image. Use it on another layout`);
     // Figure and ground: text on the visual must stay legible, so the visual may not move too far from the background.

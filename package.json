@@ -29,7 +29,8 @@
     "dist",
     "skills",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/THIRD_PARTY.md"
   ],
   "publishConfig": {
     "access": "public"

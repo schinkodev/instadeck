@@ -28,7 +28,7 @@ A principle is covered when layers 1 to 3 enforce it. A principle with critique 
 | Alignment | Williams/CRAP | 2 tokens: layouts share edges and baselines<br>3 lint: layout-alignment |  |
 | Common Region | Palmer/Gestalt | 2 tokens: cards group content on a surface |  |
 | Contrast Creates Hierarchy | Williams | 3 lint: layout-dominance | Measured only where a layout names its figure (hero number, ask). Other slides are left to critique |
-| Repetition Builds Unity | Williams/CRAP | 2 tokens: the renderer styles each block type once |  |
+| Repetition Builds Unity | Williams/CRAP | 2 tokens: the renderer styles each block type once<br>3 lint: icon-consistency |  |
 | Less But Better | Rams | 1 schema: item limits in the block schemas<br>3 lint: text-length | The number of blocks per slide is not capped |
 | Gutenberg Diagram | Arnold | 4 critique: judged by the model |  |
 | Semantic Consistency | Vignelli | 2 tokens: each token has one role |  |
