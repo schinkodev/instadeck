@@ -283,3 +283,27 @@ describe("principle rules", () => {
     expect(f.length).toBeGreaterThan(0);
   });
 });
+
+describe("typesetting and placeholders", () => {
+  it("keeps numbers, units and Czech one-letter prepositions on one line", () => {
+    const d = withSlide({ layout: "points", blocks: { title: { type: "heading", level: "h1", text: "14 000 uživatelů v Praze ušetří 87 Kč a 45 % času" }, body: { type: "bullets", items: ["EUR 690M v roce 2025", "k ceně 7 800 USD"] } } });
+    d.brief = { ...d.brief, language: "cs" };
+    const html = renderDeckHtml(d, SAMPLE_ASSETS, "static");
+    for (const s of ["14 000", "v Praze", "87 Kč", "a 45 %", "EUR 690M", "k ceně", "7 800 USD"]) expect(html).toContain(s);
+  });
+
+  it("leaves one-letter words alone outside Czech and Slovak", () => {
+    const d = withSlide({ layout: "points", blocks: { title: { type: "heading", level: "h1", text: "A plan for 12 000 teams" }, body: { type: "bullets", items: ["a", "b"] } } });
+    const html = renderDeckHtml(d, SAMPLE_ASSETS, "static");
+    expect(html).toContain("A plan");
+    expect(html).toContain("12 000");
+  });
+
+  it("flags placeholders left on a slide, in any text of any block", () => {
+    const hits = (blocks: Slide["blocks"], layout = "points") => rules(validateDeck(withSlide({ layout, blocks }), SAMPLE_ASSET_INDEX)).filter((r) => r === "placeholder").length;
+    expect(hits({ title: { type: "heading", level: "h1", text: "Revenue grew [X]% last year" }, body: { type: "bullets", items: ["a", "b"] } })).toBe(1);
+    expect(hits({ title: { type: "heading", level: "h1", text: "Revenue grew fast last year" }, body: { type: "bullets", items: ["TBD", "replace with sourced figure"] } })).toBe(1);
+    expect(hits({ title: { type: "heading", level: "h1", text: "Tržby rostou" }, body: { type: "text", size: "body", text: "Doplnit číslo za Q3" } })).toBe(1);
+    expect(hits({ title: { type: "heading", level: "h1", text: "Revenue grew 3x in two years" }, body: { type: "bullets", items: ["Replaced spreadsheets in 40 teams", "Add-ons sold to 12 customers"] } })).toBe(0);
+  });
+});
