@@ -6,7 +6,7 @@
  */
 import { z } from "zod";
 import data from "./examples.json";
-import { designPatchSchema, slideInputSchema } from "./deck";
+import { conceptSchema, designPatchSchema, slideInputSchema } from "./deck";
 import { deckMotionSchema } from "./motion";
 import { FRAME_IDS } from "./narrative";
 
@@ -16,6 +16,7 @@ export const exampleSchema = z.strictObject({
   purpose: z.string().min(1).describe("When this example fits"),
   audience: z.string().min(1),
   frame: z.enum(FRAME_IDS).describe("Narrative frame of the example, for brief.frame"),
+  concept: conceptSchema.describe("Design concept of the example, for brief.concept"),
   why: z.array(z.string().min(1)).min(2).describe("What makes the deck work, for the model to learn from"),
   design: designPatchSchema,
   motion: deckMotionSchema,

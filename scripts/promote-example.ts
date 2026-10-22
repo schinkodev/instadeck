@@ -60,6 +60,7 @@ const withAssets = deck.slides.flatMap((s, i) => Object.values(s.blocks).some((b
 if (withAssets.length) fail(`Slides ${withAssets.join(", ")} use image or logo assets. Examples carry no assets: remove those blocks and promote the deck again.`);
 if (deck.design.fonts.heading.source === "asset" || deck.design.fonts.body.source === "asset") fail("The deck uses an uploaded font. Examples use curated Google Fonts only.");
 
+if (!deck.brief.concept) fail("A golden example declares its design concept: set brief.concept, then promote the deck again.");
 if (!deck.brief.frame) fail("A golden example declares its narrative frame: set brief.frame and give the slides their beats, then promote the deck again.");
 
 const findings = validateDeck(deck, {}).filter((f) => f.severity !== "info");
@@ -71,6 +72,7 @@ const example = exampleSchema.parse({
   purpose: values.purpose,
   audience: values.audience,
   frame: deck.brief.frame,
+  concept: deck.brief.concept,
   why: values.why!.split("|").map((x) => x.trim()),
   design: deck.design,
   motion: deck.motion,

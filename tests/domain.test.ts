@@ -143,3 +143,25 @@ describe("narrative frames", () => {
     for (const f of NARRATIVE_FRAMES) for (const b of BEAT_IDS) expect(f.stages.some((s) => s.beats.includes(b)), `${f.id} lacks ${b}`).toBe(true);
   });
 });
+
+describe("design schools", () => {
+  it("use only curated fonts and known type scales, with unique ids", async () => {
+    const { DESIGN_SCHOOLS, GOOGLE_FONTS, TYPE_SCALES, findGoogleFont } = await import("@/lib/domain");
+    expect(new Set(DESIGN_SCHOOLS.map((s) => s.id)).size).toBe(DESIGN_SCHOOLS.length);
+    for (const s of DESIGN_SCHOOLS) {
+      for (const f of [...s.type.heading, ...s.type.body]) expect(findGoogleFont(f), `${s.id}: ${f}`).toBeDefined();
+      for (const f of s.type.body) expect(findGoogleFont(f)!.category, `${s.id}: body ${f}`).not.toBe("mono");
+      expect(Object.keys(TYPE_SCALES), s.id).toContain(s.type.scale);
+      expect(findGoogleFont(s.type.heading[0]!)!.weights, `${s.id}: weight`).toContain(s.type.weight);
+    }
+    expect(GOOGLE_FONTS.length).toBeGreaterThan(0);
+  });
+
+  it("create_deck requires a concept, a stored brief does not", async () => {
+    const { briefSchema, createBriefSchema } = await import("@/lib/domain");
+    const brief = { company: "A", topic: "B", language: "en" };
+    expect(briefSchema.safeParse(brief).success).toBe(true);
+    expect(createBriefSchema.safeParse(brief).success).toBe(false);
+    expect(createBriefSchema.safeParse({ ...brief, concept: { idea: "A quiet editorial deck", avoid: "Clutter", signature: "One rule under every headline" } }).success).toBe(true);
+  });
+});

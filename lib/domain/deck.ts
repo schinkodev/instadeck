@@ -7,8 +7,18 @@ import { blockSchema } from "./blocks";
 import { LAYOUT_IDS } from "./layouts";
 import { FRAME_IDS } from "./narrative";
 import { BEAT_IDS } from "./pitch";
+import { SCHOOL_IDS } from "./schools";
 import { deckMotionPatchSchema, slideMotionSchema, storedDeckMotionSchema } from "./motion";
 import { designSchema, TONES } from "./tokens";
+
+export const conceptSchema = z.strictObject({
+  idea: z.string().min(10).max(200).describe("The visual idea of the deck in one sentence, e.g. a quiet editorial deck where one number per slide speaks"),
+  school: z.enum(SCHOOL_IDS).optional().describe("Design school the deck follows (section schools), when one fits"),
+  references: z.array(z.string().min(2).max(80)).max(4).optional().describe("Named references, e.g. Bloomberg Businessweek covers, Braun product manuals"),
+  avoid: z.string().min(3).max(160).describe("What the deck must not look like"),
+  signature: z.string().min(3).max(160).describe("One device that recurs on every slide: a rule, a crop, a number style, a color field"),
+});
+export type Concept = z.infer<typeof conceptSchema>;
 
 export const briefSchema = z.strictObject({
   company: z.string().min(1).describe("Company or product name"),
@@ -16,9 +26,13 @@ export const briefSchema = z.strictObject({
   audience: z.string().optional().describe("Who will see it: seed investors, enterprise buyers, partners"),
   goal: z.string().optional().describe("What the audience should do or believe afterwards"),
   language: z.string().min(2).describe("Language of the slide content, BCP 47 tag, e.g. en, cs, de"),
+  concept: conceptSchema.optional().describe("The design concept, required when the deck is created"),
   frame: z.enum(FRAME_IDS).optional().describe("Narrative frame that orders the story (section pitch, frames): classical, scqa, abt, monroe, story-spine, sparkline, toulmin"),
 });
 export type Brief = z.infer<typeof briefSchema>;
+
+/** Brief pro create_deck: koncept je povinný, model se rozhodne dřív, než volí barvy a písma. */
+export const createBriefSchema = briefSchema.extend({ concept: conceptSchema });
 
 export const slideInputSchema = z.strictObject({
   layout: z.enum(LAYOUT_IDS).describe("Layout id from instadeck://layouts"),
