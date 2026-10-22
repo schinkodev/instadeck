@@ -57,7 +57,7 @@ export const CAPABILITIES: Capability[] = [
   },
   {
     id: "quality",
-    claim: "Checks every deck for text that does not fit, low contrast, overlong text, motion that does not match its declared intensity, motion that speeds into place or overshoots, and repetitive layouts.",
+    claim: "Checks every deck for text that does not fit, low contrast, overlong text, motion that does not match its declared intensity, motion that speeds into place or overshoots, and repetitive layouts. It also checks the numbers: a stat matches its fact, growth and CAGR match their computation, a bridge adds up.",
     status: "done",
     tools: ["validate_deck"],
   },

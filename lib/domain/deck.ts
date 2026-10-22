@@ -8,6 +8,7 @@ import { LAYOUT_IDS } from "./layouts";
 import { FRAME_IDS } from "./narrative";
 import { BEAT_IDS } from "./pitch";
 import { SCHOOL_IDS } from "./schools";
+import { factSchema } from "./facts";
 import { deckMotionPatchSchema, slideMotionSchema, storedDeckMotionSchema } from "./motion";
 import { designSchema, TONES } from "./tokens";
 
@@ -55,6 +56,7 @@ export const deckSchema = z.strictObject({
   brandKitId: z.string().optional(),
   design: designSchema,
   motion: storedDeckMotionSchema,
+  facts: z.array(factSchema).max(60).optional(),
   slides: z.array(slideSchema),
   revision: z.number().int().min(0),
   createdAt: z.string(),
@@ -94,6 +96,7 @@ export const opSchema = z.discriminatedUnion("op", [
   z.strictObject({ op: z.literal("set_motion"), motion: deckMotionPatchSchema }),
   z.strictObject({ op: z.literal("set_title"), title: z.string().min(1) }),
   z.strictObject({ op: z.literal("set_brief"), brief: briefSchema.partial() }),
+  z.strictObject({ op: z.literal("set_facts"), facts: z.array(factSchema).max(60).describe("The full list of facts, replaces the current one") }),
   z.strictObject({ op: z.literal("apply_brand"), brand_kit_id: z.string().describe("Brand kit whose colors and fonts replace the design") }),
 ]);
 export type Op = z.infer<typeof opSchema>;

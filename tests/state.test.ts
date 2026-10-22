@@ -48,6 +48,13 @@ describe("decks", () => {
     expect((await store.getDeck(deck.id)).revision).toBe(2);
   });
 
+  it("keeps facts from create_deck and replaces them with set_facts", async () => {
+    const { deck } = await created({ facts: [{ id: "arr-2024", label: "ARR", value: 2.1, unit: "USD M" }] });
+    expect(deck.facts).toEqual([{ id: "arr-2024", label: "ARR", value: 2.1, unit: "USD M" }]);
+    const r = await store.applyOps(deck.id, 1, [{ op: "set_facts", facts: [{ id: "arr-2025", label: "ARR", value: 3, status: "estimate" }] }], "mcp", "facts");
+    expect(r.deck.facts!.map((f) => f.id)).toEqual(["arr-2025"]);
+  });
+
   it("rejects a stale revision", async () => {
     const { deck } = await created();
     await store.applyOps(deck.id, 1, [{ op: "set_title", title: "A" }], "mcp", "a");

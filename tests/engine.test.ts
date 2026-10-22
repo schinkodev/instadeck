@@ -385,3 +385,37 @@ describe("analytic charts", () => {
     expect(neg).toContain("is-down");
   });
 });
+
+describe("facts integrity", () => {
+  const facts = [
+    { id: "rev-2021", label: "Revenue 2021", value: 410, unit: "EUR M", period: "2021", source: "Annual report" },
+    { id: "rev-2024", label: "Revenue 2024", value: 612, unit: "EUR M", period: "2024", source: "Annual report" },
+  ];
+  const statSlide = (stat: Record<string, unknown>, id = "x") => ({ ...sampleDeck().slides[2]!, id, layout: "headline-stat" as const, blocks: { title: { type: "heading" as const, level: "h1" as const, text: "Revenue grew by half in three years" }, stat: { type: "stat" as const, label: "growth", ...stat } as Slide["blocks"][string] } });
+  const factRules = (slides: Slide[]) => {
+    const d = sampleDeck();
+    d.facts = facts;
+    d.slides = slides;
+    return validateDeck(d, SAMPLE_ASSET_INDEX).filter((f) => f.rule.startsWith("fact"));
+  };
+
+  it("checks a stat against its fact", () => {
+    expect(factRules([statSlide({ value: 612, fact: "rev-2024" })])).toEqual([]);
+    expect(factRules([statSlide({ value: 621, fact: "rev-2024" })]).map((f) => f.rule)).toEqual(["fact-mismatch"]);
+    expect(factRules([statSlide({ value: 612, fact: "rev-2025" })]).map((f) => f.rule)).toEqual(["fact-unknown"]);
+  });
+
+  it("recomputes derived numbers and names the right value", () => {
+    expect(factRules([statSlide({ value: 49, suffix: "%", derive: { op: "growth", from: "rev-2021", to: "rev-2024" } })])).toEqual([]);
+    expect(factRules([statSlide({ value: 14.3, decimals: 1, suffix: "%", derive: { op: "cagr", from: "rev-2021", to: "rev-2024", years: 3 } })])).toEqual([]);
+    const wrong = factRules([statSlide({ value: 16, suffix: "%", derive: { op: "cagr", from: "rev-2021", to: "rev-2024", years: 3 } })]);
+    expect(wrong.map((f) => f.rule)).toEqual(["fact-derive"]);
+    expect(wrong[0]!.message).toContain("14.3");
+  });
+
+  it("warns when one fact is shown on more than two slides", () => {
+    const three = ["a", "b", "c"].map((id) => statSlide({ value: 612, fact: "rev-2024" }, id));
+    expect(factRules(three).map((f) => f.rule)).toEqual(["fact-repeated"]);
+    expect(factRules(three.slice(0, 2))).toEqual([]);
+  });
+});
