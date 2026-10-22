@@ -16,6 +16,7 @@ import {
   deriveTokens,
   findGoogleFont,
   entranceOf,
+  derive,
   getBeat,
   getFrame,
   getLayout,
@@ -413,13 +414,62 @@ function checkStory(deck: Deck): Finding[] {
   return out;
 }
 
+type StatLike = { value: number; decimals?: number; fact?: string; derive?: Parameters<typeof derive>[0] };
+
+function statsOf(block: Block): StatLike[] {
+  return block.type === "stat" ? [block] : block.type === "stats" ? block.items : [];
+}
+
+/**
+ * Integrita čísel (facts.ts): statistika, která odkazuje na fakt, ukazuje jeho hodnotu; odvozené číslo
+ * sedí s výpočtem. Tolerance je zaokrouhlení na počet desetinných míst, které statistika ukazuje.
+ * Fakt na víc než dvou slidech je opakování, které publikum unaví.
+ */
+function checkFacts(deck: Deck): Finding[] {
+  const out: Finding[] = [];
+  const facts = deck.facts ?? [];
+  const ids = new Set<string>();
+  for (const f of facts) {
+    if (ids.has(f.id)) out.push({ severity: "error", rule: "fact-unknown", message: `Fact id ${f.id} is used twice` });
+    ids.add(f.id);
+  }
+  const shownOn = new Map<string, Set<string>>();
+  const near = (shown: number, exact: number, decimals = 0) => Math.abs(shown - exact) <= 0.5 * 10 ** -decimals + 1e-9;
+  const round = (v: number, decimals = 0) => Math.round(v * 10 ** decimals) / 10 ** decimals;
+  for (const slide of deck.slides) {
+    for (const [zone, block] of Object.entries(slide.blocks)) {
+      for (const st of statsOf(block)) {
+        const push = (severity: Severity, rule: string, message: string) => out.push({ severity, rule, message, slideId: slide.id, zone });
+        if (st.fact !== undefined) {
+          const f = facts.find((x) => x.id === st.fact);
+          if (!f) push("error", "fact-unknown", `Fact ${st.fact} does not exist. Add it to facts with its source`);
+          else {
+            if (!near(st.value, f.value, st.decimals)) push("error", "fact-mismatch", `The stat shows ${st.value}, but fact ${f.id} (${f.label}) is ${f.value}${f.unit ? ` ${f.unit}` : ""}`);
+            if (!shownOn.has(f.id)) shownOn.set(f.id, new Set());
+            shownOn.get(f.id)!.add(slide.id);
+          }
+        }
+        if (st.derive) {
+          const r = derive(st.derive, facts);
+          if ("error" in r) push("error", "fact-derive", `Cannot compute ${st.derive.op}: ${r.error}`);
+          else if (!near(st.value, r.value, st.decimals)) push("error", "fact-derive", `${st.derive.op} from ${st.derive.from} to ${st.derive.to} is ${round(r.value, st.decimals ?? 1)}, the stat shows ${st.value}. Use the computed value`);
+        }
+      }
+    }
+  }
+  for (const [id, slides] of shownOn) {
+    if (slides.size > 2) out.push({ severity: "warning", rule: "fact-repeated", message: `Fact ${id} is shown on ${slides.size} slides (${[...slides].join(", ")}). Show a number where it proves the slide, repetition wears it out` });
+  }
+  return out;
+}
+
 export function validateDeck(deck: Deck, assets: AssetIndex): Finding[] {
   const deckFindings: Finding[] = [];
   const push: Push = (severity, rule, message) => deckFindings.push({ severity, rule, message });
   checkFonts(deck, assets, push);
   checkContrast(deck, push);
   checkRhythm(deck, push);
-  return [...deckFindings, ...checkStory(deck), ...checkMotion(deck), ...deck.slides.flatMap((s) => validateSlide(s, deck, assets))];
+  return [...deckFindings, ...checkFacts(deck), ...checkStory(deck), ...checkMotion(deck), ...deck.slides.flatMap((s) => validateSlide(s, deck, assets))];
 }
 
 export const hasErrors = (findings: Finding[]) => findings.some((f) => f.severity === "error");

@@ -6,6 +6,7 @@
  * Zvýraznění v textu: ==slovo== se vykreslí akcentem (jen u nadpisů, výroků a čísel).
  */
 import { z } from "zod";
+import { deriveSchema } from "./facts";
 
 const text = (max: number, what: string) => z.string().min(1).describe(`${what}. Aim for at most ${max} characters`);
 
@@ -21,6 +22,8 @@ const statItem = z.strictObject({
   suffix: z.string().max(4).optional().describe("e.g. %, x, M, k"),
   label: text(48, "What the number means"),
   detail: text(90, "Optional context or source").optional(),
+  fact: z.string().optional().describe("Id of the fact this number shows. InstaDeck checks they match"),
+  derive: deriveSchema.optional(),
 });
 
 export const blockSchema = z.discriminatedUnion("type", [

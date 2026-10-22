@@ -104,6 +104,10 @@ export function applyOpsToDeck(input: Deck, ops: Op[], ctx: OpContext): Applied 
       case "set_brief":
         deck.brief = { ...deck.brief, ...op.brief };
         break;
+      case "set_facts":
+        deck.facts = op.facts;
+        global = true;
+        break;
       case "apply_brand": {
         const brand = ctx.brandKit(op.brand_kit_id);
         if (!brand) throw new OpError(`brand kit ${op.brand_kit_id} does not exist`, i);

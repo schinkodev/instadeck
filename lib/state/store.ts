@@ -31,8 +31,7 @@ import {
   type DeckMotionPatch,
   type DesignPatch,
   type Op,
-  type SlideInput,
-} from "@/lib/domain";
+  type SlideInput, type Fact } from "@/lib/domain";
 import { hasErrors, validateDeck, type AssetData, type AssetIndex, type Finding } from "@/lib/engine";
 import { dataUri, MAX_ASSET_BYTES, sniff, type AssetMeta } from "./assets";
 import { ExistsError, LocalFiles, type Files } from "./files";
@@ -83,6 +82,7 @@ export interface CreateDeckInput {
   brandKitId?: string;
   design?: DesignPatch;
   motion?: DeckMotionPatch;
+  facts?: Fact[];
   slides?: SlideInput[];
 }
 
@@ -277,6 +277,7 @@ export class Store {
   async createDeck(input: CreateDeckInput, author: Author): Promise<WriteResult> {
     const brand = input.brandKitId ? await this.getBrandKit(input.brandKitId) : undefined;
     const ops: Op[] = [
+      ...(input.facts ? [{ op: "set_facts" as const, facts: input.facts }] : []),
       ...(input.design ? [{ op: "set_design" as const, design: input.design }] : []),
       ...(input.motion ? [{ op: "set_motion" as const, motion: input.motion }] : []),
       ...(input.slides ?? []).map((slide) => ({ op: "add_slide" as const, slide })),

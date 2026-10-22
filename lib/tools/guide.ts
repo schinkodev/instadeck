@@ -10,6 +10,7 @@ import {
   DENSITY,
   DESIGN_PRINCIPLES,
   EASINGS,
+  FACTS_GUIDANCE,
   ENTRANCES,
   GOOGLE_FONTS,
   HERO_MOTIONS,
@@ -44,7 +45,7 @@ export function workflow(mode: Mode): string[] {
     local
       ? "2. Brand: add the logo and brand files with add_asset and read candidate colors with extract_brand_colors. Pick the primary color and a mood, call suggest_brand_system, then create_brand_kit with its brand_kit plus the name and logos. Read the findings it returns. Skip when the user has no brand."
       : "2. Brand: add the logo with add_asset from its url (or small data_base64) and read colors with extract_brand_colors for SVG or from the image yourself. Pick the primary color and a mood, call suggest_brand_system, then create_brand_kit with its brand_kit plus the name and logos. Read the findings it returns. Skip when the user has no brand.",
-    "3. Story: read the example closest to the brief with get_example. Pick a narrative frame and the beats for this audience (section pitch: frames, beats). For every beat that needs evidence the user has not given, ask the user before building: at most five questions in one message, each with a suggested default. Never invent numbers, names or quotes. Write each slide intent as one sentence before choosing layouts, and give every slide its beat.",
+    "3. Story: read the example closest to the brief with get_example. Pick a narrative frame and the beats for this audience (section pitch: frames, beats). For every beat that needs evidence the user has not given, ask the user before building: at most five questions in one message, each with a suggested default. Never invent numbers, names or quotes, record the numbers as facts (section blocks, facts). Write each slide intent as one sentence before choosing layouts, and give every slide its beat.",
     "4. Design: write the concept first (section schools): the visual idea in one sentence, a school or your own named references, what the deck must not look like and one signature device. Derive the design from it: use the design and motion from suggest_brand_system, or choose colors, fonts, type scale and density yourself (sections design, fonts). Design the motion language for the audience: intensity, rationale, entrance, transition and, when the presets do not fit, your own vocabulary (section motion). Explain the choice to the user in two or three sentences.",
     "5. Build: call create_deck once with the brief, brand kit, design, motion and all slides. Keep the structure, rhythm and text lengths of the example, replace all of its content.",
     local
@@ -68,6 +69,7 @@ const layouts = () =>
 const blocks = () => ({
   types: BLOCK_TYPES.map((t) => ({ type: t, ...BLOCK_INFO[t] })),
   highlight: "Wrap key words in ==double equals== to draw them in the accent color. Use it on one or two words per slide, never whole sentences.",
+  facts: FACTS_GUIDANCE,
   textLimits: TEXT_LIMITS,
   reveal: "step: 0 or omitted shows the block with the slide entrance, 1 to 5 reveals it on click. build: items reveals list items one per click.",
 });

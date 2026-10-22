@@ -165,3 +165,21 @@ describe("design schools", () => {
     expect(createBriefSchema.safeParse({ ...brief, concept: { idea: "A quiet editorial deck", avoid: "Clutter", signature: "One rule under every headline" } }).success).toBe(true);
   });
 });
+
+describe("facts", () => {
+  it("derives change, growth, cagr and share, and refuses what cannot be computed", async () => {
+    const { derive } = await import("@/lib/domain");
+    const facts = [
+      { id: "rev-2021", label: "Revenue 2021", value: 410 },
+      { id: "rev-2024", label: "Revenue 2024", value: 612 },
+      { id: "zero", label: "Zero", value: 0 },
+    ];
+    expect(derive({ op: "change", from: "rev-2021", to: "rev-2024" }, facts)).toEqual({ value: 202 });
+    expect((derive({ op: "growth", from: "rev-2021", to: "rev-2024" }, facts) as { value: number }).value).toBeCloseTo(49.27, 2);
+    expect((derive({ op: "cagr", from: "rev-2021", to: "rev-2024", years: 3 }, facts) as { value: number }).value).toBeCloseTo(14.285, 3);
+    expect((derive({ op: "share", from: "rev-2021", to: "rev-2024" }, facts) as { value: number }).value).toBeCloseTo(66.99, 2);
+    expect(derive({ op: "cagr", from: "rev-2021", to: "rev-2024" }, facts)).toHaveProperty("error");
+    expect(derive({ op: "growth", from: "zero", to: "rev-2024" }, facts)).toHaveProperty("error");
+    expect(derive({ op: "change", from: "nope", to: "rev-2024" }, facts)).toHaveProperty("error");
+  });
+});
