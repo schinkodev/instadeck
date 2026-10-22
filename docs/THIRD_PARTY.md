@@ -22,7 +22,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-Some Lucide icons are derived from [Feather](https://feathericons.com) and keep its MIT license. Of ours these are `risk` (triangle-alert), `time` (clock), `data` (database), `lock`, `link`, `search`, `goal` (target) and `fail` (circle-x).
+Some Lucide icons are derived from [Feather](https://feathericons.com) and keep its MIT license. Lucide lists them in its `LICENSE` (115 names in 1.61.0). Checked against that list, of ours these are `risk` (triangle-alert), `time` (clock), `data` (database), `lock`, `link`, `search`, `goal` (target) and `fail` (circle-x).
 
 ```
 The MIT License (MIT)

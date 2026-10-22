@@ -255,7 +255,7 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
     const icons = block.items.map((c) => c.icon);
     const withIcon = icons.filter(Boolean).length;
     if (withIcon > 0 && withIcon < icons.length) push("warning", "icon-consistency", `${withIcon} of ${icons.length} cards have an icon. Give every card one or none, otherwise the icons read as decoration`, zone);
-    if (new Set(icons.filter(Boolean)).size < withIcon) push("warning", "icon-repeat", "Two cards share the same icon, so it tells the reader nothing. Pick an icon for what each card means or drop them", zone);
+    if (new Set(icons.filter(Boolean)).size < withIcon) push("info", "icon-repeat", "Two cards share the same icon, so it does not tell them apart. Fine when they mean the same thing, otherwise pick an icon for what each card means", zone);
   }
 
   const steps = slideSteps(slide);

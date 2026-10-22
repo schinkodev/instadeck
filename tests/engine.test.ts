@@ -226,7 +226,8 @@ describe("motion language", () => {
     delete cards.items[0]!.icon;
     expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).toContain("icon-consistency");
     cards.items[0]!.icon = "security";
-    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).toContain("icon-repeat");
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "info")).toContain("icon-repeat");
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("icon-repeat");
   });
 
   it("keeps still decks still and shared transitions meaningful", () => {

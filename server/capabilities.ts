@@ -35,6 +35,12 @@ export const CAPABILITIES: Capability[] = [
     tools: ["add_asset", "list_assets", "extract_brand_colors", "suggest_brand_system", "create_brand_kit", "get_brand_kit", "list_brand_kits"],
   },
   {
+    id: "icons",
+    claim: "Cards can carry an icon from a curated set of 32 (risk, growth, delivery, partnership and more) that stands for what the card means, drawn in the text color and exported to PowerPoint as pictures.",
+    status: "done",
+    tools: ["create_deck", "apply_ops"],
+  },
+  {
     id: "examples",
     claim: "Shows proven example decks (seed pitch, enterprise sales deck, product launch, board update, consumer launch) with the reasons they work, from a deck that does not move to a kinetic one, so a new deck starts from a good structure and a fitting motion language.",
     status: "done",

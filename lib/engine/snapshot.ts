@@ -41,7 +41,7 @@ export const snapshotItemSchema = z.discriminatedUnion("kind", [
     radius: num.min(0),
     grayscale: z.boolean(),
   }),
-  z.strictObject({ kind: z.literal("icon"), ...rect, name: z.string().min(1).max(40), color }),
+  z.strictObject({ kind: z.literal("icon"), ...rect, name: z.string().min(1).max(40), png: z.string().regex(/^data:image\/png;base64,[A-Za-z0-9+/=]+$/).max(60000) }),
   z.strictObject({ kind: z.literal("chart"), ...rect, zone: z.string().max(40) }),
   z.strictObject({ kind: z.literal("table"), ...rect, zone: z.string().max(40) }),
   z.strictObject({ kind: z.literal("scrim"), ...rect }),

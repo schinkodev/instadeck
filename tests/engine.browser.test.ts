@@ -188,16 +188,31 @@ describe("exports", () => {
     expect(all).toContain(author);
   });
 
-  it("exports icons as pictures in the color of the text", async () => {
+  it("exports icons as real PNG pictures that every presentation app shows", async () => {
     const deck = sampleDeck();
     const at = deck.slides.findIndex((x) => x.layout === "cards");
-    (deck.slides[at]!.blocks.cards as { items: { icon?: string }[] }).items.forEach((c, i) => (c.icon = (["risk", "security", "speed", "money"] as const)[i]));
+    const cards = deck.slides[at]!.blocks.cards as { items: { icon?: string }[] };
+    const names = (["risk", "security", "speed", "money"] as const).slice(0, cards.items.length);
+    cards.items.forEach((c, i) => (c.icon = names[i]));
     const snap = await snapshotDeck(deck, SAMPLE_ASSETS);
     const icons = snap[at]!.items.filter((i) => i.kind === "icon");
-    expect(icons.map((i) => (i.kind === "icon" ? i.name : ""))).toEqual(["risk", "security", "speed", "money"].slice(0, icons.length));
-    expect(icons.length).toBeGreaterThan(0);
-    const zip = await JSZip.loadAsync(await exportPptx(deck, SAMPLE_ASSETS));
-    expect(Object.keys(zip.files).some((f) => /^ppt\/media\/.*\.svg$/.test(f))).toBe(true);
+    expect(icons.map((i) => (i.kind === "icon" ? i.name : ""))).toEqual(names);
+    const png = (data: string) => Buffer.from(data.replace(/^data:image\/png;base64,/, ""), "base64");
+    for (const i of icons) if (i.kind === "icon") expect([...png(i.png).subarray(1, 4)], i.name).toEqual([...Buffer.from("PNG")]);
+    // Different icons are different pictures, so the strokes were really drawn.
+    expect(new Set(icons.map((i) => (i.kind === "icon" ? i.png : ""))).size).toBe(icons.length);
+
+    // Pictures that claim to be PNG but hold SVG text are what pptxgenjs writes for an SVG asset (the logo of the sample deck:
+    // a separate, older gap). Icons must not add to them.
+    const fakePng = async (d: Deck) => {
+      const zip = await JSZip.loadAsync(await exportPptx(d, SAMPLE_ASSETS));
+      const media = await Promise.all(Object.keys(zip.files).filter((f) => /^ppt\/media\/./.test(f) && !zip.files[f]!.dir).map(async (f) => ({ f, head: (await zip.file(f)!.async("string")).slice(0, 5) })));
+      return { fake: media.filter((m) => m.f.endsWith(".png") && m.head.startsWith("<svg")).length, png: media.filter((m) => m.f.endsWith(".png")).length };
+    };
+    const without = await fakePng(sampleDeck());
+    const withIcons = await fakePng(deck);
+    expect(withIcons.fake).toBe(without.fake);
+    expect(withIcons.png).toBe(without.png + icons.length);
   });
 
   it("renders PNG previews at the requested scale", async () => {
