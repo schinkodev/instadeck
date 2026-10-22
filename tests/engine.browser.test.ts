@@ -76,6 +76,20 @@ describe("motion measurement", () => {
     expect(await motionRules(d)).toEqual([]);
   });
 
+  it("measures how long two slides of text are legible at once", async () => {
+    const overlap = async (d: Deck) => (await motionRules(d)).filter((r) => r === "motion-overlap");
+    const d = sampleDeck();
+    d.motion = { ...d.motion, intensity: "kinetic", tempo: "calm" };
+    for (const t of ["fade", "lift", "morph", "slide"]) {
+      d.motion.transition = t;
+      expect(await overlap(d), t).toEqual([]);
+    }
+    // A plain cross fade: the old slide fades out on top of the new one and both headlines read at once.
+    d.motion.transition = "blend";
+    d.motion.vocabulary = { transitions: { blend: { purpose: "Cross fade", duration: 450, easing: "in-out", exit: [{ opacity: 0 }] } } };
+    expect(await overlap(d)).toEqual(["motion-overlap"]);
+  });
+
   it.each(EXAMPLES.map((e) => [e.id, e] as const))("example %s moves the way it declares", async (_id, e) => {
     const deck: Deck = { ...sampleDeck(), design: { ...DEFAULT_DESIGN, ...e.design } as Deck["design"], motion: e.motion, slides: e.slides.map((s, i) => ({ ...s, id: `x${i}` })) };
     expect(await motionRules(deck)).toEqual([]);

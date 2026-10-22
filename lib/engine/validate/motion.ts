@@ -11,7 +11,7 @@ export interface MotionMeasureContext {
   usage: { entrances: Record<string, string[]>; transitions: Record<string, string[]> };
 }
 
-const LABEL: Record<MotionSample["part"], string> = { entrance: "entrance", enter: "transition (incoming slide)", exit: "transition (outgoing slide)" };
+const LABEL: Record<MotionSample["part"], string> = { entrance: "entrance", enter: "transition (incoming slide)", exit: "transition (outgoing slide)", cross: "transition" };
 
 export function motionFindings(ctx: MotionMeasureContext, samples: MotionSample[]): Finding[] {
   const limit = INTENSITY[ctx.intensity];
@@ -20,6 +20,12 @@ export function motionFindings(ctx: MotionMeasureContext, samples: MotionSample[
     const slides = (s.part === "entrance" ? ctx.usage.entrances : ctx.usage.transitions)[s.name] ?? [];
     const where = `The ${LABEL[s.part]} "${s.name}"${slides.length ? ` (slides ${slides.join(", ")})` : ""}`;
     const push = (rule: string, message: string) => out.push({ severity: "warning", rule, message: `${where} ${message}` });
+    if (s.part === "cross") {
+      if ((s.overlapMs ?? 0) > MOTION_LIMITS.overlapMs) {
+        push("motion-overlap", `shows the text of both slides at once for ${s.overlapMs} ms (up to ${MOTION_LIMITS.overlapMs} ms), two texts in one place read as a glitch. Let the old slide leave before the new one appears, e.g. fade out to opacity 0 at offset 0.5 and fade in from there`);
+      }
+      continue;
+    }
 
     const travel = s.part === "entrance" ? limit.travelPx : limit.transitionTravelPx;
     const over = [

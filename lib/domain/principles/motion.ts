@@ -94,6 +94,15 @@ export const MOTION_PRINCIPLES: readonly MotionPrinciple[] = [
     measured: 'motion-readable',
   },
   {
+    id: 'one-figure-at-a-time',
+    name: 'One Figure at a Time',
+    author: 'Rubin, Koffka (Gestalt figure and ground)',
+    principle: 'The eye reads one figure against its ground. Two texts in the same place at once are not two figures but noise.',
+    why: 'A cross fade between two slides of text shows both headlines half transparent on top of each other. The audience sees a glitch instead of a change.',
+    slideApplication: 'Between text slides the old slide leaves before the new one appears (fade through), or the slides move apart so their texts never cover the same place while both are legible.',
+    measured: 'motion-overlap',
+  },
+  {
     id: 'repetition-predictability',
     name: 'Repetition Builds Predictability',
     author: 'Williams, Vignelli',

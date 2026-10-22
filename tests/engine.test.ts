@@ -167,7 +167,7 @@ describe("motion language", () => {
     expect(c.entrances["soft-rise"]).toEqual({ keyframes: [{ opacity: 0, transform: "translateY(36px)" }], duration: 1000, easing: "cubic-bezier(0.16, 1, 0.3, 1)", stagger: 250 });
     expect(c.entrances.rise!.duration).toBe(800);
     expect(c.transitions.push).toMatchObject({ duration: 875, over: "enter", shared: true, exit: [], easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
-    expect(c.transitions.fade!.exit).toEqual([{ opacity: 0 }]);
+    expect(c.transitions.fade).toMatchObject({ exit: [{ opacity: 0, offset: 0.5 }, { opacity: 0 }], enter: [{ opacity: 0 }, { opacity: 0, offset: 0.5 }] });
   });
 
   it("uses vocabulary names on slides and zones", () => {
