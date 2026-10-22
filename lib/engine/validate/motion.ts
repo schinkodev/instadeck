@@ -1,6 +1,6 @@
 /**
- * Hodnocení změřeného pohybu (measure.js, measureMotionInstaDeck) proti intenzitě decku a prahům
- * vnímání. Běží lokálně po měření v Chromiu i v MCP App v prohlížeči uživatele, proto importuje jen
+ * Scoring of the measured motion (measure.js, measureMotionInstaDeck) against the deck intensity and the thresholds
+ * of perception. Runs locally after measurement in Chromium and in the MCP App in the user's browser, so it imports only
  * moduly bez zod (motion-limits).
  */
 import { INTENSITY, MOTION_LIMITS, type Intensity, type MotionSample } from "@/lib/domain/motion-limits";

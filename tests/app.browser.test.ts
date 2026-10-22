@@ -1,6 +1,6 @@
 /**
- * MCP App end to end: hostovaný konektor na localhostu, testovací hostitel (AppBridge) v Chromiu,
- * aplikace v iframe stáhne části decku, vykreslí je, změří přetečení a pošle výsledek modelu.
+ * MCP App end to end: the hosted connector on localhost, a test host (AppBridge) in Chromium,
+ * the app in an iframe loads the deck parts, renders them, measures overflow and sends the result to the model.
  */
 import { mkdtemp, rm } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
@@ -87,11 +87,11 @@ it("renders the deck in the chat, reports overflow and motion to the model and p
   expect(await frame.$$eval(".slide", (s) => s.length)).toBe(2);
   expect(await frame.$eval("#status", (s) => (s as HTMLElement).hidden)).toBe(true);
 
-  // V chatu ovládání playeru: celá obrazovka přes hostitele, úprava slidu zprávou, bez okna řečníka a bez stahování.
+  // Player controls in the chat: fullscreen through the host, editing a slide by message, no presenter window and no downloads.
   expect(await frame.$$eval(".controls .ctl", (b) => b.map((x) => x.getAttribute("aria-label")))).toEqual(["Previous (Left arrow)", "Next (Right arrow)", "All slides (G)", "Speaker notes (N)", "Full screen (F)", "Change this slide"]);
   await frame.$eval(".ctl-full", (b) => (b as HTMLButtonElement).click());
   await frame.click("#open");
-  // Upravit slide z chatu: zpráva modelu s deckem a slidem.
+  // Edit slide from the chat: a message to the model with the deck and the slide.
   await frame.$eval(".ctl-edit", (b) => (b as HTMLButtonElement).click());
   await frame.type(".ask textarea", "Shorten the headline");
   await frame.$eval(".ask button[type=submit]", (b) => (b as HTMLButtonElement).click());
@@ -126,7 +126,7 @@ it("downloads a PowerPoint from the shared link, measured in the viewer's browse
   await page.waitForFunction(() => document.querySelector(".slide.is-active"));
   const labels = await page.$$eval(".ctl-menu b", (b) => b.map((x) => x.textContent));
   expect(labels).toEqual(["PDF", "PowerPoint", "HTML"]);
-  // Soubor se neukládá: zachytí se blob, který by stránka stáhla.
+  // The file is not saved: the blob the page would download is captured.
   await page.evaluate(() => {
     const w = window as unknown as { saved: { size: number; type: string; name: string }[] };
     w.saved = [];

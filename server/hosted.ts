@@ -1,10 +1,10 @@
 /**
- * Hostovaný konektor z proměnných prostředí. Chybějící povinná proměnná je chyba, ne výchozí hodnota.
+ * The hosted connector from environment variables. A missing required variable is an error, not a default.
  *
  *   INSTADECK_PUBLIC_URL   https://instadeck.app (odkazy na prezentace a assety)
  *   STATE_BACKEND          s3 | local
- *   S3_BUCKET, S3_PREFIX   pro s3 (prefix volitelný)
- *   INSTADECK_HOSTED_DIR   pro local (vývoj bez AWS)
+ *   S3_BUCKET, S3_PREFIX   for s3 (prefix optional)
+ *   INSTADECK_HOSTED_DIR   for local (development without AWS)
  */
 import { LocalFiles, S3Files, Store, type Files } from "@/lib/state";
 import { Service } from "@/lib/tools";

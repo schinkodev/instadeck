@@ -1,6 +1,6 @@
 /**
- * Průvodce tvorbou decku, generovaný z domény. Popisy tools ani instructions znalost nenesou,
- * odkazují sem (tool get_design_guide a resources instadeck://...).
+ * Guide to making a deck, generated from the domain. Tool descriptions and instructions do not carry the knowledge,
+ * they point here (tool get_design_guide and resources instadeck://...).
  */
 import {
   BLOCK_INFO,
@@ -36,7 +36,7 @@ export type GuideSection = (typeof GUIDE_SECTIONS)[number];
 
 export type Mode = StoreMode;
 
-/** Postup tvorby decku. Liší se jen kontrola a předání: lokálně náhledy a soubor, hostovaně zobrazení v chatu a odkaz. */
+/** Steps of making a deck. Only the review and hand over differ: locally previews and a file, hosted the view in the chat and a link. */
 export function workflow(mode: Mode): string[] {
   const local = mode === "local";
   return [

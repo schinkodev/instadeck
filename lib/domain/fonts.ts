@@ -1,6 +1,6 @@
 /**
- * Písma. Model volí z kurátorovaného výběru Google Fonts (víme, že existují a jaké mají řezy),
- * nebo brandové písmo nahrané jako asset. Libovolný název by prohlížeč tiše nahradil jiným písmem.
+ * Fonts. The model chooses from a curated selection of Google Fonts (we know they exist and which weights they have),
+ * or a brand font uploaded as an asset. The browser would silently replace an arbitrary name with another font.
  */
 import { z } from "zod";
 
@@ -9,9 +9,9 @@ export type FontCategory = "sans" | "serif" | "display" | "mono";
 export interface FontFace {
   family: string;
   category: FontCategory;
-  /** Dostupné řezy (variabilní písma: rozsah po stovkách). */
+  /** Available weights (variable fonts: the range in hundreds). */
   weights: readonly number[];
-  /** Kdy se hodí, pro model. */
+  /** When it fits, for the model. */
   character: string;
 }
 

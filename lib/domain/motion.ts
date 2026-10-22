@@ -1,10 +1,10 @@
 /**
- * Pohyb v prezentaci. Prezentace, ne video: čas neběží sám, kroky posouvá řečník.
+ * Motion in a presentation. A presentation, not a video: time does not run by itself, the presenter advances the steps.
  *
- * Pohybový jazyk navrhuje model pro každý deck (V006): intenzitu, zdůvodnění a vlastní slovník vstupů
- * a přechodů jako keyframes Web Animations. Presety níže jsou zapsané ve stejném formátu a slouží
- * jako výchozí bod. Engine animaci vždy končí v klidovém stavu slidu, takže HTML v koncovém stavu
- * platí pro tisk i PDF. Co je dobrý pohyb, hlídají měřené principy (motion-limits.ts), ne výčty.
+ * The model designs the motion language for every deck (V006): intensity, rationale and its own vocabulary of entrances
+ * and transitions as Web Animations keyframes. The presets below are written in the same format and serve
+ * as a starting point. The engine always ends an animation in the resting state of the slide, so HTML in its final state
+ * holds for print and PDF. Measured principles (motion-limits.ts) guard what good motion is, not lists.
  */
 import { z } from "zod";
 import { INTENSITIES } from "./motion-limits";
@@ -29,7 +29,7 @@ export function isEasing(v: string): boolean {
   return v in EASINGS || EASING_PATTERNS.some((p) => p.test(v));
 }
 
-/** Křivka jako CSS hodnota: pojmenovaná z EASINGS, jinak tak, jak ji model napsal. */
+/** Easing as a CSS value: named from EASINGS, otherwise as the model wrote it. */
 export function cssEasing(v: string): string {
   return v in EASINGS ? EASINGS[v as EasingName] : v;
 }
@@ -39,7 +39,7 @@ const easing = z
   .refine(isEasing, "Use a named easing (out-expo, out-cubic, in-out, in-cubic, out-back), a CSS keyword, cubic-bezier(x1, y1, x2, y2) or linear(...)")
   .describe("Named easing (out-expo, out-cubic, in-out, in-cubic, out-back), CSS keyword, cubic-bezier(...) or linear(...) for springs");
 
-/** Hodnota CSS vlastnosti v keyframe: jen funkce s čísly, žádné url() ani řetězce. */
+/** Value of a CSS property in a keyframe: only functions with numbers, no url() and no strings. */
 const cssValue = (example: string) =>
   z
     .string()
@@ -128,7 +128,7 @@ export interface HeroDef {
   easing: EasingName;
 }
 
-/** Zvýrazňující pohyby bloků (přiřazuje je doména podle typu bloku, viz blocks.ts). */
+/** Hero motions of blocks (the domain assigns them by block type, see blocks.ts). */
 export const HERO_MOTIONS = {
   "count-up": { purpose: "Number counts from zero to its value.", duration: 1400, easing: "out-expo" },
   "chart-grow": { purpose: "Bars grow from the baseline, one after another.", duration: 1000, easing: "out-expo" },
@@ -138,7 +138,7 @@ export const HERO_MOTIONS = {
 } as const satisfies Record<string, HeroDef>;
 export type HeroMotion = keyof typeof HERO_MOTIONS;
 
-/** Temperament decku: škáluje všechna trvání a rozestupy, presety i vlastní slovník. */
+/** Tempo of the deck: scales every duration and gap, presets and the custom vocabulary alike. */
 export const TEMPOS = {
   calm: { duration: 1.25, stagger: 140 },
   confident: { duration: 1, stagger: 100 },
@@ -168,7 +168,7 @@ const motionFields = {
 export const deckMotionSchema = z.strictObject({ ...motionFields, vocabulary: motionVocabularySchema.optional() });
 export type DeckMotion = z.infer<typeof deckMotionSchema>;
 
-/** Změna pohybu decku (op set_motion): uvedená pole se přepíšou, slovník se slučuje po položkách. */
+/** Change of the deck motion (op set_motion): listed fields are overwritten, the vocabulary merges entry by entry. */
 export const deckMotionPatchSchema = z.strictObject({
   intensity: motionFields.intensity.optional(),
   rationale: motionFields.rationale,
@@ -195,7 +195,7 @@ export type SlideMotion = z.infer<typeof slideMotionSchema>;
 
 export const DEFAULT_MOTION: DeckMotion = { intensity: "subtle", entrance: "rise", transition: "fade", tempo: "confident", heroes: true };
 
-/** Decky z doby před V006 nemají intenzitu. Měly jen presety, kterým odpovídá subtle. */
+/** Decks from before V006 have no intensity. They only had presets, which match subtle. */
 export const storedDeckMotionSchema = z.preprocess(
   (m) => (m && typeof m === "object" && !("intensity" in m) ? { intensity: "subtle", ...m } : m),
   deckMotionSchema,
@@ -209,7 +209,7 @@ export function transitionOf(motion: DeckMotion, name: string): TransitionSpec |
   return motion.vocabulary?.transitions?.[name] ?? (TRANSITIONS as Record<string, TransitionSpec>)[name];
 }
 
-/** Sloučí změnu do pohybu decku (op set_motion). */
+/** Merges a change into the deck motion (op set_motion). */
 export function patchMotion(motion: DeckMotion, patch: DeckMotionPatch): DeckMotion {
   const { vocabulary: vp, ...rest } = patch;
   const out: DeckMotion = { ...motion, ...Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)) };

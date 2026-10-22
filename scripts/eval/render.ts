@@ -1,8 +1,8 @@
 /**
- * Vykreslení decku pro eval: spouští ho run.ts v podprocesu s tsconfig měřeného checkoutu (--repo), takže
- * aliasy @/ ukazují do něj a deck se čte, měří a kreslí stejným kódem, který ho vytvořil.
+ * Rendering a deck for the eval: run.ts runs it in a subprocess with the tsconfig of the measured checkout (--repo), so
+ * the @/ aliases point into it and the deck is read, measured and drawn by the same code that created it.
  *   tsx --tsconfig <repo>/tsconfig.json scripts/eval/render.ts <home> <out-dir>
- * Na stdout vypíše JSON { slides, errors, warnings } nebo { slides: 0 }, když deck nevznikl.
+ * Prints JSON { slides, errors, warnings } to stdout, or { slides: 0 } when no deck was created.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

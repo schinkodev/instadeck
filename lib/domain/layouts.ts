@@ -1,6 +1,6 @@
 /**
- * Layouty: kompozice slidu 1920x1080. Každý layout má pojmenované zóny, které přijímají
- * určité typy bloků, a geometrii mřížky uvnitř okrajů. Engine geometrii jen vykreslí.
+ * Layouts: compositions of a 1920x1080 slide. Every layout has named zones that accept
+ * certain block types, and a grid geometry inside the margins. The engine only draws the geometry.
  */
 import type { BlockType } from "./blocks";
 
@@ -9,9 +9,9 @@ export interface Zone {
   accepts: readonly BlockType[];
   required: boolean;
   /**
-   * Svislé zarovnání obsahu v buňce mřížky. Text (odrážky, odstavec) navazuje pod nadpisem (start).
-   * Figury (karty, timeline, tabulka, tým, srovnání) sedí v optickém středu zbylé plochy (center), jinak
-   * krátký obsah nechá dolní část slidu prázdnou a slide působí nedokončeně (Arnheim, aktivní bílé místo).
+   * Vertical alignment of content in a grid cell. Text (bullets, a paragraph) follows below the heading (start).
+   * Figures (cards, timeline, table, team, comparison) sit in the optical center of the remaining area (center), otherwise
+   * short content leaves the bottom of the slide empty and the slide looks unfinished (Arnheim, active white space).
    */
   align?: "start" | "center" | "end";
 }
@@ -21,7 +21,7 @@ export interface LayoutDef {
   purpose: string;
   zones: readonly Zone[];
   grid: { areas: readonly string[]; columns: string; rows: string };
-  /** Obrázek přes celý slide (bez okrajů), text na něm s ochranným přechodem. */
+  /** Image across the whole slide (no margins), text on it with a protective gradient. */
   bleed?: { zone: string };
   density: "low" | "medium" | "high";
 }

@@ -1,6 +1,6 @@
 /**
- * Principy storytellingu (převzato ze slyde-saas, src/lib/layers/storytelling-principles.ts).
- * Struktura příběhu, pořadí argumentů a role jednotlivých slidů.
+ * Storytelling principles (taken from slyde-saas, src/lib/layers/storytelling-principles.ts).
+ * Story structure, the order of arguments and the role of individual slides.
  */
 
 import type { Enforced } from './enforcement';

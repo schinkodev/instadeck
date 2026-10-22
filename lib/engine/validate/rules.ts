@@ -1,7 +1,7 @@
 /**
- * Validace decku bez prohlížeče. Chyby (error) znamenají, že deck nejde správně vykreslit,
- * a zápis se odmítne. Varování (warning) jsou porušení vkusu z domény, model je má opravit.
- * Info jsou poznámky k celku, které platí až pro hotový deck.
+ * Deck validation without a browser. Errors mean the deck cannot render correctly
+ * and the write is refused. Warnings are taste violations from the domain, the model should fix them.
+ * Info are notes on the whole that only apply to a finished deck.
  */
 import {
   CONTRAST,
@@ -121,7 +121,7 @@ function blockTexts(block: Block): string[] {
   }
 }
 
-/** Pole bloků, která nejsou text pro publikum (identifikátory a volby). */
+/** Block fields that are not text for the audience (identifiers and options). */
 const NOT_TEXT = new Set(["type", "assetId", "photoAssetId", "kind", "fit", "level", "size", "unit"]);
 
 function allTexts(value: unknown, key = ""): string[] {
@@ -132,9 +132,9 @@ function allTexts(value: unknown, key = ""): string[] {
 }
 
 /**
- * Zástupný text na slidu: poznámka pro autora, která se dostala před publikum ("[Name]", "TBD",
- * "replace with sourced figure", "XX %"). Čísla a jména si model nemá domýšlet ani je nechat prázdná:
- * zeptá se uživatele, nebo údaj vynechá.
+ * Placeholder text on a slide: a note for the author that reached the audience ("[Name]", "TBD",
+ * "replace with sourced figure", "XX %"). The model must not make up numbers and names or leave them empty:
+ * it asks the user, or leaves the claim out.
  */
 const PLACEHOLDER = /\[[^\]]{1,60}\]|\b(?:TODO|TBD|TBC|lorem ipsum|placeholder)\b|\b(?:replace|insert|add) (?:with |your |real |the )|\bdoplnit\b|\bX{2,}\b|[$€£]X\b/i;
 
@@ -145,13 +145,13 @@ function checkPlaceholders(slide: Slide, push: Push) {
   }
 }
 
-/** Layouty, jejichž nadpis nese závěr. Titulní, kapitolové, výrokové a závěrečné slidy nadpis jako závěr nemají. */
+/** Layouts whose heading carries the conclusion. Title, section, statement and closing slides do not have a conclusion heading. */
 const NO_TAKEAWAY_LAYOUTS = new Set(["title", "title-image", "section", "statement", "image-full", "quote", "closing"]);
 const CJK = /[\u3040-\u30ff\u3400-\u9fff]/;
 
 /**
- * Assertion-evidence (Alley): nadpis je tvrzení, ne štítek. Jedno nebo dvě slova bez čísla ("Tým", "Náš trh")
- * jsou téma, ne závěr. Čínština a japonština se slovy nedělí, tam se pravidlo nepoužije.
+ * Assertion-evidence (Alley): a heading is a claim, not a label. One or two words without a number ("Team", "Our market")
+ * are a topic, not a conclusion. Chinese and Japanese do not split words, the rule does not apply there.
  */
 function checkHeadingLabel(slide: Slide, push: Push) {
   if (NO_TAKEAWAY_LAYOUTS.has(slide.layout)) return;
@@ -164,15 +164,15 @@ function checkHeadingLabel(slide: Slide, push: Push) {
   }
 }
 
-/** Signální barva (Swiss, Rams): zvýraznění je na slidu vzácné, jinak přestane vést oko. */
+/** Signal color (Swiss, Rams): highlighting is rare on a slide, otherwise it stops leading the eye. */
 function checkHighlightCount(slide: Slide, push: Push) {
   const count = Object.values(slide.blocks).flatMap(blockTexts).reduce((n, t) => n + (t.match(/==[^=]+==/g)?.length ?? 0), 0);
   if (count > MAX_HIGHLIGHTS) push("warning", "highlight-count", `${count} highlights on one slide, at most ${MAX_HIGHLIGHTS} keep the accent a signal`);
 }
 
 /**
- * Čas do čitelnosti: bloky vstupu slidu (bez kroku) nastupují v pořadí zón s rozestupem,
- * slide jde číst, až poslední z nich stojí.
+ * Time to legibility: blocks of the slide entrance (without a step) enter in zone order with a gap,
+ * the slide is readable once the last of them stands still.
  */
 function checkReadable(slide: Slide, deck: Deck, push: Push) {
   const layout = getLayout(slide.layout)!;
@@ -265,14 +265,14 @@ function checkContrast(deck: Deck, push: Push) {
       if (r < min) push(severity, "contrast", `${tone} tone: ${what} contrast ${r.toFixed(2)}:1, needs ${min}:1`);
     };
     pair(p.fg, p.bg, CONTRAST.text, "error", "text on background");
-    // Sekundární text bývá velký (lead), pod 3:1 je nečitelný vždy, pod 4.5:1 u malého písma.
+    // Secondary text is often large (lead), under 3:1 it is always illegible, under 4.5:1 for small type.
     const muted = contrastRatio(p.muted, p.bg);
     if (muted < CONTRAST.largeText) pair(p.muted, p.bg, CONTRAST.largeText, "error", "secondary text on background");
     else pair(p.muted, p.bg, CONTRAST.text, "warning", "secondary text on background");
     pair(p.accent, p.bg, CONTRAST.largeText, "error", "accent on background");
     if (tokens.cards === "filled") {
       pair(p.fg, p.surface, CONTRAST.text, "error", "text on cards");
-      // Text karet je sekundární (card-text), takže platí stejné prahy jako pro muted na pozadí.
+      // Card text is secondary (card-text), so the same thresholds apply as for muted on the background.
       const onCard = contrastRatio(p.muted, p.surface);
       if (onCard < CONTRAST.largeText) pair(p.muted, p.surface, CONTRAST.largeText, "error", "secondary text on cards");
       else pair(p.muted, p.surface, CONTRAST.text, "warning", "secondary text on cards");
@@ -298,7 +298,7 @@ function checkRhythm(deck: Deck, push: Push) {
   }
 }
 
-/** Pohybový jazyk decku: názvy, trvání, koherence, intenzita a sdílené prvky (V006, principles/motion.ts). */
+/** Motion language of the deck: names, durations, coherence, intensity and shared elements (V006, principles/motion.ts). */
 function checkMotion(deck: Deck): Finding[] {
   const out: Finding[] = [];
   const push = (severity: Severity, rule: string, message: string, slideId?: string) => out.push({ severity, rule, message, ...(slideId && { slideId }) });
@@ -327,7 +327,7 @@ function checkMotion(deck: Deck): Finding[] {
     }
   }
 
-  // Koherence: výjimky z jazyka decku označují momenty a musí být vzácné.
+  // Coherence: exceptions from the deck language mark moments and must be rare.
   const exceptions = deck.slides.filter(
     (s, i) => (s.motion?.entrance && s.motion.entrance !== m.entrance) || (i > 0 && s.motion?.transition && s.motion.transition !== m.transition) || Object.keys(s.motion?.zones ?? {}).length,
   );
@@ -350,12 +350,12 @@ function checkMotion(deck: Deck): Finding[] {
   return out;
 }
 
-/** Bloky, které dokládají tvrzení: číslo, graf, tabulka, citace, loga, srovnání, obraz, časová osa, tým. */
+/** Blocks that prove a claim: a number, chart, table, quote, logos, comparison, image, timeline, team. */
 const EVIDENCE = new Set(["stat", "stats", "chart", "table", "quote", "logos", "comparison", "image", "timeline", "team"]);
 
 /**
- * Příběh (narrative.ts, storytelling principy): hlava a pata, pořadí podle rámce a beaty, které tvrdí bez
- * důkazu. Hlídá se jen to, co deck sám deklaruje (beat u slidu, frame v briefu).
+ * Story (narrative.ts, storytelling principles): a head and a tail, order by the frame, and beats that claim without
+ * evidence. Only what the deck declares itself is checked (beat on a slide, frame in the brief).
  */
 function checkStory(deck: Deck, push: Push) {
   const beats = deck.slides.flatMap((s, i) => (s.beat ? [{ slide: s, beat: s.beat, i }] : []));

@@ -1,5 +1,5 @@
 /**
- * Typ assetu podle obsahu souboru (magic bytes), ne podle přípony nebo tvrzení klienta.
+ * Asset type by the file content (magic bytes), not by the extension or the client's claim.
  */
 
 export type AssetKind = "image" | "font";

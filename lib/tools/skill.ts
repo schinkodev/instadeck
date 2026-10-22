@@ -1,6 +1,6 @@
 /**
- * Skill pro Claude Code (skills/instadeck/SKILL.md), generovaný z domény a workflow.
- * npm run skill ho přepíše, test hlídá, že je aktuální.
+ * Skill for Claude Code (skills/instadeck/SKILL.md), generated from the domain and the workflow.
+ * npm run skill rewrites it, a test checks that it is up to date.
  */
 import { ENTRANCES, INTENSITY, LAYOUTS, MOTION_LIMITS, NARRATIVE_FRAMES, NARRATIVE_GUIDANCE, PITCH_GUIDANCE, TRANSITIONS } from "@/lib/domain";
 import { workflow } from "./guide";

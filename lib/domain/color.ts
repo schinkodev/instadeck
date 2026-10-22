@@ -1,6 +1,6 @@
 /**
- * Barvy: parsování hex, relativní jas a kontrast podle WCAG 2.x, míchání.
- * Čistá matematika, kterou používá doména (odvození tokenů) i engine (validace).
+ * Colors: hex parsing, relative luminance and contrast per WCAG 2.x, mixing.
+ * Pure math used by the domain (deriving tokens) and the engine (validation).
  */
 
 export type Rgb = { r: number; g: number; b: number };
@@ -23,7 +23,7 @@ export function toHex({ r, g, b }: Rgb): string {
   return `#${c(r)}${c(g)}${c(b)}`.toUpperCase();
 }
 
-/** Relativní jas podle WCAG 2.x. */
+/** Relative luminance per WCAG 2.x. */
 export function luminance(hex: string): number {
   const { r, g, b } = parseHex(hex);
   const lin = (v: number) => {
@@ -33,7 +33,7 @@ export function luminance(hex: string): number {
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 }
 
-/** Kontrastní poměr 1 až 21. */
+/** Contrast ratio from 1 to 21. */
 export function contrastRatio(a: string, b: string): number {
   const la = luminance(a);
   const lb = luminance(b);
@@ -41,7 +41,7 @@ export function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/** Lineární smíchání v sRGB: t = 0 vrací a, t = 1 vrací b. */
+/** Linear mix in sRGB: t = 0 returns a, t = 1 returns b. */
 export function mix(a: string, b: string, t: number): string {
   const x = parseHex(a);
   const y = parseHex(b);
@@ -53,15 +53,15 @@ export function withAlpha(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-/** Ze dvou kandidátů ten s vyšším kontrastem vůči pozadí. */
+/** Of two candidates, the one with higher contrast against the background. */
 export function bestContrast(background: string, candidates: readonly [string, string]): string {
   return contrastRatio(background, candidates[0]) >= contrastRatio(background, candidates[1]) ? candidates[0] : candidates[1];
 }
 
-/** Prahy WCAG: běžný text AA, velký text (od 24 px, nebo 18,66 px tučně) AA, AAA běžný text. */
+/** WCAG thresholds: normal text AA, large text (from 24 px, or 18.66 px bold) AA, normal text AAA. */
 export const CONTRAST = { text: 4.5, largeText: 3, enhanced: 7 } as const;
 
-/** Přimíchává černou (na světlém pozadí) nebo bílou (na tmavém), dokud barva nemá požadovaný kontrast vůči pozadí. */
+/** Mixes in black (on a light background) or white (on a dark one) until the color reaches the required contrast against the background. */
 export function reachContrast(color: string, against: string, min: number): { hex: string; changed: boolean } {
   if (contrastRatio(color, against) >= min) return { hex: color.toUpperCase(), changed: false };
   const target = luminance(against) > 0.5 ? "#000000" : "#FFFFFF";

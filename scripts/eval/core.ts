@@ -1,6 +1,6 @@
 /**
- * Čistá logika evalu (bez modelu a bez disku): sestavení promptů, pořadí dvojic, sjednocení verdiktů,
- * výsledky a zpráva. Testuje se ve vitestu. CLI je v run.ts.
+ * Pure eval logic (no model, no disk): building prompts, the order of pairs, merging verdicts,
+ * results and the report. Tested in vitest. The CLI is in run.ts.
  */
 import type { EvalBrief } from "./briefs";
 
@@ -26,7 +26,7 @@ Brief: ${b.text}`;
 export interface DeckRef {
   label: string;
   briefId: string;
-  /** Cesty k PNG slidů v pořadí. */
+  /** Paths to slide PNGs in order. */
   slides: string[];
 }
 
@@ -53,7 +53,7 @@ export interface Verdict {
   reason: string;
 }
 
-/** Vytáhne první JSON objekt z odpovědi modelu a ověří tvar. */
+/** Extracts the first JSON object from the model's answer and checks its shape. */
 export function parseVerdict(text: string): Verdict {
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
@@ -72,11 +72,11 @@ export function parseVerdict(text: string): Verdict {
 export type Side = "a" | "b" | "tie";
 export interface Outcome {
   winner: Side;
-  /** strong: obě pořadí souhlasí. weak: jedno pořadí remíza. contested: pořadí si odporují (rozhodne člověk). */
+  /** strong: both orders agree. weak: one order is a tie. contested: the orders contradict each other (a person decides). */
   strength: "strong" | "weak" | "contested";
 }
 
-/** Dvě posouzení téže dvojice s prohozeným pořadím: ab má A jako first, ba má B jako first. */
+/** Two judgements of the same pair with swapped order: ab has A as first, ba has B as first. */
 export function reconcile(ab: Verdict, ba: Verdict): Outcome {
   const one: Side = ab.winner === "first" ? "a" : ab.winner === "second" ? "b" : "tie";
   const two: Side = ba.winner === "first" ? "b" : ba.winner === "second" ? "a" : "tie";
@@ -86,7 +86,7 @@ export function reconcile(ab: Verdict, ba: Verdict): Outcome {
   return { winner: "tie", strength: "contested" };
 }
 
-/** Průměrné skóre kritérií pro A a B napříč oběma pořadími. */
+/** Average criterion scores for A and B across both orders. */
 export function meanScores(ab: Verdict, ba: Verdict): { a: Record<Criterion, number>; b: Record<Criterion, number> } {
   const a = {} as Record<Criterion, number>;
   const b = {} as Record<Criterion, number>;

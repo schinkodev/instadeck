@@ -1,17 +1,17 @@
 /**
- * Úložiště decků nad Files (lokálně složka INSTADECK_HOME, hostovaně S3). Klíče:
+ * Deck storage over Files (locally the INSTADECK_HOME folder, hosted S3). Keys:
  *
- *   <deck>/deck.json                  aktuální stav (hostovaně pod decks/, kvůli pravidlu expirace v S3)
- *   <deck>/.revisions/<n>.json        každá revize: deck + operace + autor
- *   <deck>/deck.html, deck.pdf        výstupy (zapisuje lib/tools)
+ *   <deck>/deck.json                  current state (hosted under decks/, because of the S3 expiration rule)
+ *   <deck>/.revisions/<n>.json        every revision: deck + operations + author
+ *   <deck>/deck.html, deck.pdf        outputs (written by lib/tools)
  *   .brand-kits/<id>.json
  *   .assets/<id>.bin + <id>.json
  *
- * Režim local: ID decku je název složky z titulku, decky, brand kity a assety jdou vypsat.
- * Režim hosted: ID jsou neuhodnutelná (capability), výpisy nejsou, aby nikdo neviděl cizí data.
+ * Local mode: the deck id is a folder name from the title, decks, brand kits and assets can be listed.
+ * Hosted mode: ids are unguessable (capability), there are no listings, so nobody sees other people's data.
  *
- * Jediná cesta zápisu decku je commit(): validace (chyby zápis odmítnou), výhradní zápis
- * souboru revize (druhý souběžný zápis stejné revize selže konfliktem), potom deck.json.
+ * The only write path of a deck is commit(): validation (errors refuse the write), an exclusive write
+ * of the revision file (a second concurrent write of the same revision fails with a conflict), then deck.json.
  */
 import { randomBytes } from "node:crypto";
 import { homedir } from "node:os";
@@ -47,16 +47,16 @@ export interface RevisionRecord {
   author: Author;
   summary: string;
   ops: Op[];
-  /** U vrácení: na kterou revizi se deck vrátil. */
+  /** For a revert: which revision the deck went back to. */
   revertedTo?: number;
 }
 
 export interface WriteResult {
   deck: Deck;
   findings: Finding[];
-  /** Slidy přidané nebo změněné zápisem. */
+  /** Slides added or changed by the write. */
   touched: string[];
-  /** Zápis změnil vzhled celého decku. */
+  /** The write changed the look of the whole deck. */
   global: boolean;
 }
 
@@ -97,14 +97,14 @@ export interface DeckSummary {
 
 export interface StoreOptions {
   mode?: StoreMode;
-  /** Generátor ID (testy ho nahrazují deterministickým). */
+  /** Id generator (tests replace it with a deterministic one). */
   id?: (prefix: string) => string;
   now?: () => string;
 }
 
 const ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789";
 const randomString = (n: number) => Array.from(randomBytes(n), (b) => ALPHABET[b % ALPHABET.length]).join("");
-/** Krátké ID pro slidy, dlouhé (asi 100 bitů) pro decky, assety a brand kity, které jsou hostovaně capability. */
+/** A short id for slides, a long one (about 100 bits) for decks, assets and brand kits, which are capabilities when hosted. */
 const randomId = (prefix: string) => prefix + randomString(prefix === "s" ? 6 : 20);
 const SAFE_ID = /^[a-z0-9][a-z0-9_-]{0,79}$/i;
 
@@ -112,7 +112,7 @@ export function defaultHome(): string {
   return process.env.INSTADECK_HOME ?? join(homedir(), "InstaDeck");
 }
 
-/** Název složky z titulku: malá písmena bez diakritiky, slova spojená pomlčkou. */
+/** Folder name from a title: lowercase without diacritics, words joined by a hyphen. */
 export function slug(title: string): string {
   const s = title
     .normalize("NFKD")
@@ -140,7 +140,7 @@ function assetRefs(deck: Deck): Set<string> {
 
 export class Store {
   readonly mode: StoreMode;
-  /** Prefix složek decků: lokálně žádný (složky přímo v INSTADECK_HOME), hostovaně decks/. */
+  /** Prefix of deck folders: locally none (folders directly in INSTADECK_HOME), hosted decks/. */
   private readonly deckPrefix: string;
   private readonly id: (prefix: string) => string;
   private readonly now: () => string;
@@ -156,12 +156,12 @@ export class Store {
     this.now = opts.now ?? (() => new Date().toISOString());
   }
 
-  /** Lokální úložiště ve složce. */
+  /** Local storage in a folder. */
   static local(home: string, opts: Omit<StoreOptions, "mode"> = {}): Store {
     return new Store(new LocalFiles(home), { ...opts, mode: "local" });
   }
 
-  // --- klíče ---
+  // --- keys ---
 
   deckKey(id: string, ...rest: string[]): string {
     if (!SAFE_ID.test(id)) throw new NotFoundError(`Deck ${id} does not exist`);
@@ -186,7 +186,7 @@ export class Store {
     if (this.mode !== "local") throw new NotAvailableError(`${what} is only available on the local InstaDeck server`);
   }
 
-  /** Zápisy jednoho decku v procesu za sebou (zámek mezi procesy je výhradní zápis revize). */
+  /** Writes of one deck in this process run one after another (the lock between processes is the exclusive revision write). */
   private serial<T>(key: string, fn: () => Promise<T>): Promise<T> {
     const prev = this.queues.get(key) ?? Promise.resolve();
     const next = prev.then(fn, fn);
@@ -228,7 +228,7 @@ export class Store {
     return deckSchema.parse(r.deck);
   }
 
-  /** Jediná cesta zápisu decku. */
+  /** The only write path of a deck. */
   private async commit(next: Deck, record: Omit<RevisionRecord, "revision" | "at">, touched: string[], global: boolean): Promise<WriteResult> {
     const at = this.now();
     const deck: Deck = { ...next, revision: next.revision + 1, updatedAt: at };
@@ -265,7 +265,7 @@ export class Store {
     };
   }
 
-  /** Kandidáti na ID nového decku: lokálně slug titulku a jeho číslované varianty, hostovaně náhodné. */
+  /** Candidate ids for a new deck: locally the title slug and its numbered variants, hosted random. */
   private *deckIds(title: string): Generator<string> {
     if (this.mode === "hosted") {
       for (;;) yield this.id("d");
@@ -284,7 +284,7 @@ export class Store {
     const brands = await this.brandKitsFor(ops);
     const at = this.now();
     for (const id of this.deckIds(input.title)) {
-      // Obsazené ID (jiný deck se stejným titulkem) se pozná levně předem, souběh řeší výhradní zápis revize 1.
+      // A taken id (another deck with the same title) is cheap to detect up front, a race is settled by the exclusive write of revision 1.
       if (await this.files.exists(this.deckKey(id, ".revisions", "1.json"))) continue;
       const empty: Deck = {
         id,
@@ -397,13 +397,13 @@ export class Store {
     return metas.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   }
 
-  /** Typy assetů, které deck používá. Chybějící v indexu nejsou, validace je nahlásí. */
+  /** Asset types the deck uses. Missing ones are not in the index, validation reports them. */
   async assetIndex(deck: Deck): Promise<AssetIndex> {
     const metas = await Promise.all([...assetRefs(deck)].map((id) => this.getAssetMeta(id).catch(() => undefined)));
     return Object.fromEntries(metas.filter((m): m is AssetMeta => !!m).map((m) => [m.id, { kind: m.kind }]));
   }
 
-  /** Data assetů, které deck používá, pro renderer: data URI (soubor, PDF), nebo URL, když je dané `url`. */
+  /** Data of the assets the deck uses, for the renderer: a data URI (file, PDF), or a URL when `url` is given. */
   async assetsFor(deck: Deck, url?: (meta: AssetMeta) => string): Promise<Record<string, AssetData>> {
     const out: Record<string, AssetData> = {};
     for (const id of assetRefs(deck)) {

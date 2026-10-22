@@ -1,18 +1,18 @@
 /**
- * Bloky do HTML. Výchozí stav HTML je koncový stav (vše odkryté, čísla s finální hodnotou,
- * grafy narostlé), takže stejný výstup slouží jako statická verze pro PDF a PNG.
- * Animace přidává runtime podle data atributů:
- *   data-step   krok odkrytí elementu
- *   data-hero   zvýrazňující pohyb (count-up, chart-grow, line-draw, donut-sweep, timeline-draw)
- *   data-part   části hero pohybu (sloupec, čára, výseč)
- *   data-shared prvek, který při přechodu se `shared` přeletí na stejný prvek dalšího slidu
+ * Blocks to HTML. The default state of the HTML is the final state (everything revealed, numbers at their final value,
+ * charts fully grown), so the same output serves as the static version for PDF and PNG.
+ * The runtime adds animation by data attributes:
+ *   data-step   reveal step of the element
+ *   data-hero   hero motion (count-up, chart-grow, line-draw, donut-sweep, timeline-draw)
+ *   data-part   parts of a hero motion (column, line, segment)
+ *   data-shared element that glides to the same element of the next slide on a transition with `shared`
  */
 import { heroMotionOf, type Block, type Palette } from "@/lib/domain";
 import { esc, formatNumber, inline } from "../text";
 
 export interface AssetData {
   mime: string;
-  /** data: URI (soubor, PDF) nebo URL (hostovaný konektor, MCP App). */
+  /** data: URI (file, PDF) or URL (hosted connector, MCP App). */
   src: string;
 }
 
@@ -20,9 +20,9 @@ export interface RenderContext {
   palette: Palette;
   assets: Record<string, AssetData>;
   locale: string;
-  /** Hero pohyb smí mít nejvýše jeden blok slidu, rozhoduje pořadí zón (viz slide.ts). */
+  /** At most one block of a slide may have a hero motion, the order of zones decides (see slide.ts). */
   heroBlock: Block | undefined;
-  /** Prvky, které můžou přeletět na sousední slide (sharedKeys v motion.ts). */
+  /** Elements that may glide to the neighboring slide (sharedKeys in motion.ts). */
   shared: Map<Block, string>;
 }
 
@@ -97,7 +97,7 @@ function lineChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): st
       return `<path data-part="line" d="${d}" fill="none" stroke="${color(si)}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" pathLength="1"/>`;
     })
     .join("");
-  // Tečky jako HTML: SVG se roztahuje bez zachování poměru stran a kruhy by se deformovaly.
+  // Dots as HTML: the SVG stretches without keeping its aspect ratio and circles would deform.
   const dots = b.series
     .flatMap((s, si) =>
       s.values.map(

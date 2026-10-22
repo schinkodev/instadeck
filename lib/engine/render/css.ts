@@ -1,6 +1,6 @@
 /**
- * CSS decku z tokenů. Všechny velikosti, mezery a barvy jdou z tokenů (proměnné --*),
- * v pravidlech bloků nejsou ad hoc hodnoty kromě jemných optických korekcí.
+ * Deck CSS from tokens. Every size, gap and color comes from tokens (--* variables),
+ * block rules have no ad hoc values except fine optical corrections.
  */
 import { findGoogleFont, type FontRef, type Palette, type Tokens, type Tone } from "@/lib/domain";
 
@@ -147,8 +147,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 `;
 }
 
-/** Režim zobrazení: prezentace (jeden slide přes celé okno) nebo statické stránky (PDF, PNG, prohlížení). */
-/** Pravidla playeru: viditelnost slidů, skryté kroky, panel s poznámkami. Platí v prezentaci i v chatu. */
+/** Display mode: presentation (one slide across the whole window) or static pages (PDF, PNG, viewing). */
+/** Player rules: slide visibility, hidden steps, the notes panel. They apply in the presentation and in the chat. */
 const PLAYER_CSS = `.slide{visibility:hidden}.slide.is-active,.slide.is-leaving{visibility:visible}.slide.is-leaving{z-index:1}.slide.is-over{z-index:2}
 .pending{opacity:0}
 .hud{position:absolute;left:0;right:0;bottom:0;z-index:2;display:none;gap:24px;align-items:flex-start;padding:16px 24px;background:rgba(11,11,12,.94);color:#E8E8EA;font:15px/1.5 system-ui,sans-serif;max-height:32%;overflow:auto}
@@ -206,10 +206,10 @@ body.presenter{margin:0;height:100vh;display:flex;flex-direction:column;overflow
 @media print{.controls,.overview,.snap-export,.ask{display:none!important}}`;
 
 /**
- * Režimy zobrazení:
- *   present  prezentace přes celé okno (samostatný deck.html)
- *   embed    kontejner .embed 16:9 uvnitř cizí stránky (MCP App v chatu), .embed.is-fullscreen na celou plochu
- *   static   všechny slidy pod sebou v koncovém stavu (PDF, PNG, měření)
+ * Display modes:
+ *   present  presentation across the whole window (standalone deck.html)
+ *   embed    a 16:9 .embed container inside another page (MCP App in the chat), .embed.is-fullscreen fills the screen
+ *   static   all slides one below another in their final state (PDF, PNG, measurement)
  */
 export const MODE_CSS = {
   present: `body{background:#0B0B0C;overflow:hidden;height:100vh;position:relative}

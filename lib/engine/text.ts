@@ -1,17 +1,17 @@
-/** Escapování a inline zvýraznění ==slovo==. */
+/** Escaping and inline highlights ==word==. */
 
 export function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 const NBSP = "\u00a0";
-/** Jazyky, kde jednopísmenná předložka nebo spojka nesmí zůstat na konci řádku (česká a slovenská sazba). */
+/** Languages where a one letter preposition or conjunction must not stay at the end of a line (Czech and Slovak typesetting). */
 const ONE_LETTER = new Set(["cs", "sk"]);
 
 /**
- * Sazba podle jazyka: nezlomitelné mezery tam, kde by zalomení rozdělilo jeden údaj.
- *   skupiny tisíců (14 000), číslo a jednotka nebo měna (87 Kč, 45 %, 7 800 USD), měna a číslo (EUR 690M),
- *   v češtině a slovenštině jednopísmenné předložky a spojky (v Praze, k ceně, a tak).
+ * Typesetting by language: non-breaking spaces where a line break would split one value.
+ *   thousands groups (14 000), a number and a unit or currency (87 Kč, 45 %, 7 800 USD), a currency and a number (EUR 690M),
+ *   in Czech and Slovak one letter prepositions and conjunctions (v Praze, k ceně, a tak).
  */
 export function typeset(s: string, lang: string): string {
   let t = s
@@ -22,7 +22,7 @@ export function typeset(s: string, lang: string): string {
   return t;
 }
 
-/** Text s ==zvýrazněním== do HTML, se sazbou podle jazyka decku. Neuzavřené == se vypíše doslova. */
+/** Text with ==highlights== to HTML, typeset by the deck language. An unclosed == is printed literally. */
 export function inline(raw: string, lang = ""): string {
   const s = lang ? typeset(raw, lang) : raw;
   return s
@@ -31,7 +31,7 @@ export function inline(raw: string, lang = ""): string {
     .join("");
 }
 
-/** Čistý text bez značek zvýraznění (pro délky a alt texty). */
+/** Plain text without highlight marks (for lengths and alt texts). */
 export function plain(s: string): string {
   return s.replace(/==([^=]+)==/g, "$1");
 }

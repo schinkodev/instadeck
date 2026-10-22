@@ -1,7 +1,7 @@
 /**
- * Celý deck jako jeden samostatný HTML soubor.
- *   present: prezentace s playerem (animace, kroky, přechody, poznámky)
- *   static:  všechny slidy pod sebou v koncovém stavu, bez skriptu (PDF, PNG, měření)
+ * The whole deck as one standalone HTML file.
+ *   present: presentation with the player (animation, steps, transitions, notes)
+ *   static:  all slides one below another in their final state, without a script (PDF, PNG, measurement)
  */
 import {
   deriveTokens,
@@ -20,7 +20,7 @@ import { renderSlide } from "./slide";
 export type RenderMode = "present" | "static";
 
 
-/** Řezy body písma, které deck používá (běžný text, polotučné popisky, tučné zvýraznění). */
+/** Body font weights the deck uses (regular text, semibold labels, bold highlights). */
 const BODY_WEIGHTS = [400, 600, 700];
 
 function googleFontsHref(deck: Deck): string | undefined {
@@ -54,17 +54,17 @@ function fontFaces(deck: Deck, assets: Record<string, AssetData>): string {
     .join("\n");
 }
 
-/** Části decku pro skládání jinde než v samostatném souboru (MCP App v chatu). */
+/** Parts of the deck for composing somewhere other than a standalone file (MCP App in the chat). */
 export interface DeckParts {
   lang: string;
   title: string;
-  /** Google Fonts stylesheet, pokud deck používá Google písma. */
+  /** Google Fonts stylesheet, when the deck uses Google fonts. */
   fontsHref?: string;
-  /** CSS decku (písma z assetů, tokeny, bloky). Bez CSS režimu zobrazení. */
+  /** Deck CSS (fonts from assets, tokens, blocks). Without the display mode CSS. */
   css: string;
-  /** <section class="slide"> pro všechny slidy. */
+  /** <section class="slide"> for every slide. */
   slides: string;
-  /** Konfigurace playeru (časování, easing, poznámky). */
+  /** Player configuration (timing, easing, notes). */
   config: PlayerConfig;
 }
 
@@ -85,7 +85,7 @@ export const HUD_HTML = `<aside class="hud"><div class="hud-count"></div><div cl
 export function renderDeckHtml(deck: Deck, assets: Record<string, AssetData>, mode: RenderMode): string {
   const p = renderDeckParts(deck, assets);
   const present = mode === "present";
-  // JSON v <script>: znak < se escapuje, aby text poznámek nemohl ukončit tag.
+  // JSON in <script>: the < character is escaped so the text of notes cannot close the tag.
   const config = JSON.stringify(p.config).replace(/</g, "\\u003c");
   return `<!doctype html>
 <html lang="${esc(p.lang)}">

@@ -1,7 +1,7 @@
 /**
- * Lokální MCP server přes stdio (Claude Code, Claude Desktop).
+ * Local MCP server over stdio (Claude Code, Claude Desktop).
  *   claude mcp add instadeck -- npx tsx /cesta/k/instadeck/server/stdio.ts
- * Data v INSTADECK_HOME (výchozí ~/InstaDeck). Stdout patří protokolu, logy jdou na stderr.
+ * Data in INSTADECK_HOME (default ~/InstaDeck). Stdout belongs to the protocol, logs go to stderr.
  */
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { closeBrowser } from "@/lib/engine";

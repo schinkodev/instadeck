@@ -1,8 +1,8 @@
 /**
- * Designové školy: formální jazyk decku vedle nálady značky (mood v suggest_brand_system). Mood říká, jaká
- * značka je, škola říká, jak deck vypadá. Model školy kombinuje nebo si pojmenuje vlastní reference,
- * nic z toho není zúžení: jsou to doporučení se zdůvodněním, ze kterých odvodí design decku.
- * Písma jen z kurátorovaného seznamu (fonts.ts), test to hlídá.
+ * Design schools: the formal language of a deck next to the mood of the brand (mood in suggest_brand_system). The mood says what
+ * the brand is, the school says how the deck looks. The model combines schools or names its own references,
+ * none of it is a restriction: they are recommendations with reasons, from which it derives the deck design.
+ * Fonts only from the curated list (fonts.ts), a test guards it.
  */
 import type { Intensity } from "./motion-limits";
 import type { Tempo } from "./motion";
@@ -12,9 +12,9 @@ export interface DesignSchool {
   id: string;
   name: string;
   masters: string;
-  /** Myšlenka školy v jedné větě. */
+  /** The idea of the school in one sentence. */
   idea: string;
-  /** Jak o decku v této škole přemýšlet. */
+  /** How to think about a deck in this school. */
   think: string;
   fits: string;
   type: { heading: readonly string[]; body: readonly string[]; scale: keyof typeof TYPE_SCALES; weight: number; case: "none" | "upper" };

@@ -1,12 +1,12 @@
 /**
- * Povýší povedený deck na ukázkový (golden example) v lib/domain/examples.json.
+ * Promotes a deck that turned out well to a golden example in lib/domain/examples.json.
  *
  *   npm run example -- <zdroj> <id> --title "..." --purpose "..." --audience "..." --why "a|b|c" --content-is-public
  *
- * Zdroj je cesta k deck.json (lokální server) nebo odkaz instadeck.app/d/<id> (hostovaný konektor,
- * deck se přečte přes MCP tool get_deck). Příklad vidí každý uživatel serveru, proto musí být obsah
- * bez skutečných jmen a čísel, což potvrzuje --content-is-public. Deck smí být bez assetů a bez
- * varování validace, jinak se příklad odmítne.
+ * The source is a path to deck.json (local server) or a link instadeck.app/d/<id> (hosted connector,
+ * the deck is read through the MCP tool get_deck). Every user of the server sees the example, so the content must
+ * have no real names and numbers, which --content-is-public confirms. The deck must have no assets and no
+ * validation warnings, otherwise the example is refused.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";

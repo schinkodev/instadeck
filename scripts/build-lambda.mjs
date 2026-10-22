@@ -1,5 +1,5 @@
-// Balíček pro AWS Lambda: dist-lambda/index.mjs (handler index.handle) a instadeck-lambda.zip.
-// Bez prohlížeče: puppeteer se v hostovaném režimu nenačítá (lib/engine/browser.ts).
+// Package for AWS Lambda: dist-lambda/index.mjs (handler index.handle) and instadeck-lambda.zip.
+// No browser: puppeteer does not load in hosted mode (lib/engine/browser.ts).
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, statSync } from "node:fs";
 import { build } from "esbuild";
@@ -16,7 +16,7 @@ await build({
   minify: true,
   legalComments: "none",
   external: ["puppeteer-core", "@puppeteer/browsers"],
-  // Některé závislosti jsou CommonJS a volají require.
+  // Some dependencies are CommonJS and call require.
   banner: { js: "import{createRequire as __cr}from'module';const require=__cr(import.meta.url);" },
   logLevel: "warning",
 });

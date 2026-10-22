@@ -1,8 +1,8 @@
 /**
- * Registr schopností: co o sobě server říká a jak daleko je implementace (vzor stavebak.cz).
- * Jediný zdroj pravdy pro sebepopis. Z něj se skládají instructions a resource instadeck://capabilities.
- * Test hlídá: každý tool je v registru, plánované nemají tools, částečné mají `now`,
- * tools schopnosti existují v každém režimu, ve kterém ji server nabízí.
+ * Capability registry: what the server says about itself and how far the implementation is (pattern from stavebak.cz).
+ * The single source of truth for self-description. The instructions and the resource instadeck://capabilities are built from it.
+ * A test checks: every tool is in the registry, planned entries have no tools, partial entries have `now`,
+ * the tools of a capability exist in every mode in which the server offers it.
  */
 import type { Mode } from "@/lib/tools";
 
@@ -12,11 +12,11 @@ export interface Capability {
   id: string;
   claim: string;
   status: CapabilityStatus;
-  /** Co funguje teď a co chybí. Povinné u partial. */
+  /** What works now and what is missing. Required for partial. */
   now?: string;
   tools?: string[];
   resources?: string[];
-  /** Režimy, ve kterých server schopnost nabízí. Výchozí oba. */
+  /** Modes in which the server offers the capability. Default both. */
   modes?: Mode[];
 }
 

@@ -1,7 +1,7 @@
 /**
- * Soubory pod klíči ("<deck>/deck.json", ".assets/<id>.bin"). Lokálně složka na disku, hostovaně S3.
- * Výhradní zápis (exclusive) je jediný zámek úložiště: druhý zápis stejného klíče selže ExistsError.
- * Lokálně link() na existující cestu selže, v S3 podmíněný PutObject s If-None-Match: *.
+ * Files under keys ("<deck>/deck.json", ".assets/<id>.bin"). Locally a folder on disk, hosted S3.
+ * An exclusive write is the only lock of the storage: a second write of the same key fails with ExistsError.
+ * Locally link() to an existing path fails, in S3 a conditional PutObject with If-None-Match: *.
  */
 import { randomBytes } from "node:crypto";
 import { link, mkdir, readFile, readdir, rename, rm, stat, unlink, writeFile } from "node:fs/promises";
@@ -23,7 +23,7 @@ export class ExistsError extends Error {
 }
 
 export interface PutOptions {
-  /** Zapsat jen pokud klíč ještě neexistuje, jinak ExistsError. */
+  /** Write only if the key does not exist yet, otherwise ExistsError. */
   exclusive?: boolean;
   contentType?: string;
 }
@@ -32,17 +32,17 @@ export interface Files {
   get(key: string): Promise<Uint8Array | undefined>;
   put(key: string, data: Uint8Array | string, opts?: PutOptions): Promise<void>;
   exists(key: string): Promise<boolean>;
-  /** Jména přímých potomků pod prefixem (soubory i „složky“), bez prefixu. */
+  /** Names of the direct children under a prefix (files and "folders"), without the prefix. */
   list(prefix: string): Promise<string[]>;
-  /** Smaže klíč a vše pod ním. */
+  /** Deletes a key and everything under it. */
   remove(prefix: string): Promise<void>;
-  /** Cesta na disku, pokud úložiště je disk (výstupy pro lokálního uživatele). */
+  /** Path on disk, when the storage is a disk (outputs for the local user). */
   localPath?(key: string): string;
 }
 
 const bytes = (d: Uint8Array | string) => (typeof d === "string" ? new TextEncoder().encode(d) : d);
 
-/** Klíč z neprázdných částí bez "..", prefix smí končit lomítkem. Prázdný klíč je kořen. */
+/** Key from non-empty parts without "..", a prefix may end with a slash. An empty key is the root. */
 function checkKey(key: string) {
   const k = key.endsWith("/") ? key.slice(0, -1) : key;
   if (k !== "" && k.split("/").some((p) => p === ".." || p === "")) throw new Error(`Invalid key ${key}`);
@@ -127,7 +127,7 @@ export class S3Files implements Files {
         new PutObjectCommand({ Bucket: this.bucket, Key: this.k(key), Body: bytes(data), ContentType: opts.contentType, ...(opts.exclusive && { IfNoneMatch: "*" }) }),
       );
     } catch (e) {
-      // 412: klíč existuje. 409: souběžný podmíněný zápis téhož klíče, druhý prohrál.
+      // 412: the key exists. 409: a concurrent conditional write of the same key, the second one lost.
       if (opts.exclusive && e instanceof S3ServiceException && [409, 412].includes(e.$metadata.httpStatusCode ?? 0)) throw new ExistsError(key);
       throw e;
     }

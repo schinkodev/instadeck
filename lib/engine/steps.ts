@@ -1,10 +1,10 @@
 /**
- * Kroky odkrývání. Blok má krok `step` (0 = se vstupem slidu). U seznamů s `build: "items"`
- * se první položka objeví s blokem a každá další o krok později.
+ * Reveal steps. A block has a `step` (0 = with the slide entrance). For lists with `build: "items"`
+ * the first item appears with the block and every next one a step later.
  */
 import type { Block, Slide } from "@/lib/domain";
 
-/** Položky bloku, které se odkrývají jednotlivě, pokud má blok build. */
+/** Items of a block that reveal one by one, when the block has a build. */
 export function itemCount(block: Block): number {
   switch (block.type) {
     case "bullets":
@@ -25,7 +25,7 @@ export function blockSteps(block: Block): { first: number; last: number } {
   return { first, last: first + builds };
 }
 
-/** Počet kliknutí potřebných k odkrytí celého slidu. */
+/** Number of clicks needed to reveal the whole slide. */
 export function slideSteps(slide: Slide): number {
   return Math.max(0, ...Object.values(slide.blocks).map((b) => blockSteps(b).last));
 }

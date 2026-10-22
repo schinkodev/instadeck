@@ -1,6 +1,6 @@
 /**
- * Slide do HTML: layout z domény jako CSS mřížka, bloky v zónách, tón a pohyb jako data atributy
- * (vstup slidu, případně vstup zóny, přechod do slidu).
+ * Slide to HTML: the domain layout as a CSS grid, blocks in zones, tone and motion as data attributes
+ * (slide entrance, optionally a zone entrance, the transition into the slide).
  */
 import { HERO_PRIORITY, getLayout, type Deck, type Slide, type Tokens } from "@/lib/domain";
 import { esc } from "../text";
@@ -13,7 +13,7 @@ export interface SlideRenderInput {
   assets: Record<string, AssetData>;
 }
 
-/** Hero pohyb má nejvýše jeden blok na slide: podle priority typu (HERO_PRIORITY), při shodě první v pořadí zón. */
+/** At most one block per slide has a hero motion: by type priority (HERO_PRIORITY), on a tie the first in zone order. */
 export function heroBlockOf(slide: Slide, deck: Deck) {
   if (!deck.motion.heroes) return undefined;
   const layout = getLayout(slide.layout);

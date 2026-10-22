@@ -1,8 +1,8 @@
 /**
- * Narativní rámce: osvědčené tvary příběhu, ze kterých model vybírá podle publika a cíle.
- * Každá fáze rámce říká, jakou práci odvádí a které beaty (pitch.ts) jí slouží. Rámec dává decku
- * začátek a konec a pořadí, ve kterém publikum přijímá argument. Validace hlídá pořadí, když deck
- * rámec uvede (brief.frame) a slidy nesou beat.
+ * Narrative frames: proven story shapes the model chooses from by audience and goal.
+ * Every stage of a frame says what job it does and which beats (pitch.ts) serve it. A frame gives the deck
+ * a beginning, an end and the order in which the audience takes in the argument. Validation checks the order when the deck
+ * names its frame (brief.frame) and the slides carry beats.
  */
 
 export interface FrameStage {
@@ -17,7 +17,7 @@ export interface NarrativeFrame {
   author: string;
   fits: string;
   stages: readonly FrameStage[];
-  /** Jak rámec selhává, aby se tomu dalo vyhnout. */
+  /** How the frame fails, so it can be avoided. */
   failure: string;
 }
 
@@ -126,7 +126,7 @@ export function getFrame(id: string): NarrativeFrame | undefined {
   return NARRATIVE_FRAMES.find((f) => f.id === id);
 }
 
-/** Pořadí fází, ve kterých beat v rámci leží (beat může sloužit dvěma fázím, např. decision na začátku i v závěru). */
+/** Order of the stages a beat sits in within a frame (a beat may serve two stages, e.g. decision at the start and at the end). */
 export function stagesOf(frame: NarrativeFrame, beat: string): number[] {
   return frame.stages.flatMap((s, i) => (s.beats.includes(beat) ? [i] : []));
 }

@@ -1,8 +1,8 @@
 /**
- * Ukázkové decky (golden examples): ověřené decky ve tvaru, který bere create_deck. Model z nich čte
- * strukturu, rytmus a délku textů, obsah ale vždy nahrazuje. Data jsou v examples.json, další příklady
- * se přidávají skriptem `npm run example` z decku, který se povedl. Test hlídá, že každý příklad projde
- * validací bez chyb a varování.
+ * Golden examples: proven decks in the shape create_deck takes. The model reads their
+ * structure, rhythm and text lengths, but always replaces the content. The data is in examples.json, more examples
+ * are added with `npm run example` from a deck that turned out well. A test checks that every example passes
+ * validation without errors and warnings.
  */
 import { z } from "zod";
 import data from "./examples.json";

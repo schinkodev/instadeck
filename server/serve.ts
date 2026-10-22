@@ -1,5 +1,5 @@
 /**
- * Hostovaný konektor lokálně (vývoj, ověření v klientech přes tunel):
+ * The hosted connector locally (development, checking in clients through a tunnel):
  *   STATE_BACKEND=local INSTADECK_HOSTED_DIR=.data/hosted INSTADECK_PUBLIC_URL=http://localhost:3535 npm run serve
  */
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";

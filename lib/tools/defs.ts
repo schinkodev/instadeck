@@ -1,7 +1,7 @@
 /**
- * Tools v MCP tvaru: ID v argumentech, žádný stav v procesu, strukturovaný výstup.
- * Definice nezávislá na transportu, adaptér je v server/mcp.ts.
- * Popisy říkají, co tool dělá. Znalost o tvorbě decku je v get_design_guide a resources.
+ * Tools in MCP shape: ids in arguments, no state in the process, structured output.
+ * A definition independent of the transport, the adapter is in server/mcp.ts.
+ * Descriptions say what a tool does. Knowledge about making decks is in get_design_guide and resources.
  */
 import { readFile } from "node:fs/promises";
 import { isAbsolute } from "node:path";
@@ -14,7 +14,7 @@ import type { Preview, Service } from "./service";
 
 export interface ToolContext {
   service: Service;
-  /** local: stdio server u uživatele (cesty na disku, prohlížeč). hosted: konektor (URL, bez prohlížeče). */
+  /** local: stdio server at the user (paths on disk, a browser). hosted: the connector (URL, no browser). */
   mode: StoreMode;
 }
 
@@ -25,7 +25,7 @@ export interface ToolImage {
 
 export interface ToolOutput {
   data: Record<string, unknown>;
-  /** Textová kopie výsledku, když celá data nepatří do kontextu (části decku pro aplikaci). Výchozí JSON dat. */
+  /** Text copy of the result, when the full data does not belong in the context (deck parts for the app). Default: JSON of the data. */
   text?: string;
   images?: ToolImage[];
 }
@@ -43,11 +43,11 @@ export interface ToolDef<S extends ZodRawShape = ZodRawShape> {
   description: string;
   input: S;
   annotations: Annotations;
-  /** Režimy, ve kterých tool existuje. Výchozí oba. */
+  /** Modes in which the tool exists. Default both. */
   modes?: readonly StoreMode[];
-  /** Výsledek ukazuje deck: klienti s MCP Apps ho vykreslí v chatu. */
+  /** The result shows a deck: clients with MCP Apps render it in the chat. */
   view?: true;
-  /** Tool volá jen aplikace v chatu (MCP Apps visibility app), model ho nepotřebuje. */
+  /** Only the app in the chat calls the tool (MCP Apps visibility app), the model does not need it. */
   audience?: "app";
   run: (args: z.infer<z.ZodObject<S>>, ctx: ToolContext) => Promise<ToolOutput>;
 }
@@ -71,7 +71,7 @@ function requireLocal(ctx: ToolContext, what: string) {
   if (ctx.mode !== "local") throw new Error(`${what} works only with the local InstaDeck server`);
 }
 
-/** Stáhne asset z veřejné https adresy (logo z webu firmy). Limit velikosti a času. */
+/** Downloads an asset from a public https address (a logo from the company website). Size and time limit. */
 async function fetchAsset(url: string): Promise<Uint8Array> {
   const u = new URL(url);
   if (u.protocol !== "https:") throw new Error("url must start with https://");

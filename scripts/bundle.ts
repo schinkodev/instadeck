@@ -1,6 +1,6 @@
 /**
- * Rozšíření pro Claude Desktop: dist-bundle/instadeck.mcpb.
- * Build, složka s produkčními závislostmi, manifest z registru tools, ikona z brand/mark.svg, validace a pack.
+ * Extension for Claude Desktop: dist-bundle/instadeck.mcpb.
+ * Build, a folder with production dependencies, a manifest from the tool registry, an icon from brand/mark.svg, validation and pack.
  */
 import { execFileSync } from "node:child_process";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";

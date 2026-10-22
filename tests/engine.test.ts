@@ -71,7 +71,7 @@ describe("validate highlight", () => {
 describe("steps", () => {
   it("counts build items as click steps", () => {
     const deck = sampleDeck();
-    const s4 = deck.slides[3]!; // bullets s build: items, 3 položky
+    const s4 = deck.slides[3]!; // bullets with build: items, 3 items
     expect(slideSteps(s4)).toBe(2);
     expect(blockSteps({ type: "bullets", items: ["a", "b", "c"], build: "items", step: 1 })).toEqual({ first: 1, last: 3 });
   });
@@ -135,7 +135,7 @@ describe("validate", () => {
     d.slides[1] = { ...d.slides[1]!, layout: d.slides[0]!.layout, blocks: d.slides[0]!.blocks };
     expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).toContain("rhythm");
 
-    // 15 slidů snese 3 výjimky z pohybového jazyka, čtvrtá už rozbíjí koherenci.
+    // 15 slides allow 3 exceptions from the motion language, a fourth breaks coherence.
     const m = sampleDeck();
     m.slides[2]!.motion = { entrance: "focus" };
     m.slides[3]!.motion = { entrance: "wipe" };
@@ -220,7 +220,7 @@ describe("motion language", () => {
     const s = sampleDeck();
     s.motion.transition = "morph";
     const shared = validateDeck(s, SAMPLE_ASSET_INDEX).filter((f) => f.rule === "motion-shared");
-    // Bez sdíleného prvku jsou jen přechody na slidy bez nadpisu (citace).
+    // Without a shared element only the transitions to slides without a heading (quote) remain.
     expect(shared.length).toBeGreaterThan(0);
     expect(shared.every((f) => s.slides.find((x) => x.id === f.slideId)!.layout === "quote" || s.slides[s.slides.findIndex((x) => x.id === f.slideId) - 1]!.layout === "quote")).toBe(true);
   });

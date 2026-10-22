@@ -1,6 +1,6 @@
 /**
- * Manifest rozšíření pro Claude Desktop (MCP Bundle, manifest 0.3), generovaný z registru tools.
- * Uživatel si při instalaci vybere složku pro decky, ta jde do INSTADECK_HOME.
+ * Extension manifest for Claude Desktop (MCP Bundle, manifest 0.3), generated from the tool registry.
+ * At install the user picks a folder for decks, it goes to INSTADECK_HOME.
  */
 import { TOOLS } from "@/lib/tools";
 

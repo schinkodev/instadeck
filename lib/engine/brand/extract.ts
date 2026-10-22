@@ -1,16 +1,16 @@
 /**
- * Barvy z loga, deterministicky. SVG: barvy zapsané v souboru podle četnosti.
- * Rastr: pixely z prohlížeče (canvas), kvantizace do přihrádek a sloučení blízkých barev.
- * Co je primární barva značky, rozhoduje model, kód jen vrací kandidáty s podílem.
+ * Colors from a logo, deterministic. SVG: colors written in the file by frequency.
+ * Raster: pixels from the browser (canvas), quantized into bins and close colors merged.
+ * The model decides which color is the primary brand color, the code only returns candidates with their share.
  */
 import { luminance, mix, parseHex, toHex } from "@/lib/domain";
 import { withPage } from "../browser";
 
 export interface ColorCandidate {
   hex: string;
-  /** Podíl 0 až 1 (u SVG podíl výskytů, u rastru podíl neprůhledných pixelů). */
+  /** Share 0 to 1 (for SVG the share of occurrences, for raster the share of opaque pixels). */
   share: number;
-  /** Téměř bílá, téměř černá nebo šedá: spíš pozadí nebo text než brand barva. */
+  /** Near white, near black or gray: more likely background or text than a brand color. */
   neutral: boolean;
 }
 
@@ -41,7 +41,7 @@ const distance = (a: string, b: string) => {
   return Math.hypot(x.r - y.r, x.g - y.g, x.b - y.b);
 };
 
-/** Sloučí barvy bližší než `minDistance` (vážený průměr podle podílu). */
+/** Merges colors closer than `minDistance` (weighted average by share). */
 function merge(colors: { hex: string; weight: number }[], minDistance: number, limit: number): ColorCandidate[] {
   const total = colors.reduce((a, c) => a + c.weight, 0);
   const groups: { hex: string; weight: number }[] = [];
@@ -68,7 +68,7 @@ export function colorsFromSvg(svg: string, limit = 6): ColorCandidate[] {
   return merge([...counts].map(([hex, weight]) => ({ hex, weight })), 18, limit);
 }
 
-/** Kvantizace RGBA pixelů: 4 bity na kanál, průhledné pixely se ignorují. */
+/** Quantization of RGBA pixels: 4 bits per channel, transparent pixels are ignored. */
 export function quantize(rgba: Uint8Array | number[], limit = 6): ColorCandidate[] {
   const bins = new Map<number, { r: number; g: number; b: number; n: number }>();
   for (let i = 0; i + 3 < rgba.length; i += 4) {

@@ -1,7 +1,7 @@
 /**
- * PPTX ze snímku vykreslených slidů (snapshot.ts) a z decku. Bez prohlížeče: geometrii dodal
- * prohlížeč, tady se jen skládá soubor. Text zůstává editovatelný, grafy jsou nativní grafy
- * PowerPointu z dat decku, tabulky nativní tabulky, poznámky řečníka jdou s sebou. Animace ne.
+ * PPTX from a snapshot of rendered slides (snapshot.ts) and from the deck. No browser: the browser supplied
+ * the geometry, here the file is only assembled. Text stays editable, charts are native PowerPoint
+ * charts from the deck data, tables native tables, speaker notes come along. Animation does not.
  *
  * Slide 1920x1080 px = 13.333 x 7.5 palce: 144 px na palec, 1 px = 0.5 pt.
  */
@@ -21,7 +21,7 @@ type PptxSlide = ReturnType<Pptx["addSlide"]>;
 type Rect = { x: number; y: number; w: number; h: number };
 const pos = (r: Rect) => ({ x: inch(r.x), y: inch(r.y), w: inch(r.w), h: inch(r.h) });
 
-/** Barva série jako v HTML (render/blocks.ts): se zvýrazněním akcent a linka, jinak akcent, druhý akcent, tlumená. */
+/** Series color as in HTML (render/blocks.ts): with a highlight accent and line, otherwise accent, second accent, muted. */
 function chartColors(b: Extract<Block, { type: "chart" }>, p: Palette): string[] {
   if (b.highlight !== undefined && (b.kind === "column" || b.kind === "bar")) return b.categories.map((_, i) => hex(i === b.highlight ? p.accent : p.line));
   if (b.kind === "donut") return b.categories.map((_, i) => hex(i === b.highlight ? p.accent : [p.accent, p.accent2, p.muted, p.line, p.fg, p.surface][i % 6]!));
@@ -37,7 +37,7 @@ function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>
     ...pos(r),
     barDir: b.kind === "bar" ? "bar" : "col",
     chartColors: chartColors(b, p),
-    // Jedna série se zvýrazněním: barvy po sloupcích, ne po sériích.
+    // One series with a highlight: colors per column, not per series.
     ...(single && b.highlight !== undefined && b.kind !== "line" && { varyColors: true }),
     showLegend: b.kind === "donut" || !single,
     legendPos: b.kind === "donut" ? "r" : "t",
@@ -65,7 +65,7 @@ function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>
 }
 
 type Border = { type: "none" } | { pt: number; color: string };
-/** Rámeček buňky: jen spodní linka (pořadí horní, pravá, spodní, levá). */
+/** Cell border: only the bottom line (order top, right, bottom, left). */
 const bottomRule = (width: number, color: string): [Border, Border, Border, Border] => [{ type: "none" }, { type: "none" }, { pt: width, color }, { type: "none" }];
 
 function addTable(s: PptxSlide, b: Extract<Block, { type: "table" }>, r: Rect, p: Palette, fonts: { body: string; small: number; body_: number }) {
@@ -109,8 +109,8 @@ function addItem(pptx: Pptx, s: PptxSlide, it: SnapshotItem, ctx: { slide: Deck[
           options: { fontFace: r.font, fontSize: pt(r.size), color: r.color, bold: r.bold, italic: r.italic, ...(r.spacing && { charSpacing: pt(r.spacing) }) },
         }));
       if (!runs.length) return;
-      // Text začíná na prvním řádku boxu, bez vnitřních okrajů a bez automatického zmenšování. Co prohlížeč
-      // vysázel na jeden řádek, zůstane na jednom řádku i s jinými metrikami písma.
+      // Text starts on the first line of the box, without inner margins and without autofit. What the browser
+      // set on one line stays on one line even with different font metrics.
       s.addText(runs, { ...pos(it), margin: 0, valign: "top", align: it.align, lineSpacing: pt(it.lineHeight), fit: "none", wrap: it.lines > 1, paraSpaceBefore: 0, paraSpaceAfter: 0 });
       return;
     }
@@ -123,7 +123,7 @@ function addItem(pptx: Pptx, s: PptxSlide, it: SnapshotItem, ctx: { slide: Deck[
       s.addImage({
         data,
         ...box,
-        // sizing počítá ořez z poměru stran obrázku: w a h jsou rozměry obrázku, sizing je rámeček.
+        // sizing computes the crop from the image aspect ratio: w and h are the image dimensions, sizing is the frame.
         w: box.w,
         h: box.w * ratio,
         sizing: { type: it.fit, w: box.w, h: box.h },
@@ -144,8 +144,8 @@ function addItem(pptx: Pptx, s: PptxSlide, it: SnapshotItem, ctx: { slide: Deck[
       return;
     }
     case "scrim": {
-      // Ochranný přechod (v HTML lineární, 74 % černé vlevo, průhledný od 82 %) jako pruhy:
-      // PowerPoint přes pptxgenjs přechodovou výplň nemá.
+      // Protective gradient (in HTML linear, 74% black on the left, transparent from 82%) as stripes:
+      // PowerPoint through pptxgenjs has no gradient fill.
       const bands = 32;
       for (let i = 0; i < bands; i++) {
         const t = (i + 0.5) / bands;

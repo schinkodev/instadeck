@@ -1,28 +1,28 @@
 /**
- * Prahy kompozice slidu, které se měří v prohlížeči (measure.js, measureLayoutInstaDeck).
+ * Slide composition thresholds measured in a browser (measure.js, measureLayoutInstaDeck).
  * Bez zod, aby je mohla importovat MCP App. Principy jsou v principles/design.ts.
  */
 
 export const LAYOUT_LIMITS = {
   /**
-   * Aktivní a pasivní bílé místo (Tschichold, Arnheim): prázdno, které obsah rámuje, je záměr. Prázdno,
-   * které zbude na jedné straně, působí nedokončeně a vychyluje rovnováhu. Obsah slidu se střední hustotou
-   * má sahat aspoň do této části výšky mřížky.
+   * Active and passive white space (Tschichold, Arnheim): emptiness that frames content is intended. Emptiness
+   * left over on one side looks unfinished and throws off the balance. The content of a medium density slide
+   * must reach at least this share of the grid height.
    */
   minFill: 0.6,
-  /** Smysluplný kontrast velikostí (Williams): nadpis musí být zjevně větší než text pod ním. */
+  /** Meaningful size contrast (Williams): a heading must be clearly larger than the text below it. */
   minHeadingRatio: 1.5,
 } as const;
 
-/** Layouty s nízkou hustotou jsou řídké záměrně (titul, výrok, citát), rovnováha se u nich neměří. */
+/** Low density layouts are sparse on purpose (title, statement, quote), their balance is not measured. */
 export const SPARSE_LAYOUTS: readonly string[] = ["title", "title-image", "statement", "section", "headline-stat", "image-full", "quote", "logos", "closing"];
 
 export interface LayoutMeasure {
   slideId: string;
   layout: string;
-  /** Spodní hrana obsahu jako podíl výšky mřížky (0 nahoře, 1 dole). */
+  /** Bottom edge of the content as a share of the grid height (0 top, 1 bottom). */
   fill: number;
-  /** Největší písmo nadpisu a největší písmo textu pod ním v px slidu (0, když na slidu není). */
+  /** Largest heading font and largest font of the text below it, in slide px (0 when the slide has none). */
   headingPx: number;
   bodyPx: number;
 }
