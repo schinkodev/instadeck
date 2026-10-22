@@ -6,7 +6,7 @@
 import { readFile } from "node:fs/promises";
 import { isAbsolute } from "node:path";
 import { z, type ZodRawShape } from "zod";
-import { EXAMPLES, EXAMPLE_NOTE, brandKitInputSchema, briefSchema, deckMotionSchema, designPatchSchema, exampleSummary, findExample, opSchema, slideInputSchema } from "@/lib/domain";
+import { EXAMPLES, EXAMPLE_NOTE, brandKitInputSchema, createBriefSchema, deckMotionSchema, designPatchSchema, exampleSummary, findExample, opSchema, slideInputSchema } from "@/lib/domain";
 import { MOODS, MOOD_NAMES, checkBrandKit, colorsFromRaster, colorsFromSvg, suggestBrandSystem } from "@/lib/engine";
 import { dataUri, MAX_ASSET_BYTES, type StoreMode } from "@/lib/state";
 import { designGuide, GUIDE_SECTIONS } from "./guide";
@@ -232,7 +232,7 @@ export const TOOLS: ToolDef[] = [
       "Creates a deck with all its slides in one call and renders it as a presentation file with animations. Returns the deck id, revision, findings (validation and measured overflow) and previews. Nothing is saved when the slides have errors.",
     input: {
       title: z.string().min(1),
-      brief: briefSchema,
+      brief: createBriefSchema,
       brand_kit_id: z.string().optional(),
       design: designPatchSchema.optional().describe("Design fields to set on top of the brand kit or default design"),
       motion: deckMotionSchema.partial().optional().describe("The motion language of this deck: intensity, rationale, default entrance and transition, tempo, heroes and your own vocabulary (section motion)"),
