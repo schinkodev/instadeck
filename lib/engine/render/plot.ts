@@ -70,7 +70,19 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
   const list = bars(b, ctx);
   const stackTotals = b.kind === "stacked" ? b.categories.map((_, ci) => b.series.reduce((a, s) => a + s.values[ci]!, 0)) : [];
   const values = [0, ...list.flatMap((x) => [x.from, x.to]), ...(b.reference ? [b.reference.value] : [])];
-  const [lo, hi] = nice(Math.min(...values), Math.max(...values), 5);
+  let [lo, hi] = nice(Math.min(...values), Math.max(...values), 5);
+  // Bridge: změny bývají malé proti součtům a od nuly by z nich zbyly proužky. Osa proto začíná pod nejnižší
+  // úrovní mostu a součtové sloupce nesou značku přerušení (IBCS), aby nebylo skryto, že nezačínají od nuly.
+  let broken = false;
+  if (b.kind === "waterfall") {
+    const levels = list.flatMap((x, i) => (i === 0 || i === list.length - 1 ? [x.to] : [x.from, x.to]));
+    const low = Math.min(...levels);
+    const high = Math.max(...levels);
+    if (low > 0 && high - low < low * 0.5) {
+      [lo, hi] = nice(Math.max(0, low - (high - low) * 0.8), high, 5);
+      broken = lo > 0;
+    }
+  }
   const span = hi - lo || 1;
   const y = (v: number) => ((v - lo) / span) * 100;
   const unit = b.unit ? esc(b.unit) : "";
@@ -90,8 +102,9 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
   const barsHtml = list
     .map((x) => {
       const left = x.ci * slot + (slot - group) / 2 + (b.kind === "column" ? x.si * width : 0);
-      const bottom = y(Math.min(x.from, x.to));
-      const height = Math.abs(y(x.to) - y(x.from));
+      const bottom = Math.max(0, y(Math.min(x.from, x.to)));
+      const height = Math.min(y(Math.max(x.from, x.to)), 100) - bottom;
+      const isTotal = b.kind === "waterfall" && (x.ci === 0 || x.ci === n - 1);
       const down = x.to < x.from;
       const estimate = b.estimate !== undefined && x.ci >= b.estimate;
       const fill = estimate ? `background:repeating-linear-gradient(135deg,${x.color} 0 5px,transparent 5px 10px);box-shadow:inset 0 0 0 2px ${x.color}` : `background:${x.color}`;
@@ -100,7 +113,7 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
       if (x.label === "outside") label = `<span class="bar-value${down ? " is-below" : ""}">${fmt(x.value, sign)}</span>`;
       else if (x.label === "inside" && height > 7) label = `<span class="bar-inside" style="color:${bestContrast(x.color, [ctx.palette.fg, ctx.palette.bg])}">${fmt(x.value)}</span>`;
       const hl = b.highlight === x.ci ? " is-highlight" : "";
-      return `<div class="plot-bar${down ? " is-down" : ""}${hl}" data-part="bar" style="left:${pct(left)};width:${pct(width)};bottom:${pct(bottom)};height:${pct(height)};${fill};transform-origin:${down ? "top" : "bottom"}">${label}</div>`;
+      return `<div class="plot-bar${down ? " is-down" : ""}${hl}${broken && isTotal ? " is-broken" : ""}" data-part="bar" style="left:${pct(left)};width:${pct(width)};bottom:${pct(bottom)};height:${pct(height)};${fill};transform-origin:${down ? "top" : "bottom"}">${label}</div>`;
     })
     .join("");
 
@@ -119,10 +132,10 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
     ? `<i class="plot-ref" style="bottom:${pct(y(b.reference.value))}"></i><span class="plot-ref-label" style="bottom:${pct(y(b.reference.value))}">${esc(b.reference.label)} ${fmt(b.reference.value)}</span>`
     : "";
 
-  const zero = `<i class="plot-zero" style="bottom:${pct(y(0))}"></i>`;
+  const zero = lo <= 0 ? `<i class="plot-zero" style="bottom:${pct(y(0))}"></i>` : `<i class="plot-zero"></i>`;
   const cats = b.categories
     .map((c, ci) => `<span class="${b.highlight === ci ? "is-highlight" : ""}${b.estimate !== undefined && ci >= b.estimate ? " is-estimate" : ""}" style="left:${pct(ci * slot)};width:${pct(slot)}">${esc(c)}</span>`)
     .join("");
 
-  return `<div class="chart chart-plot chart-${b.kind}${b.axis ? " has-axis" : ""}"><div class="plot">${grid}${zero}${links}${barsHtml}${totals}${reference}</div><div class="plot-cats">${cats}</div></div>`;
+  return `<div class="chart chart-plot chart-${b.kind}${b.axis ? " has-axis" : ""}${b.reference ? " has-ref" : ""}"><div class="plot">${grid}${zero}${links}${barsHtml}${totals}${reference}</div><div class="plot-cats">${cats}</div></div>`;
 }

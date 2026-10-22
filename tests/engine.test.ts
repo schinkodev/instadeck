@@ -402,6 +402,8 @@ describe("analytic charts", () => {
     expect(html).toContain("repeating-linear-gradient");
     expect(html).toContain("plot-ref-label");
     expect(html).toContain("+48");
+    // Bridge s malými změnami proti součtům: osa nezačíná nulou a součty nesou značku přerušení (IBCS).
+    expect(html.match(/is-broken/g)).toHaveLength(2);
     const neg = renderDeckHtml(chartSlide({ kind: "column", categories: ["2023", "2024"], series: [{ name: "EBIT", values: [-12, 8] }] }), SAMPLE_ASSETS, "static");
     expect(neg).toContain("is-down");
   });
