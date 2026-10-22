@@ -49,7 +49,7 @@ export const BRAND_VISUALS = ["numeral", "field", "geometry"] as const;
 export const DEFAULT_IMAGE_OVERLAY = 0.55;
 const brandBackground = z.strictObject({
   type: z.literal("brand"),
-  visual: z.enum(BRAND_VISUALS).describe("numeral = the chapter number set very large, field = a color field across part of the slide, geometry = circle and square from the accent"),
+  visual: z.enum(BRAND_VISUALS).describe("numeral = the chapter number set very large, field = a color field across part of the slide, geometry = one thin line in the accent along the edge of the slide"),
 });
 const imageBackground = z.strictObject({
   type: z.literal("image"),
