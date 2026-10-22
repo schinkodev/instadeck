@@ -106,9 +106,9 @@ const motion = () => ({
     "In a browser (the deck view in the chat, or the local server): how far, how big, how blurred and how rotated each motion really is against the declared intensity, overshoot outside kinetic decks, entrances that speed up into place instead of easing out.",
   ],
   rules: [
-    "Motion must earn its place. A deck that does not move (intensity still, entrance none or fade, transition cut or fade) is a strong choice for boards, reports and minimalist professional decks.",
-    "Intensity governs decoration (entrances and transitions). Data motion is information and is declared apart with heroes, at any intensity: a still deck may grow a chart once, count a number or reveal plan and then actual. Motion in data matches what changes: columns grow from the baseline, a line draws left to right, a bridge builds step by step.",
-    "Click builds are for arguments that build: a comparison column by column, risks one by one, plan then actual. A recommendation, not a requirement.",
+    "Motion must earn its place. A deck that does not move (intensity still, entrance none or fade, transition cut or fade, and heroes false when numbers and charts should not move either) is a strong choice for boards, reports and minimalist professional decks. Heroes is true by default at every intensity, so a still deck that should not move anything declares it.",
+    "Intensity governs decoration (entrances and transitions). Data motion is information and is declared apart with heroes, at any intensity: a still deck may grow a chart once or count a number. Motion in data matches what changes: columns grow from the baseline, a line draws left to right, a bridge builds step by step.",
+    "Click builds are for arguments that build: a comparison column by column, risks one by one. A recommendation, not a requirement.",
     "One entrance and one transition carry the deck. Exceptions mark the hook, the reveal or the ask, about one per five slides.",
     "Each slide gets at most one hero motion. Priority: chart, timeline, stats, stat. Other numbers show their final value.",
     "Use click steps for arguments that build, not for decoration. Most slides need none.",

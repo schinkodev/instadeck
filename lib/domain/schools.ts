@@ -163,7 +163,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     color: "Grayscale for data, one highlight color for the message, red and green only for good and bad variance.",
     space: { density: "compact", radius: 0, cards: "flat" },
     imagery: "None. Charts and tables carry the deck.",
-    motion: { intensity: "still", tempo: "calm", note: "No motion. Numbers appear at their final value." },
+    motion: { intensity: "still", tempo: "calm", note: "No decoration moves and numbers appear at their final value: declare heroes false." },
     avoid: "Pies, decorative color, inconsistent scales, charts without units.",
   },
   {

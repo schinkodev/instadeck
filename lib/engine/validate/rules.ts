@@ -253,8 +253,8 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
 
   // Arguments that build are told one part at a time: columns of a comparison, risk by risk. A recommendation, not a rule.
   for (const [zone, block] of Object.entries(slide.blocks)) {
-    const builds = block.type === "comparison" || (block.type === "bullets" && slide.beat === "risks");
-    if (builds && !block.build && !block.step) push("info", "build-suggestion", `${block.type === "comparison" ? "A comparison lands" : "Risks land"} better one part at a time. Set build to items if the speaker walks through them`, zone);
+    const builds = block.type === "comparison" || ((block.type === "bullets" || block.type === "cards") && slide.beat === "risks");
+    if (builds && !block.build) push("info", "build-suggestion", `${block.type === "comparison" ? "A comparison lands" : "Risks land"} better one part at a time. Set build to items if the speaker walks through them`, zone);
   }
 
   for (const zone of Object.keys(slide.motion?.zones ?? {})) {
