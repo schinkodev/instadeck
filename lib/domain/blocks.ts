@@ -61,6 +61,13 @@ export const blockSchema = z.discriminatedUnion("type", [
       .max(3)
       .describe("One value per category. Donut takes exactly one series"),
     unit: z.string().max(6).optional().describe("Shown after values, e.g. %, $M"),
+    decimals: z
+      .number()
+      .int()
+      .min(0)
+      .max(2)
+      .optional()
+      .describe("Decimal places of the value labels. Omit it: labels keep the decimals the values have (at most 2), the same for every label"),
     estimate: z.number().int().min(0).optional().describe("Index of the first category that is an estimate or plan (IBCS): from there bars are hatched. Name those categories e.g. 2025E"),
     axis: z.boolean().optional().describe("Show a value axis with gridlines. Only when the audience must read values off the chart, labels on the bars usually suffice (Tufte)"),
     reference: z
@@ -213,4 +220,41 @@ export function bridgeSteps(values: readonly number[]): { from: number; to: numb
     running = to;
     return { from, to, total };
   });
+}
+
+/** Decimal places a value is written with (0.48 has 2), at most 2. */
+const placesOf = (v: number) => {
+  for (let p = 0; p < 2; p++) if (Math.abs(Math.round(v * 10 ** p) - v * 10 ** p) < 1e-9) return p;
+  return 2;
+};
+
+/** Values of a chart that appear as labels: the series values and the reference. */
+const chartValues = (b: Extract<Block, { type: "chart" }>) => [...b.series.flatMap((s) => s.values), ...(b.reference ? [b.reference.value] : [])];
+
+/** Labels at `p` decimals lose a difference the chart shows: two different values read the same, or a value that is not zero reads 0. */
+export function labelsCollide(values: readonly number[], p: number): boolean {
+  const seen = new Map<string, number>();
+  for (const v of values) {
+    const label = v.toFixed(p);
+    if (v !== 0 && Number(label) === 0) return true;
+    const other = seen.get(label);
+    if (other !== undefined && other !== v) return true;
+    seen.set(label, v);
+  }
+  return false;
+}
+
+/**
+ * Decimal places of the value labels of a chart, the same for every label (tabular figures line up). The block's
+ * `decimals` when set; otherwise the precision the values have (at most 2). A label must not lose a difference the
+ * chart shows: 1.55 and 1.62 both shown as 1.6 make a rising chart look flat, 10.9 and 11.8 shown as 11 and 12
+ * contradict a headline about +0.9 points.
+ */
+export function chartDecimals(b: Extract<Block, { type: "chart" }>): number {
+  return b.decimals ?? Math.max(0, ...chartValues(b).map(placesOf));
+}
+
+/** The labels of a chart lose a difference at the decimals it is drawn with. */
+export function chartLabelsCollide(b: Extract<Block, { type: "chart" }>): boolean {
+  return labelsCollide(chartValues(b), chartDecimals(b));
 }

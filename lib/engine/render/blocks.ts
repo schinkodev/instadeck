@@ -7,7 +7,7 @@
  *   data-part   parts of a hero motion (column, line, segment)
  *   data-shared element that glides to the same element of the next slide on a transition with `shared`
  */
-import { heroMotionOf, type Block, type Palette } from "@/lib/domain";
+import { chartDecimals, heroMotionOf, type Block, type Palette } from "@/lib/domain";
 import { esc, formatNumber, inline } from "../text";
 import { plotChart, seriesColor } from "./plot";
 
@@ -64,7 +64,8 @@ function barChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): str
   const span = Math.max(0, ...all) - lo || 1;
   const zero = (-lo / span) * 100;
   const unit = b.unit ? esc(b.unit) : "";
-  const fmt = (v: number) => `${formatNumber(v, Number.isInteger(v) ? 0 : 1, ctx.locale)}${unit}`;
+  const decimals = chartDecimals(b);
+  const fmt = (v: number) => `${formatNumber(v, decimals, ctx.locale)}${unit}`;
   const groups = b.categories
     .map((cat, ci) => {
       const bars = b.series
@@ -112,7 +113,7 @@ function lineChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): st
   const labels = b.categories.map((c, i) => `<span style="left:${pct(x(i), W)}">${esc(c)}</span>`).join("");
   return `<div class="chart chart-line">
 <div class="line-plot"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${paths}</svg>${dots}
-<div class="line-end" style="top:${pct(y(last), H)}">${formatNumber(last, Number.isInteger(last) ? 0 : 1, ctx.locale)}${unit}</div></div>
+<div class="line-end" style="top:${pct(y(last), H)}">${formatNumber(last, chartDecimals(b), ctx.locale)}${unit}</div></div>
 <div class="line-labels">${labels}</div>
 </div>`;
 }
@@ -136,7 +137,7 @@ function donutChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): s
     .join("");
   const unit = b.unit ? esc(b.unit) : "";
   const legend = b.categories
-    .map((c, i) => `<li${b.highlight === i ? ' class="is-highlight"' : ""}><i style="background:${colors[i]}"></i><span>${esc(c)}</span><b>${formatNumber(values[i]!, Number.isInteger(values[i]!) ? 0 : 1, ctx.locale)}${unit}</b></li>`)
+    .map((c, i) => `<li${b.highlight === i ? ' class="is-highlight"' : ""}><i style="background:${colors[i]}"></i><span>${esc(c)}</span><b>${formatNumber(values[i]!, chartDecimals(b), ctx.locale)}${unit}</b></li>`)
     .join("");
   return `<div class="chart chart-donut"><svg viewBox="0 0 200 200"><g transform="rotate(-90 100 100)">${segs}</g></svg><ul class="legend">${legend}</ul></div>`;
 }
