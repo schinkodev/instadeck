@@ -6,7 +6,7 @@ import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import JSZip from "jszip";
 import { closeBrowser, colorsFromRaster, exportPdf, exportPptx, measureDeck, renderDeckHtml, renderPng, snapshotDeck } from "@/lib/engine";
 import { withPage } from "@/lib/engine/browser";
-import { EXAMPLES, DEFAULT_DESIGN, type Deck } from "@/lib/domain";
+import { EXAMPLES, DEFAULT_DESIGN, LAYOUT_LIMITS, type Deck } from "@/lib/domain";
 import { SAMPLE_ASSETS, sampleDeck } from "./fixtures/sample-deck";
 
 afterAll(() => closeBrowser());
@@ -48,6 +48,34 @@ describe("layout measurement", () => {
     d.slides[2] = { ...d.slides[2]!, layout: "points", blocks: { title: { type: "heading", level: "h2", text: "Matching takes three steps and no migration" }, body: { type: "bullets", items: ["Connect your ERP and the invoice inbox", "Every invoice is checked against its order", "Your team reviews only the exceptions", "Payments go out on the same day"] } } };
     const f = await layoutRules(d);
     expect(f.map((x) => x.rule)).toContain("type-contrast");
+  });
+
+  it("lines up the hero number and lets one element lead the closing", async () => {
+    const d = sampleDeck();
+    d.design.type = { ...d.design.type, scale: "minor-third" };
+    const all = await measureDeck(d, SAMPLE_ASSETS);
+    expect(all.filter((f) => f.rule === "layout-alignment" || f.rule === "layout-dominance")).toEqual([]);
+    // An h1 heading on the closing is a label: the ask is the figure, at least minDominance larger on the tightest scale.
+    const sizes = await withPage(renderDeckHtml(d, SAMPLE_ASSETS, "static"), (page) =>
+      page.evaluate(() => {
+        const slide = document.querySelector(".layout-closing")!;
+        const px = (sel: string) => parseFloat(getComputedStyle(slide.querySelector(sel)!).fontSize);
+        return { heading: px(".zone-title .heading"), ask: px(".cta-text") };
+      }),
+    );
+    expect(sizes.ask / sizes.heading).toBeGreaterThanOrEqual(LAYOUT_LIMITS.minDominance);
+  });
+
+  it("measures the hero number against a display heading and a number that runs out sideways", async () => {
+    const d = sampleDeck();
+    const i = d.slides.findIndex((s) => s.layout === "headline-stat");
+    const slide = d.slides[i]!;
+    // A display heading is about as large as the number: neither leads.
+    d.slides[i] = { ...slide, blocks: { ...slide.blocks, title: { type: "heading", level: "display", text: "Grid costs fall" } } };
+    expect((await measureDeck(d, SAMPLE_ASSETS)).filter((f) => f.slideId === slide.id).map((f) => f.rule)).toContain("layout-dominance");
+    // A number that does not wrap and is wider than its column spills into the support text.
+    d.slides[i] = { ...slide, blocks: { ...slide.blocks, stat: { type: "stat", value: 1250000000, prefix: "$", label: "Grid investment" } } };
+    expect((await measureDeck(d, SAMPLE_ASSETS)).filter((f) => f.slideId === slide.id).map((f) => [f.rule, f.message.includes("wider")])).toContainEqual(["overflow", true]);
   });
 });
 

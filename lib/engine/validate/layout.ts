@@ -24,6 +24,29 @@ export function layoutFindings(measures: LayoutMeasure[]): Finding[] {
         message: `The heading (${m.headingPx}px) is only ${(m.headingPx / m.bodyPx).toFixed(2)}x the text below it (${m.bodyPx}px). Make the difference obvious: a larger heading level, a smaller body size or a larger type scale`,
       });
     }
+    if (m.headingPx > 0 && m.figurePx > 0) {
+      const ratio = Math.max(m.headingPx, m.figurePx) / Math.min(m.headingPx, m.figurePx);
+      if (ratio < LAYOUT_LIMITS.minDominance) {
+        const fix =
+          m.layout === "closing"
+            ? "a display heading as the callback with the ask below it, or a short h1 label above a large ask"
+            : "a smaller heading level (h1 or h2) so the number leads";
+        out.push({
+          severity: "warning",
+          rule: "layout-dominance",
+          slideId: m.slideId,
+          message: `The heading (${m.headingPx}px) and the figure (${m.figurePx}px) are close in size and compete. Let one lead: ${fix}`,
+        });
+      }
+    }
+    if (m.unaligned.length) {
+      out.push({
+        severity: "warning",
+        rule: "layout-alignment",
+        slideId: m.slideId,
+        message: `The content of ${m.unaligned.map((z) => `"${z}"`).join(", ")} shares no edge or center line with the rest of the slide, so it floats. Choose a layout whose zones line up, or drop the zone`,
+      });
+    }
   }
   return out;
 }

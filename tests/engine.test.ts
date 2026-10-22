@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Deck, Slide } from "@/lib/domain";
 import { deckMotionSchema, keyframeSchema } from "@/lib/domain";
-import { blockSteps, colorsFromSvg, hasErrors, isNeutral, motionFindings, playerConfig, quantize, renderDeckHtml, slideSteps, validateDeck, type Finding } from "@/lib/engine";
+import { blockSteps, colorsFromSvg, hasErrors, isNeutral, layoutFindings, motionFindings, playerConfig, quantize, renderDeckHtml, slideSteps, validateDeck, type Finding } from "@/lib/engine";
 import { LOGO_SVG, SAMPLE_ASSET_INDEX, SAMPLE_ASSETS, sampleDeck } from "./fixtures/sample-deck";
 
 const rules = (f: Finding[], severity?: Finding["severity"]) => f.filter((x) => !severity || x.severity === severity).map((x) => x.rule);
@@ -223,6 +223,14 @@ describe("motion language", () => {
     // Without a shared element only the transitions to slides without a heading (quote) remain.
     expect(shared.length).toBeGreaterThan(0);
     expect(shared.every((f) => s.slides.find((x) => x.id === f.slideId)!.layout === "quote" || s.slides[s.slides.findIndex((x) => x.id === f.slideId) - 1]!.layout === "quote")).toBe(true);
+  });
+
+  it("judges a figure that competes with the heading and a zone that lines up with nothing", () => {
+    const m = { slideId: "s1", layout: "closing", fill: 1, headingPx: 64, bodyPx: 0, figurePx: 70, unaligned: [] as string[] };
+    expect(layoutFindings([m]).map((f) => f.rule)).toEqual(["layout-dominance"]);
+    expect(layoutFindings([{ ...m, figurePx: 110 }])).toEqual([]);
+    expect(layoutFindings([{ ...m, figurePx: 40 }])).toEqual([]);
+    expect(layoutFindings([{ ...m, layout: "headline-stat", figurePx: 110, unaligned: ["stat"] }]).map((f) => [f.rule, f.message.includes('"stat"')])).toEqual([["layout-alignment", true]]);
   });
 
   it("judges measured motion against the declared intensity", () => {
