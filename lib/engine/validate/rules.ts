@@ -6,7 +6,6 @@
 import {
   CONTRAST,
   ENTRANCES,
-  INTENSITY,
   MOTION_LIMITS,
   PITCH_GUIDANCE,
   TEMPOS,
@@ -252,6 +251,12 @@ export function validateSlide(slide: Slide, deck: Deck, assets: AssetIndex): Fin
   const steps = slideSteps(slide);
   if (steps > MOTION_LIMITS.stepsPerSlide) push("warning", "motion-steps", `${steps} click steps, at most ${MOTION_LIMITS.stepsPerSlide} keep the talk flowing`);
 
+  // Arguments that build are told one part at a time: columns of a comparison, risk by risk. A recommendation, not a rule.
+  for (const [zone, block] of Object.entries(slide.blocks)) {
+    const builds = block.type === "comparison" || ((block.type === "bullets" || block.type === "cards") && slide.beat === "risks");
+    if (builds && !block.build) push("info", "build-suggestion", `${block.type === "comparison" ? "A comparison lands" : "Risks land"} better one part at a time. Set build to items if the speaker walks through them`, zone);
+  }
+
   for (const zone of Object.keys(slide.motion?.zones ?? {})) {
     if (!slide.blocks[zone]) push("error", "motion-zone", `motion.zones names "${zone}", which has no block on this slide`, zone);
   }
@@ -360,8 +365,6 @@ function checkMotion(deck: Deck): Finding[] {
   if (exceptions.length > allowed) {
     push("warning", "motion-consistency", `${exceptions.length} slides depart from the deck's entrance or transition (${exceptions.map((s) => s.id).join(", ")}). Keep exceptions for about ${allowed} key moment${allowed > 1 ? "s" : ""}, or make the motion the deck default`);
   }
-
-  if (!INTENSITY[m.intensity].heroes && m.heroes) push("warning", "motion-intensity", `A ${m.intensity} deck does not animate numbers and charts. Set heroes to false or raise the intensity`);
 
   for (let i = 1; i < deck.slides.length; i++) {
     const s = deck.slides[i]!;
