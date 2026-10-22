@@ -54,6 +54,7 @@
     "@modelcontextprotocol/ext-apps": "^1.7.5",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@puppeteer/browsers": "^3.2.5",
+    "d3-array": "^3.2.4",
     "pptxgenjs": "^4.0.1",
     "puppeteer-core": "^25.15.0",
     "zod": "^4.6.7"
@@ -61,6 +62,7 @@
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2",
     "@eslint/js": "^10.0.1",
+    "@types/d3-array": "^3.2.2",
     "@types/node": "^26.6.5",
     "esbuild": "^0.28.2",
     "eslint": "^10.13.0",

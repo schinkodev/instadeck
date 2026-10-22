@@ -67,10 +67,31 @@ function checkData(block: Block, push: Push, zone: string) {
     const n = block.categories.length;
     for (const s of block.series) {
       if (s.values.length !== n) push("error", "chart-shape", `Series "${s.name}" has ${s.values.length} values for ${n} categories`, zone);
-      if (s.values.some((v) => v < 0)) push("error", "chart-negative", `Series "${s.name}" has negative values, charts start at zero`, zone);
+      if ((block.kind === "donut" || block.kind === "stacked") && s.values.some((v) => v < 0)) push("error", "chart-negative", `Series "${s.name}" has negative values. A ${block.kind} chart shows parts of a whole, use column or waterfall for negative values`, zone);
     }
     if (block.kind === "donut" && block.series.length !== 1) push("error", "chart-donut", "A donut chart takes exactly one series", zone);
     if (block.kind === "donut" && n > 6) push("error", "chart-donut", `A donut chart takes at most 6 segments, got ${n}`, zone);
+    // Cleveland a McGill: úhel a plochu oko porovnává hůř než délku. Víc výsečí už nejde přečíst.
+    else if (block.kind === "donut" && n > 4) push("warning", "chart-donut", `${n} donut segments are hard to compare by angle. Use a bar chart, or group the small segments`, zone);
+    if (block.kind === "waterfall") {
+      const v = block.series[0]!.values;
+      if (block.series.length !== 1) push("error", "chart-bridge", "A waterfall chart takes exactly one series: the start total, the changes and the end total", zone);
+      else if (n < 3) push("error", "chart-bridge", "A waterfall chart needs a start total, at least one change and an end total", zone);
+      else if (v.length === n) {
+        // Bridge musí sedět: start plus změny je konec. Tolerance na zaokrouhlení popisků.
+        const expected = v.slice(0, -1).reduce((a, x) => a + x, 0);
+        const end = v.at(-1)!;
+        if (Math.abs(expected - end) > Math.max(Math.abs(end) * 0.005, 0.05)) {
+          push("error", "chart-bridge", `The bridge does not add up: ${block.categories[0]} ${v[0]} plus the changes gives ${Math.round(expected * 100) / 100}, but ${block.categories.at(-1)} is ${end}. Fix a value or add the missing change`, zone);
+        }
+      }
+    }
+    const plotted = block.kind === "column" || block.kind === "stacked" || block.kind === "waterfall";
+    for (const opt of ["estimate", "axis", "reference"] as const) {
+      if (block[opt] !== undefined && !plotted) push("error", "chart-option", `${opt} works on column, stacked and waterfall charts, not on ${block.kind}`, zone);
+    }
+    if (block.estimate !== undefined && block.estimate >= n) push("error", "chart-option", `estimate ${block.estimate} is outside the ${n} categories`, zone);
+    if (block.kind === "stacked" && block.highlight !== undefined) push("warning", "chart-highlight", "A stacked chart colors by series, highlight has no effect. Remove it or use a column chart", zone);
     if (block.kind === "line" && block.highlight !== undefined && block.series.length > 1) push("warning", "chart-highlight", "With highlight a line chart shows only the first series in the accent", zone);
     if (block.highlight !== undefined && block.highlight >= n) push("error", "chart-highlight", `highlight ${block.highlight} is outside the ${n} categories`, zone);
   }

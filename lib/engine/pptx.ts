@@ -29,13 +29,56 @@ function chartColors(b: Extract<Block, { type: "chart" }>, p: Palette): string[]
   return [p.accent, p.accent2, p.muted].map(hex);
 }
 
+/**
+ * Waterfall v PowerPointu: skládaný sloupcový graf s neviditelnou základnou (barva pozadí slidu) a viditelným
+ * dílem, který je velikost změny. Součty (první a poslední) stojí na nule.
+ */
+function waterfallData(b: Extract<Block, { type: "chart" }>) {
+  const v = b.series[0]!.values;
+  const base: number[] = [];
+  const size: number[] = [];
+  let running = 0;
+  v.forEach((x, i) => {
+    const total = i === 0 || i === v.length - 1;
+    const from = total ? 0 : running;
+    const to = total ? x : running + x;
+    running = to;
+    base.push(Math.min(from, to));
+    size.push(Math.abs(to - from));
+  });
+  return [
+    { name: "base", labels: b.categories, values: base },
+    { name: b.series[0]!.name, labels: b.categories, values: size },
+  ];
+}
+
 function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>, r: Rect, p: Palette, fonts: { body: string; size: number }) {
+  if (b.kind === "waterfall") {
+    s.addChart(pptx.ChartType.bar, waterfallData(b), {
+      ...pos(r),
+      barDir: "col",
+      barGrouping: "stacked",
+      chartColors: [hex(p.bg), hex(p.accent)],
+      showLegend: false,
+      showValue: false,
+      catAxisLabelColor: hex(p.muted),
+      catAxisLabelFontFace: fonts.body,
+      catAxisLabelFontSize: fonts.size,
+      catAxisLineShow: true,
+      catAxisLineColor: hex(p.line),
+      valAxisHidden: !b.axis,
+      valGridLine: b.axis ? { color: hex(p.line), size: 0.5 } : { style: "none" },
+      barGapWidthPct: 60,
+    });
+    return;
+  }
   const data = b.series.map((x) => ({ name: x.name, labels: b.categories, values: x.values }));
   const type = b.kind === "line" ? pptx.ChartType.line : b.kind === "donut" ? pptx.ChartType.doughnut : pptx.ChartType.bar;
   const single = b.series.length === 1;
   s.addChart(type, data, {
     ...pos(r),
     barDir: b.kind === "bar" ? "bar" : "col",
+    ...(b.kind === "stacked" && { barGrouping: "stacked" }),
     chartColors: chartColors(b, p),
     // Jedna série se zvýrazněním: barvy po sloupcích, ne po sériích.
     ...(single && b.highlight !== undefined && b.kind !== "line" && { varyColors: true }),
@@ -55,8 +98,8 @@ function addChart(pptx: Pptx, s: PptxSlide, b: Extract<Block, { type: "chart" }>
     catAxisLabelFontSize: fonts.size,
     catAxisLineShow: true,
     catAxisLineColor: hex(p.line),
-    valAxisHidden: true,
-    valGridLine: { style: "none" },
+    valAxisHidden: !b.axis,
+    valGridLine: b.axis ? { color: hex(p.line), size: 0.5 } : { style: "none" },
     barGapWidthPct: 60,
     lineSize: 3,
     lineDataSymbolSize: 8,
