@@ -38,6 +38,9 @@ export const snapshotItemSchema = z.discriminatedUnion("kind", [
     nw: num.min(0),
     nh: num.min(0),
     fit: z.enum(["cover", "contain"]),
+    /** Focal point of a cover crop (object-position), 0 to 1. Center when absent. */
+    fx: z.number().min(0).max(1).optional(),
+    fy: z.number().min(0).max(1).optional(),
     radius: num.min(0),
     grayscale: z.boolean(),
   }),

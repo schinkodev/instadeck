@@ -215,6 +215,65 @@ describe("exports", () => {
     expect(withIcons.png).toBe(without.png + icons.length);
   });
 
+  it("measures text over a background image and names the overlay that makes it legible", async () => {
+    const mk = (overlay: number) => {
+      const d = sampleDeck();
+      d.slides[0]!.background = { type: "image", assetId: "field", overlay };
+      return d;
+    };
+    const rulesOf = async (d: Deck) => (await measureDeck(d, SAMPLE_ASSETS)).filter((f) => f.slideId === d.slides[0]!.id && f.rule === "background-legibility");
+    // A dark image and dark text on a light slide: without an overlay it cannot be read, with a strong one it can.
+    const weak = await rulesOf(mk(0));
+    expect(weak).toHaveLength(1);
+    const needed = Number(/Raise the overlay to ([\d.]+)/.exec(weak[0]!.message)?.[1]);
+    expect(needed).toBeGreaterThan(0);
+    expect(await rulesOf(mk(needed))).toEqual([]);
+    expect(await rulesOf(mk(0.95))).toEqual([]);
+  });
+
+  it("does not measure text that sits on a surface of its own against the image", async () => {
+    const d = sampleDeck();
+    const at = d.slides.findIndex((x) => x.layout === "cards");
+    // A dark image with no overlay: the heading stands on the image and fails, the card texts stand on their cards and do not.
+    d.slides[at]!.background = { type: "image", assetId: "field", overlay: 0 };
+    const found = (await measureDeck(d, SAMPLE_ASSETS)).filter((f) => f.slideId === d.slides[at]!.id && f.rule === "background-legibility");
+    expect(found).toHaveLength(1);
+    // Raising the overlay as told clears it, so the cards were never the reason.
+    const needed = Number(/Raise the overlay to ([\d.]+)/.exec(found[0]!.message)?.[1]);
+    d.slides[at]!.background = { type: "image", assetId: "field", overlay: needed };
+    expect((await measureDeck(d, SAMPLE_ASSETS)).filter((f) => f.slideId === d.slides[at]!.id && f.rule === "background-legibility")).toEqual([]);
+  });
+
+  it("crops a background image around its focal point in PowerPoint like the browser does", async () => {
+    // The product image is 4:3 on a 16:9 slide, so cover crops top and bottom and the focal point decides which.
+    const crop = async (y: number) => {
+      const deck = sampleDeck();
+      deck.slides[0]!.background = { type: "image", assetId: "product", focus: { x: 0.5, y }, overlay: 0.5 };
+      const zip = await JSZip.loadAsync(await exportPptx(deck, SAMPLE_ASSETS));
+      const xml = await zip.file("ppt/slides/slide1.xml")!.async("string");
+      const rect = [...xml.matchAll(/<a:srcRect([^/]*)\/>/g)].map((m) => Object.fromEntries([...m[1]!.matchAll(/(\w+)="(-?\d+)"/g)].map((a) => [a[1], Number(a[2])]))) as { t?: number; b?: number }[];
+      // The background is the first picture of the slide.
+      return rect[0] ?? {};
+    };
+    const top = await crop(0);
+    const bottom = await crop(1);
+    const middle = await crop(0.5);
+    expect(top.t ?? 0).toBe(0);
+    expect(top.b ?? 0).toBeGreaterThan(0);
+    expect(bottom.b ?? 0).toBe(0);
+    expect(bottom.t ?? 0).toBeGreaterThan(0);
+    expect(Math.abs((middle.t ?? 0) - (middle.b ?? 0))).toBeLessThanOrEqual(1);
+  });
+
+  it("exports a background image with its overlay as a picture and a transparent box", async () => {
+    const deck = sampleDeck();
+    deck.slides[0]!.background = { type: "image", assetId: "field", overlay: 0.6 };
+    const snap = (await snapshotDeck(deck, SAMPLE_ASSETS)).find((s) => s.slideId === deck.slides[0]!.id)!;
+    const image = snap.items.find((i) => i.kind === "image" && i.asset === "field");
+    expect(image).toMatchObject({ x: 0, y: 0, w: 1920, h: 1080, fit: "cover" });
+    expect(snap.items.some((i) => i.kind === "box" && i.w === 1920 && i.h === 1080 && i.fill && i.fill.alpha === 0.6)).toBe(true);
+  });
+
   it("exports a brand background as shapes and text", async () => {
     const deck = sampleDeck();
     deck.slides[0]!.background = { type: "brand", visual: "geometry" };

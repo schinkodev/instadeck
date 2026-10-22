@@ -183,13 +183,21 @@ function addItem(pptx: Pptx, s: PptxSlide, it: SnapshotItem, ctx: { slide: Deck[
       const data = a.src.replace(/^data:/, "");
       const box = pos(it);
       const ratio = it.nw && it.nh ? it.nh / it.nw : it.h / it.w;
+      const fx = it.fx ?? 0.5;
+      const fy = it.fy ?? 0.5;
+      // A cover crop around a focal point other than the center: the image is scaled to cover the frame and the window is
+      // placed by the focal point, as object-position does in the browser. Pptxgenjs crops centered only for `cover`.
+      const scale = it.nw && it.nh ? Math.max(box.w / it.nw, box.h / it.nh) : 0;
+      const off = it.fit === "cover" && scale && (fx !== 0.5 || fy !== 0.5);
+      const iw = off ? it.nw * scale : box.w;
+      const ih = off ? it.nh * scale : box.w * ratio;
       s.addImage({
         data,
         ...box,
         // sizing computes the crop from the image aspect ratio: w and h are the image dimensions, sizing is the frame.
-        w: box.w,
-        h: box.w * ratio,
-        sizing: { type: it.fit, w: box.w, h: box.h },
+        w: iw,
+        h: ih,
+        sizing: off ? { type: "crop", x: (iw - box.w) * fx, y: (ih - box.h) * fy, w: box.w, h: box.h } : { type: it.fit, w: box.w, h: box.h },
         ...(it.radius >= Math.min(it.w, it.h) / 2 - 0.5 && { rounding: true }),
       });
       return;

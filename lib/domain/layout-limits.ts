@@ -17,6 +17,8 @@ export const LAYOUT_LIMITS = {
    * heading wins by this ratio. Two elements of similar size compete and neither leads the eye.
    */
   minDominance: 1.5,
+  /** Text over a background image below this contrast is unreadable, not just weak (large text needs 3:1, WCAG 1.4.3). */
+  minBackdropContrast: 3,
 } as const;
 
 
@@ -35,4 +37,19 @@ export interface LayoutMeasure {
   figurePx: number;
   /** Zones whose content shares no edge or center line with any other zone. */
   unaligned: string[];
+  /** Text over a background image: the worst contrast of any text and what it takes to make it legible. Absent without one. */
+  backdrop?: Backdrop;
+}
+
+export type Backdrop = BackdropMeasured | { unreadable: true };
+
+export interface BackdropMeasured {
+  /** Overlay of the slide now. */
+  overlay: number;
+  /** Worst contrast of any text over the image at that overlay. */
+  contrast: number;
+  /** Contrast that text of that size needs (4.5, or 3 for large type). */
+  required: number;
+  /** The smallest overlay, in steps of 0.05, at which every text reaches its contrast. Null when even the strongest does not. */
+  needed: number | null;
 }

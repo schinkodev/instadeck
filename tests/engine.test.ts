@@ -257,6 +257,36 @@ describe("motion language", () => {
     expect(slide.indexOf('class="brand-visual')).toBeLessThan(slide.indexOf('class="bleed"'));
   });
 
+  it("puts the user's image under an overlay in the slide color", () => {
+    const d = sampleDeck();
+    d.slides[0]!.background = { type: "image", assetId: "field", focus: { x: 0.25, y: 0.5 }, overlay: 0.7 };
+    const html = renderDeckHtml(d, SAMPLE_ASSETS, "static");
+    expect(html).toContain('class="bg-image"');
+    expect(html).toContain("object-position:25.0% 50.0%");
+    expect(html).toMatch(/class="bg-overlay" style="background:rgba\(\d+, \d+, \d+, 0\.7\)"/);
+    d.slides[0]!.background = { type: "image", assetId: "field" };
+    expect(renderDeckHtml(d, SAMPLE_ASSETS, "static")).toContain("0.55)");
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "error")).toEqual([]);
+
+    d.slides[0]!.background = { type: "image", assetId: "nope" };
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "error")).toContain("asset");
+    d.slides[0]!.background = { type: "image", assetId: "field" };
+    expect(rules(validateDeck(d, { field: { kind: "font" } }), "error")).toContain("asset");
+  });
+
+  it("scores text over an image by the overlay it needs", () => {
+    const base = { slideId: "s1", layout: "statement", fill: 1, headingPx: 0, bodyPx: 0, figurePx: 0, unaligned: [] };
+    expect(layoutFindings([{ ...base, backdrop: { overlay: 0.55, contrast: 5.1, required: 4.5, needed: 0.4 } }])).toEqual([]);
+    const weak = layoutFindings([{ ...base, backdrop: { overlay: 0.2, contrast: 3.4, required: 4.5, needed: 0.55 } }]);
+    expect(weak.map((f) => [f.rule, f.severity])).toEqual([["background-legibility", "warning"]]);
+    expect(weak[0]!.message).toContain("Raise the overlay to 0.55");
+    const unread = layoutFindings([{ ...base, backdrop: { unreadable: true } }]);
+    expect(unread.map((f) => [f.rule, f.severity])).toEqual([["background-unchecked", "info"]]);
+    const hopeless = layoutFindings([{ ...base, backdrop: { overlay: 0.9, contrast: 1.4, required: 4.5, needed: null } }]);
+    expect(hopeless[0]!.severity).toBe("error");
+    expect(hopeless[0]!.message).toContain("choose another image");
+  });
+
   it("keeps text legible on a brand background and warns where the image hides it", () => {
     const d = sampleDeck();
     d.slides[0]!.background = { type: "brand", visual: "field" };

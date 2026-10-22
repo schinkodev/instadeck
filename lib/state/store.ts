@@ -133,7 +133,10 @@ function assetRefs(deck: Deck): Set<string> {
     if (b.type === "logos") for (const l of b.items) ids.add(l.assetId);
     if (b.type === "team") for (const p of b.people) if (p.photoAssetId) ids.add(p.photoAssetId);
   };
-  for (const s of deck.slides) for (const b of Object.values(s.blocks)) add(b);
+  for (const s of deck.slides) {
+    for (const b of Object.values(s.blocks)) add(b);
+    if (s.background?.type === "image") ids.add(s.background.assetId);
+  }
   for (const f of [deck.design.fonts.heading, deck.design.fonts.body]) if (f.source === "asset") ids.add(f.assetId);
   return ids;
 }
