@@ -8,6 +8,7 @@ export { measureDeck, overflowFindings, exportPdf, exportPptx, snapshotDeck, ren
 export { buildPptx } from "./pptx";
 export { exportRequestSchema, slideSnapshotSchema, type SlideSnapshot, type SnapshotItem } from "./snapshot";
 export { motionFindings, type MotionMeasureContext } from "./validate/motion";
+export { layoutFindings } from "./validate/layout";
 export { playerConfig, sharedKeys, motionUsage, type PlayerConfig } from "./motion";
 export { MEASURE_JS } from "./render/measure-source";
 export { closeBrowser } from "./browser";

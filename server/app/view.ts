@@ -9,10 +9,12 @@
  * Bundluje se esbuildem do server/app/view-source.ts (npm run gen).
  */
 import { App } from "@modelcontextprotocol/ext-apps";
+import type { LayoutMeasure } from "@/lib/domain/layout-limits";
 import type { MotionSample } from "@/lib/domain/motion-limits";
 import { MEASURE_JS } from "@/lib/engine/render/measure-source";
 import { PLAYER_JS } from "@/lib/engine/render/player-source";
 // Přímo z modulů bez zod: bundle MCP App má zůstat malý.
+import { layoutFindings } from "@/lib/engine/validate/layout";
 import { motionFindings, type MotionMeasureContext } from "@/lib/engine/validate/motion";
 
 interface DeckParts {
@@ -47,6 +49,7 @@ declare global {
     }): PlayerHandle;
     measureInstaDeck(root: HTMLElement): OverflowMeasure[];
     measureMotionInstaDeck(root: HTMLElement, config: unknown): MotionSample[];
+    measureLayoutInstaDeck(root: HTMLElement): LayoutMeasure[];
   }
 }
 
@@ -87,14 +90,14 @@ openButton.addEventListener("click", (e) => {
   if (presentationUrl) void app.openLink({ url: presentationUrl });
 });
 
-function report(deckId: string, revision: number, raw: OverflowMeasure[], motion: { rule: string; message: string }[]): string {
-  if (raw.length === 0 && motion.length === 0) return `InstaDeck view: deck ${deckId} revision ${revision} rendered in the chat, every slide fits and the motion matches its intensity.`;
+function report(deckId: string, revision: number, raw: OverflowMeasure[], motion: { rule: string; message: string; slideId?: string }[]): string {
+  if (raw.length === 0 && motion.length === 0) return `InstaDeck view: deck ${deckId} revision ${revision} rendered in the chat, every slide fits, the composition is balanced and the motion matches its intensity.`;
   const lines = raw.map((o) =>
     o.axis === "y"
       ? `- error overflow, slide ${o.slideId}${o.zone ? `, zone ${o.zone}` : ""}: content is ${o.px}px taller than its space`
       : `- error overflow, slide ${o.slideId}${o.zone ? `, zone ${o.zone}` : ""}: content is ${o.px}px wider than its zone`,
   );
-  const moves = motion.map((f) => `- warning ${f.rule}: ${f.message}`);
+  const moves = motion.map((f) => `- warning ${f.rule}${f.slideId ? `, slide ${f.slideId}` : ""}: ${f.message}`);
   return [`InstaDeck view: deck ${deckId} revision ${revision} rendered in the chat and measured. Fix these with apply_ops:`, ...lines, ...moves].join("\n");
 }
 
@@ -121,7 +124,7 @@ async function show(deckId: string, revision: number, url: string) {
 
   // Měří se koncový stav před připojením playeru, animace by posouvaly obdélníky.
   const raw = window.measureInstaDeck(root);
-  const motion = motionFindings(parts.config.measure, window.measureMotionInstaDeck(root, parts.config));
+  const motion = [...layoutFindings(window.measureLayoutInstaDeck(root)), ...motionFindings(parts.config.measure, window.measureMotionInstaDeck(root, parts.config))];
   if (app.getHostCapabilities()?.updateModelContext) {
     await app.updateModelContext({ content: [{ type: "text", text: report(deckId, revision, raw, motion) }], structuredContent: { deckId, revision, overflow: raw, motion } });
   }
