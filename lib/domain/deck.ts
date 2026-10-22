@@ -28,6 +28,11 @@ export const briefSchema = z.strictObject({
   goal: z.string().optional().describe("What the audience should do or believe afterwards"),
   language: z.string().min(2).describe("Language of the slide content, BCP 47 tag, e.g. en, cs, de"),
   concept: conceptSchema.optional().describe("The design concept, required when the deck is created"),
+  delivery: z
+    .enum(["live", "pre-read", "both"])
+    .optional()
+    .describe("How the deck is used: live (spoken to an audience), pre-read (read alone, no speaker) or both. It decides text density, motion and speaker notes (validation checks density and motion). Ask the user, do not infer it from the industry"),
+  bigIdea: z.string().min(10).max(200).optional().describe("What the audience should take away and do, in one sentence. Every slide serves it"),
   frame: z.enum(FRAME_IDS).optional().describe("Narrative frame that orders the story (section pitch, frames): classical, scqa, abt, monroe, story-spine, sparkline, toulmin"),
 });
 export type Brief = z.infer<typeof briefSchema>;
