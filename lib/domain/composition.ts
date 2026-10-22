@@ -62,9 +62,18 @@ export function isSplittable(layout: LayoutDef): boolean {
   return !layout.bleed && cols.length === 2 && cols.every(isFr);
 }
 
-/** Dense layouts keep a left edge to read along (Müller-Brockmann), so their text is not centered. */
+/**
+ * Dense content keeps the full width and a left edge to read along (Müller-Brockmann): centering it breaks the edge, and
+ * pushing it right narrows cards, stats and tables built for the full width until their text wraps badly. So an axis other
+ * than `left` applies to one column layouts of low density (title, statement, section, quote, closing).
+ */
 export function allowsCenter(layout: LayoutDef): boolean {
   return layout.density === "low" && tracks(layout.grid.columns).length === 1;
+}
+
+/** A two column layout takes `asymmetric` as an uneven split. A one column layout takes it when it has little content. */
+export function allowsAsymmetric(layout: LayoutDef): boolean {
+  return isSplittable(layout) || allowsCenter(layout);
 }
 
 /** Column (0 or 1) that a zone occupies in a two column layout, or null when it spans both or is not there. */
@@ -85,6 +94,7 @@ export function compositionProblems(layout: LayoutDef, c: Composition): string[]
     else if (columnOf(layout, c.dominant) === null) out.push(`dominant "${c.dominant}" spans both columns of ${layout.id}. Pick a zone that sits in one column`);
   }
   if (c.axis === "center" && !allowsCenter(layout)) out.push(`axis center needs a one column layout with little content, ${layout.id} is ${tracks(layout.grid.columns).length === 1 ? layout.density : "two columns"}. Dense content keeps a left edge`);
+  if (c.axis === "asymmetric" && !allowsAsymmetric(layout)) out.push(`axis asymmetric needs a two column layout or a one column layout with little content, ${layout.id} is ${layout.density}. Content built for the full width would be squeezed`);
   return out;
 }
 
@@ -103,8 +113,8 @@ function frOf(split: Split, dominantColumn: number | null): [number, number] {
 export function resolveGrid(layout: LayoutDef, c: Composition | undefined, defaults: Composition | undefined): ResolvedGrid {
   const want = c ?? {};
   const two = isSplittable(layout);
-  // A school default of center applies only where center is allowed. An explicit choice is reported by compositionProblems.
-  const fromSchool = defaults?.axis === "center" && !allowsCenter(layout) ? undefined : defaults?.axis;
+  // A school default of center or asymmetric applies only where the layout allows it. An explicit choice is reported by compositionProblems.
+  const fromSchool = (defaults?.axis === "center" && !allowsCenter(layout)) || (defaults?.axis === "asymmetric" && !allowsAsymmetric(layout)) ? undefined : defaults?.axis;
   const axis: Axis = want.axis ?? fromSchool ?? "left";
   const split = want.split ?? (two ? defaults?.split : undefined);
   const dominant = want.dominant;

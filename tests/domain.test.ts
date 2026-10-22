@@ -156,9 +156,13 @@ describe("composition", () => {
     expect(resolveGrid(textImage, { split: "1:1", dominant: "image" }, undefined).columns).toBe("1fr 1fr");
     expect(resolveGrid(textImage, undefined, undefined).columns).toBe(textImage.grid.columns);
     // One column: asymmetric adds an empty lead track, center keeps the grid.
-    const asym = resolveGrid(points, { axis: "asymmetric" }, undefined);
+    const asym = resolveGrid(statement, { axis: "asymmetric" }, undefined);
     expect(asym.columns).toBe("0.4fr 1fr");
-    expect(asym.areas).toEqual(["title".replace(/^/, ". "), "body".replace(/^/, ". ")]);
+    expect(asym.areas).toEqual([". statement", ". support"]);
+    // Dense one column layouts keep the full width: an explicit asymmetric is an error, a school default is skipped.
+    expect(compositionProblems(points, { axis: "asymmetric" })[0]).toContain("squeezed");
+    expect(resolveGrid(getLayout("cards")!, undefined, { axis: "asymmetric" }).columns).toBe("1fr");
+    expect(compositionProblems(textImage, { axis: "asymmetric" })).toEqual([]);
     expect(resolveGrid(statement, { axis: "center" }, undefined)).toMatchObject({ axis: "center", columns: statement.grid.columns });
     // Problems are explicit.
     expect(compositionProblems(points, { split: "1:2" })[0]).toContain("two column");
