@@ -149,7 +149,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     color: "White or light paper, ink text, one strong data color and grays for everything else.",
     space: { density: "balanced", radius: 0, cards: "flat" },
     imagery: "Charts and tables, rarely photos.",
-    motion: { intensity: "still", tempo: "calm", note: "Charts may grow once, nothing else moves." },
+    motion: { intensity: "still", tempo: "calm", note: "Decoration does not move. Charts may grow once (heroes), nothing else moves." },
     avoid: "Chart junk, 3D, legends where direct labels fit, decorative color.",
   },
   {
@@ -163,7 +163,7 @@ export const DESIGN_SCHOOLS: readonly DesignSchool[] = [
     color: "Grayscale for data, one highlight color for the message, red and green only for good and bad variance.",
     space: { density: "compact", radius: 0, cards: "flat" },
     imagery: "None. Charts and tables carry the deck.",
-    motion: { intensity: "still", tempo: "calm", note: "No motion. Numbers appear at their final value." },
+    motion: { intensity: "still", tempo: "calm", note: "No decoration moves and numbers appear at their final value: declare heroes false." },
     avoid: "Pies, decorative color, inconsistent scales, charts without units.",
   },
   {
