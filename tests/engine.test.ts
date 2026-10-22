@@ -211,6 +211,22 @@ describe("motion language", () => {
     expect(validateDeck(d, SAMPLE_ASSET_INDEX).find((f) => f.rule === "motion-duration")!.message).toContain("jump");
   });
 
+  it("checks the delivery against motion and density", () => {
+    const d = sampleDeck();
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("delivery-motion");
+    d.brief.delivery = "pre-read";
+    d.motion.intensity = "kinetic";
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).toContain("delivery-motion");
+    d.motion.intensity = "still";
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("delivery-motion");
+
+    d.brief.delivery = "live";
+    d.slides[0]!.layout = "table" as never;
+    expect(validateDeck(d, SAMPLE_ASSET_INDEX).find((f) => f.rule === "delivery-density")?.slideId).toBe(d.slides[0]!.id);
+    d.brief.delivery = "both";
+    expect(rules(validateDeck(d, SAMPLE_ASSET_INDEX), "warning")).not.toContain("delivery-density");
+  });
+
   it("suggests a build for comparisons and risks, and stops once one is set", () => {
     const d = sampleDeck();
     const at = d.slides.findIndex((x) => x.layout === "comparison");

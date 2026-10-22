@@ -310,6 +310,23 @@ function checkContrast(deck: Deck, push: Push) {
   }
 }
 
+/**
+ * Delivery decides how a deck may be built (Duarte, Resonate): a pre-read is read alone, so it does not perform, and a
+ * live deck is listened to, so a slide that must be read competes with the speaker (split attention, Mayer).
+ */
+function checkDelivery(deck: Deck): Finding[] {
+  const out: Finding[] = [];
+  const push = (severity: Severity, rule: string, message: string, slideId?: string) => out.push({ severity, rule, message, ...(slideId && { slideId }) });
+  const delivery = deck.brief.delivery;
+  if (delivery === "pre-read" && deck.motion.intensity === "kinetic") push("warning", "delivery-motion", "A pre-read is read alone, so a kinetic deck only makes the reader wait. Lower the intensity or declare the deck live");
+  if (delivery === "live") {
+    for (const s of deck.slides) {
+      if (getLayout(s.layout)?.density === "high") push("warning", "delivery-density", `A live audience reads a ${s.layout} slide instead of listening. Split it or declare the deck a pre-read`, s.id);
+    }
+  }
+  return out;
+}
+
 function checkRhythm(deck: Deck, push: Push) {
   const slides = deck.slides;
   for (let i = 1; i < slides.length; i++) {
@@ -426,7 +443,7 @@ export function validateDeck(deck: Deck, assets: AssetIndex): Finding[] {
   checkFonts(deck, assets, push);
   checkContrast(deck, push);
   checkRhythm(deck, push);
-  return [...deckFindings, ...checkStory(deck), ...checkMotion(deck), ...deck.slides.flatMap((s) => validateSlide(s, deck, assets))];
+  return [...deckFindings, ...checkStory(deck), ...checkDelivery(deck), ...checkMotion(deck), ...deck.slides.flatMap((s) => validateSlide(s, deck, assets))];
 }
 
 export const hasErrors = (findings: Finding[]) => findings.some((f) => f.severity === "error");
