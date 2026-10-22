@@ -95,6 +95,16 @@ Model dnes volí mood (šest). Navrhuji druhou osu a krok před layouty.
 
 **Recepty slidů místo celých vzorových decků.** 40 až 60 pojmenovaných kompozic („problém: jedno velké číslo a jedna lidská věta“) s dvojicí špatně a dobře. Model je skládá podle beatu. `get_example` zůstává pro rytmus celku, ale instrukce přestane říkat „klonuj“ a začne „vyber recepty“.
 
+## Příběh: narativní rámce a doptávání
+
+Deck potřebuje hlavu a patu a model nemá domýšlet důkazy. Eval ukázal obojí: decky bez jasného konce a zástupné texty na slidech („Add real bio“, „replace with sourced figure“). Zástupné poznámky učily samy golden examples.
+
+- **Narativní rámce jako data** (`lib/domain/narrative.ts`): klasická řeč (Cicero), SCQA (Minto), And But Therefore (Olson), motivovaná sekvence (Monroe), story spine (Adams, Pixar), what is a what could be (Duarte), claim, grounds, warrant, rebuttal (Toulmin). Rámec je pořadí fází, fáze říká svou práci a beaty, které jí slouží, a rámec říká, jak selhává.
+- **Beat říká, na co se zeptat** (`askUser`) a zda stojí na důkazu (`needsEvidence`). Nové beaty `risks` a `decision` pro boardy a interní decky.
+- **Doptávání:** než model staví, porovná beaty s briefem a na chybějící důkaz se zeptá uživatele, nejvýš pěti otázkami s navrženou odpovědí. Čísla, jména ani citace si nedomýšlí a zástupný text na slide nepíše. Beat bez důkazu vynechá.
+- **Validace** jen toho, co deck deklaruje (`brief.frame`, `slide.beat`): otevírá hook, končí ask nebo decision, pořadí podle fází rámce, beat s potřebou důkazu má důkazový blok. Lint `placeholder` hlídá poznámky pro autora na slidu.
+- **Později:** MCP `elicitation` (formulář přímo uživateli) tam, kde ho klient podporuje, jako nadstavba otázky v chatu. Eval s řídkým briefem, který měří, zda se model zeptá.
+
 ## Obrazová vrstva: assety, obrázky, pozadí
 
 Postup od principů dolů.
@@ -170,6 +180,19 @@ Bez měření ladíme podle dojmu. Eval harness mimo CI (volá model, stojí pen
 6. **Polish.** Odvození palety v OKLCH místo míchání v sRGB, česká typografie (nezlomitelná mezera po jednopísmenných předložkách, mezery v tisících, uvozovky, pomlčky v rozsazích), jednotná mezera pro rozsahy.
 
 Každá fáze: větev, PR, typecheck, lint, vitest. Fáze 1 před ostatními, protože jinak se nedá říct, jestli další kroky pomáhají.
+
+## Stav k 2026-10-22
+
+| Krok | PR | Výsledek |
+|---|---|---|
+| Audit principů, tři nová pravidla | #13 | designové principy 21 z 27 pokryté, storytelling 6 z 14 |
+| Eval harness | #14 | baseline 10 decků, 0 nálezů, cca 6 USD |
+| Měření kompozice, figury v optickém středu, hierarchie závěru | #15 | kontrolovaný eval (stejné decky, jiný renderer) 10 : 0, polish 2,8 na 3,5 |
+| Sazba podle jazyka, lint zástupných textů | #16 | testy, příčina v golden examples odstraněna |
+| Narativní rámce, beaty, doptávání | #17 | testy, příklady nesou rámec a beaty |
+| Koncept a školy | #18 | eval celé fáze 2 proti baseline běží |
+
+Recepty slidů (druhá část fáze 2) zatím chybí.
 
 ## Otevřené
 
