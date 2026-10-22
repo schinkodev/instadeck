@@ -169,6 +169,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .layout-closing:has(.cta-text):has(.zone-title .heading-h1, .zone-title .heading-h2) .zone-title .heading{font-size:var(--fs-h2)}
 .layout-closing:has(.zone-title .heading-h1, .zone-title .heading-h2) .cta-text{font-size:var(--fs-display);max-width:20ch}
 .cta-detail{margin-top:var(--sp-md);font-size:var(--fs-lead);color:var(--muted)}
+.brand-visual{position:absolute;inset:0;pointer-events:none}
+.brand-visual>div{position:absolute}
+.brand-numeral-text{bottom:24px;font-family:var(--font-heading);font-weight:var(--hw);font-size:880px;line-height:.8;letter-spacing:-.04em;white-space:nowrap}
 .axis-center .grid{justify-content:center}
 .axis-center .zone{text-align:center}
 .axis-center .heading,.axis-center .text,.axis-center .cta-text{margin-inline:auto}
