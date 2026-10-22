@@ -2,7 +2,7 @@
  * Scoring of the measured composition (measure.js, measureLayoutInstaDeck): passive white space and size contrast.
  * Runs locally after measurement in Chromium and in the MCP App, so it imports only modules without zod.
  */
-import { FIGURE_LAYOUTS, LAYOUT_LIMITS, SPARSE_LAYOUTS, type LayoutMeasure } from "@/lib/domain/layout-limits";
+import { LAYOUT_LIMITS, SPARSE_LAYOUTS, type LayoutMeasure } from "@/lib/domain/layout-limits";
 import type { Finding } from "./rules";
 
 export function layoutFindings(measures: LayoutMeasure[]): Finding[] {
@@ -24,14 +24,18 @@ export function layoutFindings(measures: LayoutMeasure[]): Finding[] {
         message: `The heading (${m.headingPx}px) is only ${(m.headingPx / m.bodyPx).toFixed(2)}x the text below it (${m.bodyPx}px). Make the difference obvious: a larger heading level, a smaller body size or a larger type scale`,
       });
     }
-    if (FIGURE_LAYOUTS.includes(m.layout) && m.headingPx > 0 && m.figurePx > 0) {
+    if (m.headingPx > 0 && m.figurePx > 0) {
       const ratio = Math.max(m.headingPx, m.figurePx) / Math.min(m.headingPx, m.figurePx);
       if (ratio < LAYOUT_LIMITS.minDominance) {
+        const fix =
+          m.layout === "closing"
+            ? "a display heading as the callback with the ask below it, or a short h1 label above a large ask"
+            : "a smaller heading level (h1 or h2) so the number leads";
         out.push({
           severity: "warning",
           rule: "layout-dominance",
           slideId: m.slideId,
-          message: `The heading (${m.headingPx}px) and the ${m.layout === "closing" ? "ask" : "number"} (${m.figurePx}px) are close in size and compete. Let one lead: a display heading as the callback with the ask below it, or a short h1 label above a large ask`,
+          message: `The heading (${m.headingPx}px) and the figure (${m.figurePx}px) are close in size and compete. Let one lead: ${fix}`,
         });
       }
     }

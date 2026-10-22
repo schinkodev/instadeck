@@ -139,14 +139,14 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .block-table td{padding:var(--sp-sm) var(--sp-sm) var(--sp-sm) 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .block-table .is-highlight{color:var(--accent);font-weight:700}
 .cta-text{font-family:var(--font-heading);font-weight:var(--hw);font-size:var(--fs-h3);color:var(--accent);line-height:var(--lh-heading);letter-spacing:var(--ht);max-width:28ch;text-wrap:balance}
-/* The column fits the number (it never wraps), the label and detail wrap within it instead of widening it. */
+/* The stat is as wide as its number (it never wraps, min-content), label and detail wrap to that width. */
 .layout-headline-stat .zone-stat{padding-top:var(--sp-lg)}
-.layout-headline-stat .zone-stat .stat-label,.layout-headline-stat .zone-stat .stat-detail{max-width:14em}
+.layout-headline-stat .zone-stat .block-stat{width:min-content;min-width:12em}
 .layout-headline-stat .zone-support{padding-top:var(--sp-lg)}
 /* Closing: one dominant element. A display heading is the callback and the ask supports it; an h1 or h2 heading is a
    label: it steps down to h2 and the ask becomes the figure of the slide (peak and end, Kahneman), at least three steps
    apart on any scale. */
-.layout-closing:has(.zone-title .heading-h1, .zone-title .heading-h2) .zone-title .heading{font-size:var(--fs-h2)}
+.layout-closing:has(.cta-text):has(.zone-title .heading-h1, .zone-title .heading-h2) .zone-title .heading{font-size:var(--fs-h2)}
 .layout-closing:has(.zone-title .heading-h1, .zone-title .heading-h2) .cta-text{font-size:var(--fs-display);max-width:20ch}
 .cta-detail{margin-top:var(--sp-md);font-size:var(--fs-lead);color:var(--muted)}
 .bleed{position:absolute;inset:0}

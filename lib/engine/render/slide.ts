@@ -52,7 +52,8 @@ export function renderSlide(slide: Slide, index: number, input: SlideRenderInput
         bleed = `<div class="bleed"${enter}>${html}<div class="scrim"></div></div>`;
         return "";
       }
-      return `<div class="zone zone-${zone.name} align-${zone.align ?? "start"}" style="grid-area:${zone.name}" data-zone="${zone.name}"${enter}>${html}</div>`;
+      const figure = zone.figure ? " data-figure" : "";
+      return `<div class="zone zone-${zone.name} align-${zone.align ?? "start"}" style="grid-area:${zone.name}" data-zone="${zone.name}"${figure}${enter}>${html}</div>`;
     })
     .join("");
 

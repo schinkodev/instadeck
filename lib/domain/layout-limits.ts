@@ -19,8 +19,6 @@ export const LAYOUT_LIMITS = {
   minDominance: 1.5,
 } as const;
 
-/** Layouts built around one figure next to the heading: the hero number, the closing ask. */
-export const FIGURE_LAYOUTS: readonly string[] = ["headline-stat", "closing"];
 
 /** Low density layouts are sparse on purpose (title, statement, quote), their balance is not measured. */
 export const SPARSE_LAYOUTS: readonly string[] = ["title", "title-image", "statement", "section", "headline-stat", "image-full", "quote", "logos", "closing"];
@@ -33,7 +31,7 @@ export interface LayoutMeasure {
   /** Largest heading font and largest font of the text below it, in slide px (0 when the slide has none). */
   headingPx: number;
   bodyPx: number;
-  /** Largest font of the figure (a call to action, a single hero number), in slide px (0 when the slide has none). */
+  /** Largest font in a figure zone (Zone.figure: a hero number, the ask), in slide px (0 when the slide has none). */
   figurePx: number;
   /** Zones whose content shares no edge or center line with any other zone. */
   unaligned: string[];

@@ -65,6 +65,18 @@ describe("layout measurement", () => {
     );
     expect(sizes.ask / sizes.heading).toBeGreaterThanOrEqual(LAYOUT_LIMITS.minDominance);
   });
+
+  it("measures the hero number against a display heading and a number that runs out sideways", async () => {
+    const d = sampleDeck();
+    const i = d.slides.findIndex((s) => s.layout === "headline-stat");
+    const slide = d.slides[i]!;
+    // A display heading is about as large as the number: neither leads.
+    d.slides[i] = { ...slide, blocks: { ...slide.blocks, title: { type: "heading", level: "display", text: "Grid costs fall" } } };
+    expect((await measureDeck(d, SAMPLE_ASSETS)).filter((f) => f.slideId === slide.id).map((f) => f.rule)).toContain("layout-dominance");
+    // A number that does not wrap and is wider than its column spills into the support text.
+    d.slides[i] = { ...slide, blocks: { ...slide.blocks, stat: { type: "stat", value: 1250000000, prefix: "$", label: "Grid investment" } } };
+    expect((await measureDeck(d, SAMPLE_ASSETS)).filter((f) => f.slideId === slide.id).map((f) => [f.rule, f.message.includes("wider")])).toContainEqual(["overflow", true]);
+  });
 });
 
 describe("motion measurement", () => {

@@ -230,8 +230,6 @@ describe("motion language", () => {
     expect(layoutFindings([m]).map((f) => f.rule)).toEqual(["layout-dominance"]);
     expect(layoutFindings([{ ...m, figurePx: 110 }])).toEqual([]);
     expect(layoutFindings([{ ...m, figurePx: 40 }])).toEqual([]);
-    // Only layouts built around one figure: a stat row next to a heading is not a contest.
-    expect(layoutFindings([{ ...m, layout: "stats" }])).toEqual([]);
     expect(layoutFindings([{ ...m, layout: "headline-stat", figurePx: 110, unaligned: ["stat"] }]).map((f) => [f.rule, f.message.includes('"stat"')])).toEqual([["layout-alignment", true]]);
   });
 

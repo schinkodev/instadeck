@@ -188,7 +188,10 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'Every element shares a common edge or axis. One misalignment reads as carelessness.',
     why: 'Alignment creates invisible lines that connect elements across the slide, producing unity.',
     slideApplication: 'All text left edges align. All stat numbers align. Grid items share baseline and top edges.',
-    enforced: [{ layer: 2, by: 'layouts share edges and baselines' }],
+    enforced: [
+      { layer: 2, by: 'layouts share edges and baselines' },
+      { layer: 3, by: 'layout-alignment' },
+    ],
   },
   {
     id: 'common-region',
@@ -210,8 +213,8 @@ export const DESIGN_PRINCIPLES: readonly DesignPrinciple[] = [
     principle: 'One dominant element per slide, everything else subordinate.',
     why: 'Multiple competing focal points split attention. A single hero element anchors the message.',
     slideApplication: 'Title slide: one big number or statement. Stats slide: the key metric is largest. Never equal sizing.',
-    enforced: [],
-    gap: "Nothing checks that one element dominates the slide",
+    enforced: [{ layer: 3, by: 'layout-dominance' }],
+    gap: 'Measured only where a layout names its figure (hero number, ask). Other slides are left to critique',
   },
   {
     id: 'repetition-unity',

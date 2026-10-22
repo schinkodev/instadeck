@@ -14,6 +14,11 @@ export interface Zone {
    * short content leaves the bottom of the slide empty and the slide looks unfinished (Arnheim, active white space).
    */
   align?: "start" | "center" | "end";
+  /**
+   * The zone holds the figure of the slide (a hero number, the ask). The figure and the heading must not compete:
+   * one of them leads by LAYOUT_LIMITS.minDominance (measured as layout-dominance).
+   */
+  figure?: boolean;
 }
 
 export interface LayoutDef {
@@ -80,12 +85,13 @@ export const LAYOUTS: readonly LayoutDef[] = [
     purpose: "One hero number proves the headline: market size, growth, savings.",
     zones: [
       { name: "title", accepts: H, required: true, align: "start" },
-      { name: "stat", accepts: ["stat"], required: true, align: "center" },
+      { name: "stat", accepts: ["stat"], required: true, align: "center", figure: true },
       { name: "support", accepts: SUPPORT, required: false, align: "center" },
     ],
     // The number stands under the headline on the same left edge and the support text beside it on the same center line,
     // so the three read as one figure instead of three corners (Müller-Brockmann, a shared edge for every element).
-    grid: { areas: ["title title", "stat support"], columns: "auto minmax(0, 1fr)", rows: "auto 1fr" },
+    // The support column keeps at least 30%: a number too long for the rest overflows and is measured, not squeezed in.
+    grid: { areas: ["title title", "stat support"], columns: "auto minmax(30%, 1fr)", rows: "auto 1fr" },
     density: "low",
   },
   {
@@ -242,7 +248,7 @@ export const LAYOUTS: readonly LayoutDef[] = [
     purpose: "The ask and the way to reach you. A display heading is the callback to the opening hook and the ask supports it. An h1 or h2 heading is a short label and the ask becomes the large figure of the slide.",
     zones: [
       { name: "title", accepts: H, required: true, align: "end" },
-      { name: "cta", accepts: ["cta", "stat"], required: true, align: "center" },
+      { name: "cta", accepts: ["cta", "stat"], required: true, align: "center", figure: true },
       { name: "logo", accepts: ["logo"], required: false, align: "end" },
     ],
     grid: { areas: ["title", "cta", "logo"], columns: "1fr", rows: "1fr auto auto" },

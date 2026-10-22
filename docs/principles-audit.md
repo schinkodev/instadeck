@@ -6,7 +6,7 @@ Layers: 1 schema (a bad state cannot be written), 2 tokens (the renderer or deri
 
 A principle is covered when layers 1 to 3 enforce it. A principle with critique only is a judgement call that no measurement captures today. A principle enforced by nothing names its gap.
 
-## Design principles (22 of 27 covered)
+## Design principles (23 of 27 covered)
 
 | Principle | Author | Enforced by | Gap |
 |---|---|---|---|
@@ -25,9 +25,9 @@ A principle is covered when layers 1 to 3 enforce it. A principle with critique 
 | Proximity = Relationship | Gestalt | 2 tokens: spacing tokens sp-xs to sp-lg |  |
 | Active White Space | Swiss Style | 2 tokens: figures (cards, timeline, table, team, comparison) sit in the optical center of the space under the heading<br>3 lint: layout-balance: content of a medium or dense slide reaches at least 60% of the slide height, measured in the browser | Crowding (too little white space) is caught only as overflow |
 | Figure-Ground Clarity | Gestalt | 3 lint: contrast: text on bg and on cards | The distinction of surface from bg is not checked |
-| Alignment | Williams/CRAP | 2 tokens: layouts share edges and baselines |  |
+| Alignment | Williams/CRAP | 2 tokens: layouts share edges and baselines<br>3 lint: layout-alignment |  |
 | Common Region | Palmer/Gestalt | 2 tokens: cards group content on a surface |  |
-| Contrast Creates Hierarchy | Williams | nothing | Nothing checks that one element dominates the slide |
+| Contrast Creates Hierarchy | Williams | 3 lint: layout-dominance | Measured only where a layout names its figure (hero number, ask). Other slides are left to critique |
 | Repetition Builds Unity | Williams/CRAP | 2 tokens: the renderer styles each block type once |  |
 | Less But Better | Rams | 1 schema: item limits in the block schemas<br>3 lint: text-length | The number of blocks per slide is not capped |
 | Gutenberg Diagram | Arnold | 4 critique: judged by the model |  |
