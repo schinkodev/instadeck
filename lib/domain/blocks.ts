@@ -242,12 +242,12 @@ export const placesOf = (v: number) => {
 };
 
 /**
- * Values of a chart that appear as labels: what each kind draws. A line labels only the end of its first series, a
+ * Values of a chart that appear as labels: what each kind draws. A line labels the end of every series, a
  * stacked chart its segments and their totals, the others every value; a reference line carries its value too.
  */
 export function chartValues(b: Extract<Block, { type: "chart" }>): number[] {
   const reference = b.reference ? [b.reference.value] : [];
-  if (b.kind === "line") return [b.series[0]!.values.at(-1)!, ...reference];
+  if (b.kind === "line") return [...b.series.map((s) => s.values.at(-1)!), ...reference];
   const values = b.series.flatMap((s) => s.values);
   if (b.kind === "stacked") return [...values, ...b.categories.map((_, ci) => b.series.reduce((a, s) => a + (s.values[ci] ?? 0), 0)), ...reference];
   return [...values, ...reference];
