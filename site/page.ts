@@ -1,16 +1,19 @@
 /**
- * Landing page instadeck.app. Statická, bez frameworku. Co InstaDeck umí, se bere z registru
- * schopností (server/capabilities.ts) a z domény, takže stránka neslibuje nic, co server nemá.
- * Vizuál ze slyde-saas: bílá plocha, Plus Jakarta Sans, logo v JetBrains Mono, akcent #B86B6B, bez zaoblení.
+ * Landing page of instadeck.app. Static, no framework. What InstaDeck can do comes from the capability
+ * registry (server/capabilities.ts) and the domain, so the page promises nothing the server does not have.
+ * The decks on the page are the golden examples, rendered by scripts/site.ts (site/showcase.ts).
+ * Visual from slyde-saas: a white surface, Plus Jakarta Sans, the logo in JetBrains Mono, accent #B86B6B, no rounding.
  *
- * Design systém stránky: mezery jen ze stupnice po 8 px, jedna výška ovládacích prvků, jedna tloušťka
- * rámečku, dva sloupce obsahu (--narrow pro hero a texty, --max pro demo a mřížky). Co stojí vedle sebe,
- * sdílí řádky přes subgrid, takže nadpisy, texty i bloky kódu v sousedních kartách začínají na stejné lince.
+ * Design system of the page: spacing only from an 8 px scale, one control height, one border width, two content
+ * widths (--narrow for the hero and text, --max for decks and grids). Things that sit side by side share rows
+ * through subgrid, so headings, text and code blocks in neighbouring cards start on the same line. Every deck image
+ * is 16:9 with its width and height set, so nothing shifts while it loads.
  */
-import { LAYOUTS, BLOCK_TYPES, GOOGLE_FONTS } from "@/lib/domain";
+import { LAYOUTS, BLOCK_TYPES, GOOGLE_FONTS, SLIDE } from "@/lib/domain";
 import { NARRATIVE_FRAMES } from "@/lib/domain/narrative";
 import { DESIGN_SCHOOLS } from "@/lib/domain/schools";
 import { capabilitiesFor } from "@/server/capabilities";
+import { SHOWCASE, WALL, deckName, slideLayout, type ShowcaseDeck } from "@/site/showcase";
 
 const REPO = "https://github.com/schinkodev/instadeck";
 const AUTHOR = { name: "Jakub Schinko", url: "https://schinko.dev" };
@@ -18,8 +21,16 @@ const CONNECTOR_URL = "https://instadeck.app/mcp";
 const CODE_REMOTE = `claude mcp add --transport http instadeck ${CONNECTOR_URL}`;
 const CODE_LOCAL = "claude mcp add instadeck -- npx -y instadeck";
 const DESKTOP_DOWNLOAD = `${REPO}/releases/latest/download/instadeck.mcpb`;
+/** One step of a deck every 3.6 s: long enough to read a headline, short enough to see the motion language. */
+const AUTOPLAY_MS = 3600;
 
-/** Jak přidat hostovaný konektor v běžných MCP klientech. Každý klient má vlastní krok a vlastní text ke zkopírování. */
+/** Paths of the files scripts/site.ts writes for every deck. */
+export const deckFiles = (id: string) => ({ html: `demo/${id}.html`, cover: `demo/${id}/cover.png`, slide: (i: number) => `demo/${id}/${String(i + 1).padStart(2, "0")}.png` });
+/** Scale of the images against the 1920 x 1080 slide: a cover fills the player on a 2x screen, a wall slide a quarter of it. */
+export const IMAGE_SCALE = { cover: 0.6, slide: 0.3 } as const;
+const px = (scale: number) => ({ w: Math.round(SLIDE.width * scale), h: Math.round(SLIDE.height * scale) });
+
+/** How to add the hosted connector in common MCP clients. Every client has its own step and its own text to copy. */
 const CLIENTS = [
   { id: "claude", name: "Claude", steps: "Settings, Connectors, Add custom connector, paste the link. Works in claude.ai and Claude Desktop on every plan, and the deck plays right in the chat.", label: "Connector link", code: CONNECTOR_URL },
   { id: "claude-code", name: "Claude Code", steps: "Run this once, then ask for a deck in any project.", label: "Terminal", code: CODE_REMOTE },
@@ -29,34 +40,6 @@ const CLIENTS = [
   { id: "gemini", name: "Gemini CLI", steps: "Run this once, then ask for a deck.", label: "Terminal", code: `gemini mcp add --transport http instadeck ${CONNECTOR_URL}` },
   { id: "windsurf", name: "Windsurf", steps: "Add it to ~/.codeium/windsurf/mcp_config.json.", label: "mcp_config.json", code: `{ "mcpServers": { "instadeck": { "serverUrl": "${CONNECTOR_URL}" } } }` },
   { id: "other", name: "Other", steps: "A standard MCP server over streamable HTTP, with no sign in. Point any client that supports remote servers at this address.", label: "Server URL", code: CONNECTOR_URL },
-] as const;
-
-/** Ukázkové zadání. Smyšlené firmy jako v golden examples, každé ukazuje jiné publikum, rámec nebo jazyk. */
-const PROMPTS = [
-  {
-    id: "seed",
-    name: "Seed pitch",
-    text: "Make a seed pitch deck for Northwind Grid. We predict power grid congestion hours ahead, live with three operators, €1.9M ARR, raising €6M. Our logo is attached.",
-    note: "Claude picks a frame for investors, asks for the numbers it is missing and builds the deck in Northwind's colors, read from the logo.",
-  },
-  {
-    id: "board",
-    name: "Board update",
-    text: "Q3 board update for Fernhill. Revenue €412k against a plan of €450k, churn down to 2.1 %, hiring paused. Be straight about the miss and end with the two decisions we need from the board.",
-    note: "A calm deck that does not move. It opens with the answer, shows the miss next to the plan and closes on the decisions.",
-  },
-  {
-    id: "sales",
-    name: "Sales deck",
-    text: "Enterprise sales deck for Lumen Ops, for the CFO of a 2,000 person logistics company. Numbers first, no hype. Use our brand fonts and the product screenshots in ./assets.",
-    note: "Your fonts and screenshots go into layouts made for them, the savings land as a chart, and speaker notes carry what the slide leaves out.",
-  },
-  {
-    id: "czech",
-    name: "In Czech",
-    text: "Připrav prezentaci k uvedení aplikace Kolo na trh, pro novináře, česky. Hravě, s fotkami produktu, které přikládám.",
-    note: "The deck is written in the language of the brief, typeset for it, and moves with a livelier rhythm for a launch.",
-  },
 ] as const;
 
 const STEPS = [
@@ -91,23 +74,54 @@ const GITHUB_ICON = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden
 const STAR_ICON = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M8 .6l2.2 4.7 5.1.7-3.7 3.6.9 5.1L8 12.2l-4.5 2.5.9-5.1L.7 6l5.1-.7L8 .6Z"/></svg>`;
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** Záložky nad panely. Sdílí je výběr klienta i ukázkové prompty, obsluhuje je jeden skript. */
-function tabs(group: string, label: string, items: readonly { id: string; name: string }[], panel: (item: never) => string): string {
-  const buttons = items.map((t, i) => `<button type="button" role="tab" id="${group}-tab-${t.id}" aria-controls="${group}-${t.id}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">${esc(t.name)}</button>`).join("");
-  const panels = items.map((t, i) => `<div role="tabpanel" id="${group}-${t.id}" aria-labelledby="${group}-tab-${t.id}"${i === 0 ? "" : " hidden"}>${panel(t as never)}</div>`).join("");
-  return `<div class="tablist" role="tablist" aria-label="${esc(label)}">${buttons}</div><div class="panels">${panels}</div>`;
+/** Tabs above panels. The client picker and the deck gallery share them, one script handles both. */
+function tablist(group: string, label: string, items: readonly { id: string }[], button: (item: never) => string, attrs: (item: never) => string = () => ""): string {
+  return `<div class="tablist-${group}" role="tablist" aria-label="${esc(label)}">${items
+    .map((t, i) => `<button type="button" role="tab" id="${group}-tab-${t.id}" aria-controls="${group}-${t.id}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}"${attrs(t as never)}>${button(t as never)}</button>`)
+    .join("")}</div>`;
 }
+const panels = (group: string, items: readonly { id: string }[], panel: (item: never) => string) =>
+  items.map((t, i) => `<div role="tabpanel" id="${group}-${t.id}" aria-labelledby="${group}-tab-${t.id}"${i === 0 ? "" : " hidden"}>${panel(t as never)}</div>`).join("");
 
 const code = (id: string, label: string, text: string) =>
   `<div class="code"><div class="code-bar"><span>${esc(label)}</span><button type="button" data-copy="${id}">Copy</button></div><pre id="${id}">${esc(text)}</pre></div>`;
 
 function clientPicker(): string {
-  return `<div class="picker">${tabs("client", "Choose your MCP client", CLIENTS, (c: (typeof CLIENTS)[number]) => `<p class="picker-steps">${esc(c.steps)}</p>${code(`code-${c.id}`, c.label, c.code)}`)}</div>`;
+  return `<div class="picker">${tablist("client", "Choose your MCP client", CLIENTS, (c: (typeof CLIENTS)[number]) => esc(c.name))}<div class="panels">${panels("client", CLIENTS, (c: (typeof CLIENTS)[number]) => `<p class="picker-steps">${esc(c.steps)}</p>${code(`code-${c.id}`, c.label, c.code)}`)}</div></div>`;
 }
 
-function promptPicker(): string {
-  return `<div class="prompts">${tabs("prompt", "Example briefs", PROMPTS, (p: (typeof PROMPTS)[number]) => `<figure class="prompt"><figcaption class="mono">You, in your chat</figcaption><blockquote${p.id === "czech" ? ' lang="cs"' : ""}>${esc(p.text)}</blockquote></figure><p class="prompt-note">${esc(p.note)}</p>`)}</div>`;
+/** The gallery: one live player, the decks as tabs under it, and for the chosen deck the brief and what Claude chose. */
+function gallery(): string {
+  const cover = px(IMAGE_SCALE.cover);
+  const first = SHOWCASE[0]!;
+  const thumb = (d: ShowcaseDeck) =>
+    `<img src="/${deckFiles(d.id).cover}" width="${cover.w}" height="${cover.h}" alt="" loading="lazy" decoding="async"><span class="deck-name">${esc(d.name)}</span><span class="deck-meta">${cap(d.intensity)} motion, ${d.slides} slides</span>`;
+  const info = (d: ShowcaseDeck) => `<div class="deck-info">
+      <figure class="brief"><figcaption>You, in Claude</figcaption><blockquote>${esc(d.brief)}</blockquote></figure>
+      <dl class="chose">
+        <div><dt>Idea</dt><dd>${esc(d.idea)}</dd></div>
+        <div><dt>Story</dt><dd>${esc(d.frame)}</dd></div>
+        ${d.school ? `<div><dt>School</dt><dd>${esc(d.school)}</dd></div>` : ""}
+        <div><dt>Type</dt><dd>${esc(d.type)}</dd></div>
+        <div><dt>Motion</dt><dd><strong>${cap(d.intensity)}.</strong> ${esc(d.motion)}</dd></div>
+      </dl>
+    </div>`;
+  return `<section class="gallery" id="decks" aria-label="Example decks">
+  <div class="frame" id="frame" style="background-image:url(/${deckFiles(first.id).cover})"><iframe id="player" src="/${deckFiles(first.id).html}?autoplay=${AUTOPLAY_MS}" title="${esc(first.name)}, a deck made with InstaDeck, playing live" loading="lazy"></iframe></div>
+  <div class="frame-caption"><span>Playing live. Click to take over, use the arrow keys, press F for fullscreen.</span><a id="open-deck" href="/${deckFiles(first.id).html}" target="_blank" rel="noopener">Open full screen</a></div>
+  ${tablist("deck", "Example decks", SHOWCASE, thumb, (d: ShowcaseDeck) => ` data-deck="/${deckFiles(d.id).html}" data-cover="/${deckFiles(d.id).cover}" data-name="${esc(d.name)}"`)}
+  <div class="panels">${panels("deck", SHOWCASE, info)}</div>
+  <p class="gallery-note">These are the golden examples that ship with InstaDeck, which Claude reads before it builds yours. Companies and numbers are made up.</p>
+</section>`;
+}
+
+function wall(): string {
+  const s = px(IMAGE_SCALE.slide);
+  return `<div class="wall content">${WALL.map(
+    (w) => `<figure><img src="/${deckFiles(w.deck).slide(w.slide)}" width="${s.w}" height="${s.h}" alt="${esc(`A ${slideLayout(w.deck, w.slide)} slide from the ${deckName(w.deck).toLowerCase()} example`)}" loading="lazy" decoding="async"><figcaption><span>${esc(slideLayout(w.deck, w.slide))}</span><span>${esc(deckName(w.deck))}</span></figcaption></figure>`,
+  ).join("")}</div>`;
 }
 
 function capabilityList(): string {
@@ -134,7 +148,7 @@ export function landingHtml(version: string): string {
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Stupnice po 8 px: --s1 8, --s2 16, --s3 24, --s4 32, --s5 48, --s6 64, --s7 96, --s8 128. Nic mimo ni. */
+/* An 8 px scale: --s1 8, --s2 16, --s3 24, --s4 32, --s5 48, --s6 64, --s7 96, --s8 128. Nothing outside it. */
 :root{--bg:#FFFFFF;--subtle:#F5F5F3;--inset:#F0F2F7;--fg:#111111;--muted:#555E70;--dim:#6F7A8E;--accent:#B86B6B;--accent-hover:#A55E5E;--line:rgba(17,17,17,.09);--line-strong:rgba(17,17,17,.18);
 --s1:8px;--s2:16px;--s3:24px;--s4:32px;--s5:48px;--s6:64px;--s7:96px;--s8:128px;
 --gutter:24px;--max:1120px;--narrow:720px;--control:40px;--bar:40px;--border:1px;--section:var(--s8);
@@ -143,14 +157,15 @@ export function landingHtml(version: string): string {
 html{scroll-behavior:smooth;scroll-padding-top:var(--s7)}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;line-height:1.6;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
-p{margin:0}
+p,figure,blockquote,dl,dd{margin:0}
+img{display:block;max-width:100%;height:auto}
 h1,h2,h3{margin:0;font-weight:700;text-wrap:balance}
 .wrap{max-width:calc(var(--max) + 2 * var(--gutter));margin:0 auto;padding:0 var(--gutter)}
 .mono{font-family:var(--mono)}
 .eyebrow{font-family:var(--mono);font-size:12px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* Ovládací prvky: jedna výška, jeden rámeček, jedno písmo */
+/* Controls: one height, one border, one font */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s1);height:var(--control);padding:0 var(--s2);background:var(--accent);color:#FFF;border:var(--border) solid var(--accent);font:inherit;font-size:14px;font-weight:500;line-height:1;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
 .btn:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn-outline{background:transparent;color:var(--fg);border-color:var(--fg)}
@@ -165,18 +180,18 @@ nav .wrap{display:flex;justify-content:space-between;align-items:center;height:v
 .logo{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}
 .nav-links{display:flex;gap:var(--s1);align-items:center}
 
-/* Záložky jako segmentový přepínač: buňky sdílí rámeček, žádné mezery mezi nimi */
-.tablist{display:flex;flex-wrap:wrap;border-top:var(--border) solid var(--line-strong);border-left:var(--border) solid var(--line-strong)}
-.tablist button{flex:1 1 auto;height:var(--control);padding:0 var(--s2);background:var(--bg);border:0;border-right:var(--border) solid var(--line-strong);border-bottom:var(--border) solid var(--line-strong);color:var(--muted);font:inherit;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
-.tablist button:hover{color:var(--fg);background:var(--subtle)}
-.tablist button[aria-selected="true"]{background:var(--fg);color:#FFF}
+/* Client tabs as a segmented control: cells share their borders, no gaps between them */
+.tablist-client{display:flex;flex-wrap:wrap;border-top:var(--border) solid var(--line-strong);border-left:var(--border) solid var(--line-strong)}
+.tablist-client button{flex:1 1 auto;height:var(--control);padding:0 var(--s2);background:var(--bg);border:0;border-right:var(--border) solid var(--line-strong);border-bottom:var(--border) solid var(--line-strong);color:var(--muted);font:inherit;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
+.tablist-client button:hover{color:var(--fg);background:var(--subtle)}
+.tablist-client button[aria-selected="true"]{background:var(--fg);color:#FFF}
 
-/* Hero: jedna osa. Nadpis, podtitul i výběr klienta sdílí střed i šířku --narrow. */
+/* Hero: one axis. Heading, subtitle and client picker share the center and the --narrow width. */
 .hero{padding:var(--s7) 0 var(--s6);text-align:center}
 .hero .eyebrow{margin-bottom:var(--s3)}
 .hero h1{margin:0 auto;max-width:860px;font-size:clamp(40px,7vw,76px);line-height:1.02;letter-spacing:-0.04em}
 .hero h1 em{font-style:normal;color:var(--accent)}
-/* Tučná čárka a tečka v Plus Jakarta Sans mají široký levý okraj glyfu, ve velikosti nadpisu z toho je viditelná mezera. Optické dorovnání. */
+/* The bold comma and period of Plus Jakarta Sans carry a wide left side bearing, visible as a gap at heading size. Optical kerning. */
 .hero h1 .punct{margin-left:-0.1em}
 .hero .sub{margin:var(--s3) auto 0;max-width:600px;font-size:clamp(17px,2vw,19px);line-height:1.55;color:var(--muted);text-wrap:pretty}
 .picker{max-width:var(--narrow);margin:var(--s5) auto 0;text-align:left}
@@ -191,11 +206,32 @@ nav .wrap{display:flex;justify-content:space-between;align-items:center;height:v
 .code-bar button:hover{background:var(--fg);color:#FFF}
 .code pre{margin:0;padding:var(--s2);overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:24px;min-height:calc(var(--s2) * 2 + 48px);white-space:pre-wrap;word-break:break-word}
 
-.demo{padding-bottom:var(--section)}
-.frame{position:relative;width:100%;aspect-ratio:16/9;background:#0B0B0C;border:var(--border) solid var(--line-strong);box-shadow:0 1px 2px rgba(15,23,42,.06),0 32px 64px -32px rgba(15,23,42,.3)}
-.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.demo-caption{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s2);font-size:14px;color:var(--muted)}
-.demo-caption a{color:var(--fg);font-weight:500}
+/* Gallery: the player spans --max at exactly 16:9, the cover of the deck sits under it until the deck has loaded. */
+.gallery{padding-bottom:var(--section)}
+.frame{position:relative;width:100%;aspect-ratio:16/9;background:var(--subtle) center/cover no-repeat;border:var(--border) solid var(--line-strong);box-shadow:0 1px 2px rgba(15,23,42,.06),0 32px 64px -32px rgba(15,23,42,.28)}
+.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .3s var(--ease)}
+.frame iframe.is-ready{opacity:1}
+.frame-caption{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s2);font-size:13px;line-height:20px;color:var(--dim)}
+.frame-caption a{color:var(--fg);font-weight:500}
+/* Deck tabs: five equal columns, each a 16:9 cover with its name. The chosen one carries a 2 px rule above and a dark edge around its cover. */
+.tablist-deck{display:grid;grid-template-columns:repeat(${SHOWCASE.length},minmax(0,1fr));gap:var(--s2);margin-top:var(--s5)}
+.tablist-deck button{display:grid;grid-template-rows:auto auto auto;justify-items:start;padding:var(--s1) 0 0;border:0;border-top:2px solid transparent;background:none;color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.tablist-deck img{width:100%;aspect-ratio:16/9;object-fit:cover;border:var(--border) solid var(--line-strong);transition:border-color .2s var(--ease)}
+.tablist-deck button:hover img{border-color:var(--fg)}
+.tablist-deck button[aria-selected="true"]{border-top-color:var(--fg)}
+.tablist-deck button[aria-selected="true"] img{border-color:var(--fg)}
+.tablist-deck button[aria-selected="false"] .deck-name{color:var(--muted)}
+.deck-name{margin-top:var(--s1);font-size:14px;line-height:20px;font-weight:600}
+.deck-meta{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--dim)}
+/* Under the tabs: the brief on the left (7 of 12 columns), what Claude chose on the right, both from the same top line. */
+.deck-info{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);column-gap:var(--s6);margin-top:var(--s5);padding-top:var(--s4);border-top:var(--border) solid var(--line)}
+.brief figcaption,.chose dt{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--dim)}
+.brief blockquote{margin-top:var(--s2);font-size:19px;line-height:30px;letter-spacing:-0.015em;text-wrap:pretty}
+.chose{display:grid;row-gap:var(--s2)}
+.chose div{display:grid;grid-template-columns:var(--s7) minmax(0,1fr);column-gap:var(--s2)}
+.chose dd{font-size:14px;line-height:20px;color:var(--muted);text-wrap:pretty}
+.chose strong{font-weight:600;color:var(--fg)}
+.gallery-note{margin-top:var(--s4);font-size:13px;line-height:20px;color:var(--dim)}
 
 section.block{padding:var(--section) 0;border-top:var(--border) solid var(--line)}
 .head{max-width:var(--narrow)}
@@ -206,20 +242,18 @@ section.block{padding:var(--section) 0;border-top:var(--border) solid var(--line
 h3{font-size:18px;line-height:24px;letter-spacing:-0.02em;font-weight:600}
 .body{margin-top:var(--s1);color:var(--muted);font-size:15px;line-height:24px;text-wrap:pretty}
 
-/* Jak to funguje: prompt vlevo, kroky vpravo, oba sloupce začínají na stejné lince */
-.how{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--s6);align-items:start}
-.prompts .panels{border:var(--border) solid var(--line-strong);border-top:0}
-.prompts{position:sticky;top:calc(var(--s6) + var(--s4))}
-.prompt{margin:0;padding:var(--s4);background:var(--inset);min-height:200px}
-.prompt figcaption{font-size:12px;line-height:16px;color:var(--dim);margin-bottom:var(--s2)}
-.prompt blockquote{margin:0;font-size:19px;line-height:30px;letter-spacing:-0.015em;text-wrap:pretty}
-.prompt-note{padding:var(--s2) var(--s4);font-size:14px;line-height:22px;color:var(--muted);border-top:var(--border) solid var(--line-strong);min-height:calc(var(--s2) * 2 + 44px)}
-.steps{margin:0;padding:0;list-style:none;counter-reset:step;border-top:var(--border) solid var(--fg)}
-.steps li{counter-increment:step;display:grid;grid-template-columns:var(--s5) minmax(0,1fr);padding:var(--s3) 0;border-bottom:var(--border) solid var(--line)}
-.steps li::before{content:"0" counter(step);font-family:var(--mono);font-size:12px;line-height:24px;color:var(--accent)}
-.steps li:last-child{border-bottom:0;padding-bottom:0}
+/* How it works: four steps on one row, each under a rule, numbers in the accent */
+.steps{margin-bottom:0;padding:0;list-style:none;counter-reset:step;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:var(--s4)}
+.steps li{counter-increment:step;padding-top:var(--s3);border-top:var(--border) solid var(--fg)}
+.steps li::before{content:"0" counter(step);display:block;margin-bottom:var(--s2);font-family:var(--mono);font-size:12px;line-height:16px;color:var(--accent)}
 
-/* Funkce: mřížka 3 x 2 s vlasovými linkami, každá buňka stejná vnitřní stavba */
+/* Slide wall: four columns of 16:9 slides from the example decks, each labelled with its layout and deck */
+.wall{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s4) var(--s2)}
+.wall img{width:100%;aspect-ratio:16/9;border:var(--border) solid var(--line-strong)}
+.wall figcaption{display:flex;justify-content:space-between;gap:var(--s1);margin-top:var(--s1);font-family:var(--mono);font-size:12px;line-height:16px;color:var(--dim)}
+.wall figcaption span:first-child{color:var(--fg)}
+
+/* Features: a 3 x 2 grid with hairlines, every cell with the same inner structure */
 .features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--border);background:var(--line-strong);border:var(--border) solid var(--line-strong)}
 .features > div{background:var(--bg);padding:var(--s4);display:grid;grid-template-rows:subgrid;grid-row:span 3;row-gap:0}
 .features .eyebrow{margin-bottom:var(--s3);color:var(--accent)}
@@ -236,7 +270,7 @@ h3{font-size:18px;line-height:24px;letter-spacing:-0.02em;font-weight:600}
 .caps em{font-style:normal;font-size:12px;font-family:var(--mono);color:var(--dim);white-space:nowrap}
 .caps .is-planned span{color:var(--dim)}
 
-/* Instalace: dvě karty na subgridu, takže nadpis, text, kód a akce leží v obou na stejných řádcích */
+/* Install: two cards on a subgrid, so heading, text, code and action sit on the same rows in both */
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(5,auto);column-gap:var(--s4)}
 .cards > div{display:grid;grid-template-rows:subgrid;grid-row:span 5;row-gap:0;padding:var(--s4);border:var(--border) solid var(--line-strong);min-width:0}
 .cards .eyebrow{margin-bottom:var(--s2)}
@@ -254,8 +288,9 @@ footer a:hover{color:var(--fg)}
 footer .sep::before{content:"\\00B7";margin:0 var(--s1)}
 
 @media (max-width:960px){
-  .how{grid-template-columns:1fr;gap:var(--s5)}
-  .prompts{position:static}
+  .deck-info{grid-template-columns:1fr;row-gap:var(--s4)}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:var(--s5)}
+  .wall{grid-template-columns:repeat(2,minmax(0,1fr))}
   .features{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:720px){
@@ -263,15 +298,20 @@ footer .sep::before{content:"\\00B7";margin:0 var(--s1)}
   .hero{padding:var(--s6) 0 var(--s5)}
   .nav-links .btn-ghost{display:none}
   .content{margin-top:var(--s5)}
-  .features,.caps ul,.models{grid-template-columns:1fr}
+  /* Deck tabs scroll sideways inside the gutter instead of shrinking the covers below legibility */
+  .tablist-deck{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:40%;overflow-x:auto;scroll-snap-type:x mandatory;margin-top:var(--s4);padding-bottom:var(--s1)}
+  .tablist-deck button{scroll-snap-align:start}
+  .deck-info{margin-top:var(--s4);padding-top:var(--s3)}
+  .brief blockquote{font-size:17px;line-height:28px}
+  .chose div{grid-template-columns:var(--s6) minmax(0,1fr)}
+  .steps,.features,.caps ul,.models{grid-template-columns:1fr}
+  .wall{gap:var(--s3) var(--s2)}
+  .wall figcaption span:last-child{display:none}
   .features > div{grid-row:auto;grid-template-rows:auto;padding:var(--s3)}
   .cards{grid-template-columns:1fr;grid-template-rows:none;row-gap:var(--s3)}
   .cards > div{grid-row:auto;grid-template-rows:auto;padding:var(--s3)}
   .models p + p{margin-top:var(--s2)}
-  .tablist button{flex:1 1 33%;padding:0 var(--s1)}
-  .prompt{padding:var(--s3);min-height:0}
-  .prompt blockquote{font-size:17px;line-height:28px}
-  .prompt-note{padding:var(--s2) var(--s3)}
+  .tablist-client button{flex:1 1 33%;padding:0 var(--s1)}
   footer{padding:var(--s3) 0;flex-direction:column;align-items:flex-start;gap:var(--s1)}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
@@ -281,6 +321,7 @@ footer .sep::before{content:"\\00B7";margin:0 var(--s1)}
 <nav id="nav"><div class="wrap">
   <a class="logo" href="/">InstaDeck</a>
   <div class="nav-links">
+    <a class="btn btn-ghost" href="#decks">Examples</a>
     <a class="btn btn-ghost" href="#how">How it works</a>
     <a class="btn btn-outline" href="${REPO}" target="_blank" rel="noopener" aria-label="Star InstaDeck on GitHub">${GITHUB_ICON}<span>Star</span><span class="count" id="stars" hidden></span></a>
     <a class="btn" href="#install">Install</a>
@@ -297,10 +338,7 @@ footer .sep::before{content:"\\00B7";margin:0 var(--s1)}
   <p class="picker-foot"><span>Free, no account</span><span><a href="#install">Run it on your computer instead</a></span></p>
 </header>
 
-<section class="demo" aria-label="Live demo">
-  <div class="frame"><iframe src="/demo/deck.html?autoplay=4200" title="A pitch deck made with InstaDeck" loading="lazy"></iframe></div>
-  <div class="demo-caption"><span>A real InstaDeck, playing live. Click it to take over, use the arrow keys, press F for fullscreen.</span><a href="/demo/deck.html">Open the demo</a></div>
-</section>
+${gallery()}
 </div>
 
 <section class="block" id="how"><div class="wrap">
@@ -309,17 +347,16 @@ footer .sep::before{content:"\\00B7";margin:0 var(--s1)}
     <h2>You bring the company. Claude and InstaDeck bring the craft.</h2>
     <p class="lead">Claude decides what to say and how it should look. InstaDeck renders, measures and exports, so the result holds up on a big screen.</p>
   </div>
-  <div class="how content">
-    ${promptPicker()}
-    <ol class="steps">${STEPS.map((s) => `<li><div><h3>${esc(s.title)}</h3><p class="body">${esc(s.text)}</p></div></li>`).join("")}</ol>
-  </div>
+  <ol class="steps content">${STEPS.map((s) => `<li><h3>${esc(s.title)}</h3><p class="body">${esc(s.text)}</p></li>`).join("")}</ol>
 </div></section>
 
 <section class="block"><div class="wrap">
   <div class="head">
     <p class="eyebrow">What you get</p>
     <h2>Built like a design team would build it.</h2>
+    <p class="lead">Every slide below comes from the decks above. Each one is composed from a layout, set in the brand's type and checked for fit, contrast and balance before anyone sees it.</p>
   </div>
+  ${wall()}
   <div class="features content">${FEATURES.map((f) => `<div><p class="eyebrow">${esc(f.label)}</p><h3>${esc(f.title)}</h3><p class="body">${esc(f.text)}</p></div>`).join("")}</div>
   <details class="caps">
     <summary><div>The full list Claude reads from the server<p>Planned items are marked. Nothing here is promised that is not there.</p></div><span class="eyebrow">Show</span></summary>
@@ -386,15 +423,30 @@ footer .sep::before{content:"\\00B7";margin:0 var(--s1)}
     });
   });
 
+  // The player shows the cover of the deck until the deck has loaded, then fades the live deck in over it.
+  var frame = document.getElementById("frame");
+  var player = document.getElementById("player");
+  var open = document.getElementById("open-deck");
+  player.addEventListener("load", function () { player.classList.add("is-ready"); });
+  function play(tab) {
+    player.classList.remove("is-ready");
+    frame.style.backgroundImage = "url(" + tab.dataset.cover + ")";
+    player.title = tab.dataset.name + ", a deck made with InstaDeck, playing live";
+    player.src = tab.dataset.deck + "?autoplay=${AUTOPLAY_MS}";
+    open.href = tab.dataset.deck;
+  }
+
   document.querySelectorAll('[role="tablist"]').forEach(function (list) {
     var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
     function select(tab) {
+      if (tab.getAttribute("aria-selected") === "true") return;
       tabs.forEach(function (t) {
         var on = t === tab;
         t.setAttribute("aria-selected", String(on));
         t.tabIndex = on ? 0 : -1;
         document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
       });
+      if (tab.dataset.deck) play(tab);
     }
     tabs.forEach(function (t, i) {
       t.addEventListener("click", function () { select(t); });
