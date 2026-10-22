@@ -393,6 +393,22 @@ describe("analytic charts", () => {
     expect(chartRules({ kind: "column", categories: ["a", "b"], series: [{ name: "A", values: [1, 2] }], estimate: 5 })).toContain("chart-option");
   });
 
+  it("draws horizontal bars left of zero for negative values", () => {
+    const html = renderDeckHtml(chartSlide({ kind: "bar", categories: ["EBIT", "Cash"], series: [{ name: "M EUR", values: [-12, 8] }] }), SAMPLE_ASSETS, "static");
+    // Zero sits at 60% of the scale from -12 to 8: the negative bar ends there, the positive one starts there.
+    expect(html).toContain('class="bar-zero" style="left:60.00%"');
+    expect(html).toContain('class="bar is-negative" data-part="bar" style="margin-left:0.00%;width:60.00%');
+    expect(html).toContain('style="margin-left:60.00%;width:40.00%');
+    expect(html).toContain("chart-bar has-negative");
+  });
+
+  it("keeps the reference line inside a bridge whose axis starts above zero", () => {
+    const html = renderDeckHtml(chartSlide({ ...bridge, reference: { value: 650, label: "Target" } }), SAMPLE_ASSETS, "static");
+    const at = Number(html.match(/class="plot-ref" style="bottom:([\d.-]+)%/)![1]);
+    expect(at).toBeGreaterThanOrEqual(0);
+    expect(at).toBeLessThanOrEqual(100);
+  });
+
   it("draws negative bars down from zero, the bridge with links and estimates hatched", () => {
     const html = renderDeckHtml(chartSlide({ ...bridge, estimate: 4, axis: true, reference: { value: 600, label: "Plan" } }), SAMPLE_ASSETS, "static");
     expect(html).toContain("chart-waterfall");

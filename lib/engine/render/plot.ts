@@ -10,7 +10,7 @@
  * increases in the accent, decreases in the text color. Estimates hatched.
  */
 import { nice, ticks } from "d3-array";
-import { bestContrast, type Block } from "@/lib/domain";
+import { bestContrast, bridgeSteps, type Block } from "@/lib/domain";
 import { esc, formatNumber } from "../text";
 import type { RenderContext } from "./blocks";
 
@@ -29,17 +29,19 @@ interface Bar {
 
 const pct = (v: number) => `${v.toFixed(2)}%`;
 
+/** Series color, shared by every chart: with a highlight the accent and the line color, otherwise accent, second accent, muted. */
+export function seriesColor(ctx: RenderContext, seriesIndex: number, categoryIndex: number, highlight: number | undefined): string {
+  if (highlight !== undefined) return categoryIndex === highlight ? ctx.palette.accent : ctx.palette.line;
+  return [ctx.palette.accent, ctx.palette.accent2, ctx.palette.muted][seriesIndex]!;
+}
+
 function bars(b: Chart, ctx: RenderContext): Bar[] {
   const p = ctx.palette;
   const out: Bar[] = [];
   if (b.kind === "waterfall") {
     const v = b.series[0]!.values;
-    let running = 0;
-    v.forEach((x, ci) => {
-      const total = ci === 0 || ci === v.length - 1;
-      const from = total ? 0 : running;
-      const to = total ? x : running + x;
-      running = to;
+    bridgeSteps(v).forEach(({ from, to, total }, ci) => {
+      const x = v[ci]!;
       const color = b.highlight !== undefined ? (ci === b.highlight ? p.accent : p.line) : total ? p.muted : x >= 0 ? p.accent : p.fg;
       out.push({ ci, si: 0, from, to, color, value: x, label: "outside" });
     });
@@ -50,7 +52,7 @@ function bars(b: Chart, ctx: RenderContext): Bar[] {
       let at = 0;
       b.series.forEach((s, si) => {
         const x = s.values[ci]!;
-        out.push({ ci, si, from: at, to: at + x, color: [p.accent, p.accent2, p.muted][si]!, value: x, label: "inside" });
+        out.push({ ci, si, from: at, to: at + x, color: seriesColor(ctx, si, ci, undefined), value: x, label: "inside" });
         at += x;
       });
     });
@@ -58,8 +60,7 @@ function bars(b: Chart, ctx: RenderContext): Bar[] {
   }
   b.categories.forEach((_, ci) =>
     b.series.forEach((s, si) => {
-      const color = b.highlight !== undefined ? (ci === b.highlight ? p.accent : p.line) : [p.accent, p.accent2, p.muted][si]!;
-      out.push({ ci, si, from: 0, to: s.values[ci]!, color, value: s.values[ci]!, label: "outside" });
+      out.push({ ci, si, from: 0, to: s.values[ci]!, color: seriesColor(ctx, si, ci, b.highlight), value: s.values[ci]!, label: "outside" });
     }),
   );
   return out;
@@ -75,7 +76,8 @@ export function plotChart(b: Chart, ctx: RenderContext): string {
   // level of the bridge and the total columns carry a break mark (IBCS), so it is not hidden that they do not start at zero.
   let broken = false;
   if (b.kind === "waterfall") {
-    const levels = list.flatMap((x, i) => (i === 0 || i === list.length - 1 ? [x.to] : [x.from, x.to]));
+    // The reference line is a level too: a cut axis must still show it inside the plot.
+    const levels = [...list.flatMap((x, i) => (i === 0 || i === list.length - 1 ? [x.to] : [x.from, x.to])), ...(b.reference ? [b.reference.value] : [])];
     const low = Math.min(...levels);
     const high = Math.max(...levels);
     if (low > 0 && high - low < low * 0.5) {

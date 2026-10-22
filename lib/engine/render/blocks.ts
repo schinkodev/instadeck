@@ -9,7 +9,7 @@
  */
 import { heroMotionOf, type Block, type Palette } from "@/lib/domain";
 import { esc, formatNumber, inline } from "../text";
-import { plotChart } from "./plot";
+import { plotChart, seriesColor } from "./plot";
 
 export interface AssetData {
   mime: string;
@@ -57,13 +57,12 @@ function statHtml(s: StatItem, ctx: RenderContext, counting: boolean): string {
 </div>`;
 }
 
-export function seriesColor(ctx: RenderContext, seriesIndex: number, categoryIndex: number, highlight: number | undefined): string {
-  if (highlight !== undefined) return categoryIndex === highlight ? ctx.palette.accent : ctx.palette.line;
-  return [ctx.palette.accent, ctx.palette.accent2, ctx.palette.muted][seriesIndex]!;
-}
-
-function columnChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext, horizontal: boolean): string {
-  const max = Math.max(...b.series.flatMap((s) => s.values));
+/** Horizontal bars on one scale from the smallest to the largest value with zero in it: negative bars grow left from zero. */
+function barChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): string {
+  const all = b.series.flatMap((s) => s.values);
+  const lo = Math.min(0, ...all);
+  const span = Math.max(0, ...all) - lo || 1;
+  const zero = (-lo / span) * 100;
   const unit = b.unit ? esc(b.unit) : "";
   const fmt = (v: number) => `${formatNumber(v, Number.isInteger(v) ? 0 : 1, ctx.locale)}${unit}`;
   const groups = b.categories
@@ -71,16 +70,16 @@ function columnChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext, h
       const bars = b.series
         .map((s, si) => {
           const v = s.values[ci]!;
-          const pct = max === 0 ? 0 : (v / max) * 100;
-          const dim = horizontal ? "width" : "height";
-          return `<div class="bar-wrap"><div class="bar" data-part="bar" style="${dim}:${pct.toFixed(2)}%;background:${seriesColor(ctx, si, ci, b.highlight)}"><span class="bar-value">${fmt(v)}</span></div></div>`;
+          const width = (Math.abs(v) / span) * 100;
+          const left = v < 0 ? zero - width : zero;
+          return `<div class="bar-wrap"><div class="bar${v < 0 ? " is-negative" : ""}" data-part="bar" style="margin-left:${left.toFixed(2)}%;width:${width.toFixed(2)}%;background:${seriesColor(ctx, si, ci, b.highlight)}"><span class="bar-value">${fmt(v)}</span></div></div>`;
         })
         .join("");
       const hl = b.highlight === ci ? " is-highlight" : "";
-      return `<div class="bar-group${hl}"><div class="bars">${bars}</div><div class="bar-label">${esc(cat)}</div></div>`;
+      return `<div class="bar-group${hl}"><div class="bars"><i class="bar-zero" style="left:${zero.toFixed(2)}%"></i>${bars}</div><div class="bar-label">${esc(cat)}</div></div>`;
     })
     .join("");
-  return `<div class="chart chart-${horizontal ? "bar" : "column"}">${groups}</div>`;
+  return `<div class="chart chart-bar${lo < 0 ? " has-negative" : ""}">${groups}</div>`;
 }
 
 function lineChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): string {
@@ -143,7 +142,7 @@ function donutChart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): s
 }
 
 function chart(b: Extract<Block, { type: "chart" }>, ctx: RenderContext): string {
-  const body = b.kind === "line" ? lineChart(b, ctx) : b.kind === "donut" ? donutChart(b, ctx) : b.kind === "bar" ? columnChart(b, ctx, true) : plotChart(b, ctx);
+  const body = b.kind === "line" ? lineChart(b, ctx) : b.kind === "donut" ? donutChart(b, ctx) : b.kind === "bar" ? barChart(b, ctx) : plotChart(b, ctx);
   const legend =
     b.series.length > 1 && b.kind !== "donut"
       ? `<ul class="series-legend">${b.series.map((s, si) => `<li><i style="background:${seriesColor(ctx, si, 0, undefined)}"></i>${esc(s.name)}</li>`).join("")}</ul>`

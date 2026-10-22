@@ -199,3 +199,18 @@ export const TEXT_LIMITS = {
   cardText: 110,
 } as const;
 
+
+/**
+ * Levels of a waterfall bridge: the first and the last value are totals standing on zero, every value between is a
+ * change from the running level. One definition for the renderer, the PowerPoint export and validation.
+ */
+export function bridgeSteps(values: readonly number[]): { from: number; to: number; total: boolean }[] {
+  let running = 0;
+  return values.map((x, i) => {
+    const total = i === 0 || i === values.length - 1;
+    const from = total ? 0 : running;
+    const to = total ? x : running + x;
+    running = to;
+    return { from, to, total };
+  });
+}

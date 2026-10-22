@@ -24,8 +24,7 @@ import {
   type Block,
   type Deck,
   type Slide,
-  type Tone,
-} from "@/lib/domain";
+  type Tone, bridgeSteps } from "@/lib/domain";
 import { motionUsage, sharedKeys, slideEntrance, slideTransition, zoneEntrances } from "../motion";
 import { slideSteps } from "../steps";
 import { plain } from "../text";
@@ -79,7 +78,7 @@ function checkData(block: Block, push: Push, zone: string) {
       else if (n < 3) push("error", "chart-bridge", "A waterfall chart needs a start total, at least one change and an end total", zone);
       else if (v.length === n) {
         // The bridge must add up: start plus changes is the end. Tolerance for rounded labels.
-        const expected = v.slice(0, -1).reduce((a, x) => a + x, 0);
+        const expected = bridgeSteps(v).at(-2)!.to;
         const end = v.at(-1)!;
         if (Math.abs(expected - end) > Math.max(Math.abs(end) * 0.005, 0.05)) {
           push("error", "chart-bridge", `The bridge does not add up: ${block.categories[0]} ${v[0]} plus the changes gives ${Math.round(expected * 100) / 100}, but ${block.categories.at(-1)} is ${end}. Fix a value or add the missing change`, zone);
