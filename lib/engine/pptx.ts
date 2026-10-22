@@ -196,7 +196,7 @@ function addItem(pptx: Pptx, s: PptxSlide, it: SnapshotItem, ctx: { slide: Deck[
     }
     case "icon": {
       // The picture the browser drew (measure.js, rasterIcon): a real PNG that every presentation app shows.
-      s.addImage({ data: it.png.replace(/^data:/, ""), ...pos(it) });
+      s.addImage({ data: it.png.replace(/^data:/, ""), altText: `${it.name} icon`, ...pos(it) });
       return;
     }
     case "chart": {

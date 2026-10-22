@@ -4,6 +4,7 @@
  * A test checks: every tool is in the registry, planned entries have no tools, partial entries have `now`,
  * the tools of a capability exist in every mode in which the server offers it.
  */
+import { ICON_NAMES } from "@/lib/domain";
 import type { Mode } from "@/lib/tools";
 
 export type CapabilityStatus = "done" | "partial" | "planned";
@@ -36,7 +37,7 @@ export const CAPABILITIES: Capability[] = [
   },
   {
     id: "icons",
-    claim: "Cards can carry an icon from a curated set of 32 (risk, growth, delivery, partnership and more) that stands for what the card means, drawn in the text color and exported to PowerPoint as pictures.",
+    claim: `Cards can carry an icon from a curated set of ${ICON_NAMES.length} (risk, growth, delivery, partnership and more) that stands for what the card means, drawn in the text color and exported to PowerPoint as pictures.`,
     status: "done",
     tools: ["create_deck", "apply_ops"],
   },

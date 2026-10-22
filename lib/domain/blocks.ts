@@ -139,7 +139,7 @@ export const blockSchema = z.discriminatedUnion("type", [
         z.strictObject({
           title: text(32, "Card title"),
           text: text(110, "Card text"),
-          icon: z.enum(ICON_NAMES).optional().describe("An icon that carries the meaning of the card (the kind of risk, the step of a process). All cards have one or none, and no two cards share the same"),
+          icon: z.enum(ICON_NAMES).optional().describe("An icon that carries the meaning of the card (the kind of risk, the step of a process). Give all cards one or none, and avoid the same icon on two cards unless they mean the same thing"),
         }),
       )
       .min(2)
