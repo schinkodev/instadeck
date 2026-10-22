@@ -37,7 +37,7 @@ export const STORYTELLING_PRINCIPLES: readonly StorytellingPrinciple[] = [
     principle: 'Three phases: here is the current state, here is what broke or changed, here is what we propose.',
     why: 'Without the complication, there is no reason to listen. The complication creates the urgency that makes the resolution valuable.',
     outlineApplication: 'First third establishes context. Middle third presents the problem or change. Final third delivers the solution and proof.',
-    enforced: [{ layer: 4, by: 'judged by the model' }],
+    enforced: [{ layer: 3, by: 'story-order: with brief.frame scqa the beats follow situation, complication, answer, support' }],
   },
   {
     id: 'sparkline',
@@ -58,7 +58,7 @@ export const STORYTELLING_PRINCIPLES: readonly StorytellingPrinciple[] = [
     principle: 'Attention, Need, Satisfaction, Visualization, Action. A persuasion funnel that remains the most effective structure for pitch decks.',
     why: 'Each phase must be present. Skipping "Need" makes "Satisfaction" feel unmotivated. Skipping "Visualization" makes "Action" feel premature.',
     outlineApplication: 'Open with attention grab. Establish the need. Present your solution. Help them visualize the outcome. Close with a specific call to action.',
-    enforced: [{ layer: 4, by: 'judged by the model' }],
+    enforced: [{ layer: 3, by: 'story-order: with brief.frame monroe the beats follow attention, need, satisfaction, visualization, action' }],
   },
   {
     id: 'narrative-arc',
@@ -68,7 +68,7 @@ export const STORYTELLING_PRINCIPLES: readonly StorytellingPrinciple[] = [
     principle: 'Setup, rising tension, climax, resolution. Not every presentation is a story, but every good presentation has a tension curve.',
     why: 'Flat energy across slides means the audience checks out. The arc creates anticipation and payoff.',
     outlineApplication: 'Map your slides to a tension curve. Energy should build toward a climax in the final third, then resolve cleanly.',
-    enforced: [{ layer: 4, by: 'judged by the model' }],
+    enforced: [{ layer: 3, by: 'story-order: beats follow the stages of the declared narrative frame' }],
   },
 
   // Persuasion Sequencing
@@ -122,7 +122,7 @@ export const STORYTELLING_PRINCIPLES: readonly StorytellingPrinciple[] = [
     principle: 'Every slide asserts one thing. The heading is a claim ("Revenue grew 3x"), not a topic label ("Revenue").',
     why: 'This single change improves any presentation. Topic labels force the audience to find the point themselves.',
     outlineApplication: 'Every slide heading must be a complete assertion. Not "Our Team" but "12 engineers with 80 years of combined fintech experience".',
-    enforced: [{ layer: 3, by: 'heading-label: a content slide heading of one or two words without a number' }],
+    enforced: [{ layer: 3, by: 'heading-label: a content slide heading of one or two words without a number' }, { layer: 3, by: 'story-evidence: a beat that needs proof carries a stat, chart, table or quote' }],
   },
   {
     id: 'rule-of-three',
@@ -162,6 +162,6 @@ export const STORYTELLING_PRINCIPLES: readonly StorytellingPrinciple[] = [
     principle: 'Return to the opening image or idea at the end. Creates closure and a sense of completeness.',
     why: 'Stronger than a generic "Questions?" slide. The callback signals the argument is complete.',
     outlineApplication: 'Reference the opening hook in the closing slide. If you opened with a question, close with the answer. If you opened with a problem, close with the transformation.',
-    enforced: [{ layer: 4, by: 'judged by the model' }],
+    enforced: [{ layer: 3, by: 'story-open: the story opens with the hook' }, { layer: 3, by: 'story-close: the story ends with the ask or the decision' }, { layer: 4, by: 'the callback itself is judged by the model' }],
   },
 ];
