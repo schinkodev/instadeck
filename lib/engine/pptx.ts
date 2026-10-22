@@ -3,7 +3,7 @@
  * the geometry, here the file is only assembled. Text stays editable, charts are native PowerPoint
  * charts from the deck data, tables native tables, speaker notes come along. Animation does not.
  *
- * Slide 1920x1080 px = 13.333 x 7.5 palce: 144 px na palec, 1 px = 0.5 pt.
+ * Slide 1920x1080 px = 13.333 x 7.5 inches: 144 px per inch, 1 px = 0.5 pt.
  */
 import PptxGenJS from "pptxgenjs";
 import { deriveTokens, type Block, type Deck, type Palette } from "@/lib/domain";
