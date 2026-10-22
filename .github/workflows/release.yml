@@ -42,3 +42,29 @@ jobs:
         run: gh release create "${GITHUB_REF_NAME}" dist-bundle/instadeck.mcpb --title "${GITHUB_REF_NAME}" --generate-notes
       - name: Publish to npm
         run: npm publish --access public
+
+  # Zápis do oficiálního MCP Registry (z něj čerpají PulseMCP a další katalogy).
+  # Samostatná job po npm: registry ověřuje, že balíček s mcpName už na npm je.
+  # Selhání jde spustit znovu bez nového publish na npm. Přihlášení přes OIDC, bez tokenu.
+  registry:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Version in server.json from package.json
+        run: |
+          VERSION="$(node -p 'require("./package.json").version')"
+          test "v${VERSION}" = "${GITHUB_REF_NAME}"
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > server.tmp
+          mv server.tmp server.json
+          jq '{name, version, packages: [.packages[] | {identifier, version}]}' server.json
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - name: Login with GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish

@@ -51,7 +51,7 @@ Co je dobré vědět:
 
 ## 4. Každé další vydání
 
-1. Na větvi `release/0.1.1` zvyš verzi: `npm version 0.1.1 --no-git-tag-version`. Stejné číslo dej do `server.json` (`version` a `packages[0].version`), ať záznam v MCP Registry nezastará. Otevři PR, nech projít CI a sluč.
+1. Na větvi `release/0.1.1` zvyš verzi: `npm version 0.1.1 --no-git-tag-version`. `server.json` ručně neupravuj, verzi do něj doplní workflow z `package.json`. Otevři PR, nech projít CI a sluč.
 2. Z čistého `main` vytvoř tag a pushni ho (smíš jen ty, hlídá to ruleset na tagy):
 
    ```bash
@@ -62,7 +62,8 @@ Co je dobré vědět:
 
 3. V záložce Actions sleduj běh **Release**. Po zelené:
    - GitHub Release `v0.1.1` s `instadeck.mcpb` a automatickými poznámkami,
-   - nová verze na npm s provenance.
+   - nová verze na npm s provenance,
+   - záznam v MCP Registry (job `registry`, viz sekce 6).
 4. Ověř: `npm view instadeck version`, `npx -y instadeck@0.1.1` a odkaz na `instadeck.mcpb` v README (`releases/latest`).
 
 Číslování: `0.x` dokud se tools mění, od `1.0.0` se řiď semver (rozbití tools znamená major).
@@ -81,7 +82,11 @@ Doporučení po prvním úspěšném běhu: v nastavení balíčku na npmjs.com 
 
 ## 6. MCP Registry (oficiální katalog MCP serverů)
 
-Registr drží jen metadata (`server.json`), balíček musí být už na npm a jeho `package.json` musí mít `mcpName` shodné s `name` v `server.json`. Publikuje vlastník ručně po vydání na npm:
+Registr drží jen metadata (`server.json`), balíček musí být už na npm a jeho `package.json` musí mít `mcpName` shodné s `name` v `server.json`.
+
+Od vydání po zavedení automatizace to dělá job `registry` ve workflow `release.yml`: po úspěšném npm publish doplní verzi do `server.json`, přihlásí se přes GitHub OIDC (bez tokenu) a spustí `mcp-publisher publish`. Když selže, spusť znovu jen tu job (Re-run failed jobs), npm se znovu publikovat nebude. Ze zápisu čerpají další katalogy (např. PulseMCP).
+
+Ruční cesta (verze, která vyšla před automatizací, nebo když OIDC selže na členství v organizaci):
 
 ```bash
 brew install mcp-publisher
@@ -90,4 +95,4 @@ mcp-publisher validate
 mcp-publisher publish
 ```
 
-Ověř: `curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.schinkodev/instadeck"`. Při každé nové verzi zvyš číslo v `server.json` a publikuj znovu.
+Ověř: `curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.schinkodev/instadeck"`.
