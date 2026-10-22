@@ -101,16 +101,23 @@ describe("motion measurement", () => {
       d.motion = { ...d.motion, intensity: "expressive", entrance };
       expect(await motionRules(d), entrance).toEqual([]);
     }
-    // The rest the player adds keeps the inset interpolable: halfway the element is half uncovered, not clipped away.
-    const clip = await withPage("<div id=p style='width:800px;height:400px'></div>", (page) =>
-      page.evaluate(() => {
-        const a = document.getElementById("p")!.animate([{ clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0% 0% 0% 0%)" }], { duration: 100, fill: "both" });
-        a.pause();
-        a.currentTime = 50;
-        return getComputedStyle(document.getElementById("p")!).clipPath;
-      }),
-    );
-    expect(clip).toBe("inset(0% 50% 0% 0%)");
+    // In the player itself: halfway through the wipe the heading of the next slide is partly uncovered, not unclipped.
+    const d = sampleDeck();
+    d.motion = { ...d.motion, intensity: "expressive", entrance: "wipe", transition: "cut" };
+    const clip = await withPage(renderDeckHtml(d, SAMPLE_ASSETS, "present"), async (page) => {
+      await page.keyboard.press("ArrowRight");
+      return page.evaluate(() => {
+        const heading = document.querySelector(".slide.is-active .heading")!;
+        heading.getAnimations().forEach((a) => {
+          a.pause();
+          const t = a.effect!.getTiming();
+          a.currentTime = Number(t.delay ?? 0) + Number(t.duration) / 2;
+        });
+        return getComputedStyle(heading).clipPath;
+      });
+    });
+    expect(clip).toMatch(/^inset\(/);
+    expect(clip).not.toContain(" 0% -25% -25%)");
   });
 
   it("measures transitions against the intensity", async () => {
