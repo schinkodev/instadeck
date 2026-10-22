@@ -10,7 +10,7 @@
  */
 import { App } from "@modelcontextprotocol/ext-apps";
 import type { LayoutMeasure } from "@/lib/domain/layout-limits";
-import type { MotionSample } from "@/lib/domain/motion-limits";
+import type { MotionOverlap, MotionSample } from "@/lib/domain/motion-limits";
 import { MEASURE_JS } from "@/lib/engine/render/measure-source";
 import { PLAYER_JS } from "@/lib/engine/render/player-source";
 // Directly from modules without zod: the MCP App bundle should stay small.
@@ -48,7 +48,7 @@ declare global {
       onAsk?: (a: { index: number; slideId: string; text: string }) => void;
     }): PlayerHandle;
     measureInstaDeck(root: HTMLElement): OverflowMeasure[];
-    measureMotionInstaDeck(root: HTMLElement, config: unknown): MotionSample[];
+    measureMotionInstaDeck(root: HTMLElement, config: unknown): { samples: MotionSample[]; overlaps: MotionOverlap[] };
     measureLayoutInstaDeck(root: HTMLElement): LayoutMeasure[];
   }
 }
@@ -124,7 +124,8 @@ async function show(deckId: string, revision: number, url: string) {
 
   // The final state is measured before the player mounts, animation would move the rectangles.
   const raw = window.measureInstaDeck(root);
-  const motion = [...layoutFindings(window.measureLayoutInstaDeck(root)), ...motionFindings(parts.config.measure, window.measureMotionInstaDeck(root, parts.config))];
+  const measured = window.measureMotionInstaDeck(root, parts.config);
+  const motion = [...layoutFindings(window.measureLayoutInstaDeck(root)), ...motionFindings(parts.config.measure, measured.samples, measured.overlaps)];
   if (app.getHostCapabilities()?.updateModelContext) {
     await app.updateModelContext({ content: [{ type: "text", text: report(deckId, revision, raw, motion) }], structuredContent: { deckId, revision, overflow: raw, motion } });
   }

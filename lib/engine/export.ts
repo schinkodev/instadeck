@@ -1,7 +1,7 @@
 /**
  * Measurement and exports over static HTML (the final state of every slide).
  */
-import type { Deck, MotionSample } from "@/lib/domain";
+import type { Deck, MotionOverlap, MotionSample } from "@/lib/domain";
 import type { LayoutMeasure } from "@/lib/domain/layout-limits";
 import { withPage } from "./browser";
 import type { AssetData } from "./render/blocks";
@@ -48,10 +48,10 @@ export async function measureDeck(deck: Deck, assets: Record<string, AssetData>)
       page.evaluate(`${MEASURE_JS}\n({ overflow: measureInstaDeck(document), layout: measureLayoutInstaDeck(document), motion: measureMotionInstaDeck(document.body, ${JSON.stringify(config)}) })`) as Promise<{
         overflow: OverflowMeasure[];
         layout: LayoutMeasure[];
-        motion: MotionSample[];
+        motion: { samples: MotionSample[]; overlaps: MotionOverlap[] };
       }>,
   );
-  return [...overflowFindings(raw.overflow), ...layoutFindings(raw.layout), ...motionFindings(config.measure, raw.motion)];
+  return [...overflowFindings(raw.overflow), ...layoutFindings(raw.layout), ...motionFindings(config.measure, raw.motion.samples, raw.motion.overlaps)];
 }
 
 /** Snapshot of the rendered slides in Chromium (static HTML: final state, scale 1). */

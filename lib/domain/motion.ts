@@ -99,7 +99,7 @@ export const ENTRANCES = {
 export const TRANSITIONS = {
   cut: { purpose: "No transition. Fast, factual.", duration: 0, easing: "out-cubic" },
   // Fade through, not a cross fade: the old slide is gone at half time and the new one appears from there, so two texts
-  // never cover each other (principle one-figure-at-a-time). Offsets are in eased progress, in-out keeps half at half.
+  // never cover each other (principle one-figure-at-a-time).
   fade: {
     purpose: "Fade through: the old slide fades out, then the new one fades in. The safe default.",
     duration: 450,
@@ -118,7 +118,7 @@ export const TRANSITIONS = {
     purpose: "Old slide drops back and fades, new one rises. Calm depth.",
     duration: 650,
     easing: "out-expo",
-    exit: [{ transform: "scale(0.97)", opacity: 0, offset: 0.4 }, { transform: "scale(0.94)", opacity: 0 }],
+    exit: [{ transform: "scale(0.94)", opacity: 0, offset: 0.5 }, { transform: "scale(0.94)", opacity: 0 }],
     enter: [{ transform: "translateY(48px)", opacity: 0 }],
   },
   morph: {

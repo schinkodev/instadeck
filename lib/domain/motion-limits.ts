@@ -102,18 +102,24 @@ export const CONTENT_DELAY = 0.45;
 
 /**
  * Measured motion of one definition (measure.js, sampling the animation on a probe in the browser).
- * part: entrance (content entrance), enter (incoming slide), exit (outgoing slide), cross (both slides of a transition together).
+ * part: entrance (content entrance), enter (incoming slide), exit (outgoing slide).
  */
 export interface MotionSample {
   name: string;
-  part: "entrance" | "enter" | "exit" | "cross";
+  part: "entrance" | "enter" | "exit";
   travelPx: number;
   scale: number;
   blurPx: number;
   rotateDeg: number;
   overshoot: boolean;
-  /** Share of the motion remaining at half time (0 to 1). Only for entrance and enter. */
+  /** Share of the motion remaining at half time (0 to 1), half of the active time. Only for entrance and enter. */
   remainingAtHalf: number;
-  /** How long the text of both slides is legible at once, in ms. Only for cross. */
-  overlapMs?: number;
+  /** How long the element really moves, from its first change to its rest, in ms. Only for entrance and enter. */
+  activeMs: number;
+}
+
+/** Measured transition (measure.js): how long the text of both slides is legible at once, in ms. */
+export interface MotionOverlap {
+  name: string;
+  overlapMs: number;
 }
