@@ -20,7 +20,7 @@
   },
   "license": "MIT",
   "mcpName": "io.github.schinkodev/instadeck",
-  "author": "Jakub Schinko",
+  "author": "Sharpest Labs (https://www.sharpestlabs.com)",
   "type": "module",
   "bin": {
     "instadeck": "dist/instadeck.js"

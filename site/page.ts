@@ -17,7 +17,7 @@ import { capabilitiesFor } from "@/server/capabilities";
 import { SHOWCASE, WALL, deckName, slideLayout, type ShowcaseDeck } from "@/site/showcase";
 
 const REPO = "https://github.com/schinkodev/instadeck";
-const AUTHOR = { name: "Jakub Schinko", url: "https://schinko.dev" };
+const AUTHOR = { name: "Sharpest Labs", url: "https://www.sharpestlabs.com" };
 const CONNECTOR_URL = "https://instadeck.app/mcp";
 const CODE_REMOTE = `claude mcp add --transport http instadeck ${CONNECTOR_URL}`;
 const CODE_LOCAL = "claude mcp add instadeck -- npx -y instadeck";
