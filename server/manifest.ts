@@ -13,7 +13,7 @@ export function buildManifest(version: string) {
     description: "Branded, animated pitch decks. Claude writes the story and design, InstaDeck renders, validates and exports.",
     long_description:
       "Describe your company and topic, add your logo and brand fonts, and Claude builds a pitch deck with InstaDeck: a presentation file with slide transitions, click by click reveals, counting numbers and growing charts, plus a PDF. Everything runs on your computer, decks are folders you own.",
-    author: { name: "Jakub Schinko", url: "https://instadeck.app" },
+    author: { name: "Sharpest Labs", url: "https://www.sharpestlabs.com" },
     homepage: "https://instadeck.app",
     repository: { type: "git", url: "https://github.com/schinkodev/instadeck" },
     license: "MIT",
